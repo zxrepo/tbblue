@@ -1,0 +1,1108 @@
+RC1 (v1.99R) 2018-09-08
+=======================
+* Added new option to F_OPENDIR, allowing F_READDIR to use a wildcard string
+  to filter returned entries.
+* Browser menu option will now run an external file manager/browser program
+  if present as the .FM dot command. If .FM is not present, the internal
+  browser is run.
+
+
+v1.99Q (2018-09-04)
+===================
+* Rewrite of text justification routines, improving performance by ~40%.
+* Minor performance optimisation in Multiface character output.
+* Added .ASSOCIATE dot command for managing filetype associations for the
+  Browser.
+* Changed default handler for .TXT/DOC/CFG/INI/ASM to Marco's .MORE command,
+  running in 85-column mode.
+* Changed default line-endings of browser.cfg to CRLF, as DOS/Windows editors
+  are less likely to cope with different line-endings than Mac/Unix ones.
+* Print a blank line between output of each command in the Command Line in
+  32-column mode, making it a bit more consistent with 64/85-column modes.
+* Fixed a bug where 4 attribute bytes were corrupted during ZXZVM operation,
+  due to new temp variables being incorrectly located within shadow screen area.
+
+
+v1.99P (2018-09-02)
+===================
+* Added .BROWSE dot command, allowing BASIC programs to use the Browser dialog
+  to request filenames.
+* Added .NEXTVER dot command, allowing BASIC programs to detect running NextZXOS
+  version (or if running in 48K/esxdos modes).
+* Wildcards are now allowed in any part of a filename, eg:
+  c:/gam*/man*.* could match c:/games/manic miner.tap
+* Browser now shows error reasons for failing erase, rename, mkdir and paste.
+* Reinstated stripping of leading space in dot command arguments, as some dot
+  commands don't perform their own space stripping.
+* Fixed a bug where Browser screen could go blank if a directory erase failed.
+* Fixed a hang if a dot command with >255 characters of arguments was entered.
+* Fixed broken text printing in Timex hi-colour mode (LAYER 1,3).
+* Fixed fragmentation check in MKDATA and MKSWAP which could lead to fragmented
+  images sometimes being created.
+* Fixed a bug in M_P3DOS where the entry IX parameter was corrupted if the
+  selected RAM page was 0.
+* Fixed M_P3DOS when called from a dot command to not move stack if already
+  >$4000; this avoids issues for calls requiring the stack to be as set by BASIC.
+* Fixed M_P3DOS when called from a dot command to not disable interrupts for
+  the duration of the call.
+* Fixed IDE_MOUNT bug which erased vital temporary internal state, preventing
+  it from returning to the caller after being called via M_P3DOS.
+* Fixed Browser to clear the lower-screen before printing an error message.
+* Don't set internal Browser mode flag when called from IDE_BROWSER, so .BROWSE
+  returns to BASIC/Command Line rather than the menu system.
+* Updated $, LFN, DEFRAG, INSTALL, UNINSTALL, MKDATA, MKSWAP to limit argument
+  lengths to 255 characters per argument.
+* Standardised help screens of $, LFN, DEFRAG, INSTALL, UNINSTALL, MKDATA,
+  MKSWAP, BROWSE and NEXTVER.
+
+
+v1.99N (2018-08-30)
+===================
+* TAP helper now respects the current settings for pause & simulate.
+* Changed welcome program to use NEXT #n instead of INKEY$, so the screensaver
+  can kick in.
+* Clarifications and other tweaks in the welcome program.
+* Enhanced F_GETCWD so it may alternatively be used to obtain a consistent path
+  for any provided filespec.
+* Fixed M_GETSETDRV to ignore the drive number field, allowing A: to be set
+  as the default drive (by using drive number=1).
+* Fixed dot command line parsing so quotes directly after the command name
+  (without a separating space) are allowed.
+* Fixed dot command line parsing to reject any embedded colour control codes
+  that might be entered in 48K mode.
+* Fixed the .DEFRAG, .$, .LFN, .INSTALL, .UNINSTALL, .MKDATA and .MKSWAP dot
+  commands to accept quoted arguments.
+* Fixed OPEN # to open input files as shared-read rather than exclusive-read.
+
+
+v1.99M (2018-08-27)
+===================
+* Fixed adjustments to R register on entry to Multiface; these previously
+  didn't take account of $ED shift opcodes.
+* Fixed error status on return from M_TAPEIN hook with B=in_flags.
+* Fixed bug in esxdos F_OPEN hook which caused files opened for read to be
+  marked as also open for write.
+* Removed workaround for allowing tape in/out files to be opened regardless
+  of access modes (no longer required after previous bugfix).
+
+
+v1.99L (2018-08-25)
+===================
+* Moved the "About" screen right by 1 char to work around the Timex offset bug
+  in the core which is very visible if the screensaver kicks in on this page.
+* Added ".ASM" association in the Browser, to view as a text file.
+* More tweaks to the About screen, now named "About NextZXOS" and reflecting
+  the authors of the dot commands that will be shipped in the final distro.
+* IDE_PATH / F_RMDIR now refuse to delete any directory which is the current
+  directory for its drive.
+* M_TAPEIN hook with B=in_flags now also returns the previously-set flags in A.
+* Fixed dot command syntax checking to prevent dot commands with unbalanced
+  double-quotes from being accepted as valid statements.
+* Fixed a bug where the automatic delete options of DOS_OPEN were failing to
+  check if the file to be deleted was open.
+* Fixed a bug in "screen" editor mode where the whole screen was scrolled up
+  by one line after a report, if the entered command was > 1 line long.
+* Removed an obsolete workaround to limit AY volume to 13 when >3 channels
+  were being used in a PLAY command.
+* Optimised layer2/lo-res text printing routine.
+
+
+v1.99K (2018-08-24)
+===================
+* Implemented new IDE_MODE call, which returns information on the current
+  display mode, and allows it to be changed.
+* Added new command to execute m/code in any bank; the bank is automatically
+  paged in to the top 16K, so address must be in the range 49152-65535:
+    BANK n USR address
+* Partial rewrite of Calculator mode, allowing integer expressions to be entered
+  and removing some oddities (like silently ignoring lines with syntax errors).
+* Added a progress display (in K) to the COPY command and Browser copy function.
+* If paste of a file fails in the Browser, the error message is now shown.
+* Fixed the path display in the Browser to show the final 51 chars of the path
+  rather than the first 51 chars.
+* Entering a direct command in full-screen editor mode now clears the screen
+  so the command output is not interleaved with the program listing.
+* Fixed NEW and REMOUNT so that the RAMdisk contents are retained.
+* Added note in MF status page that a stepper/disassembler will be forthcoming.
+* Updated About screen credits to reflect new dot commands.
+
+
+v1.99J (2018-08-22)
+===================
+* Various optimisations to windowing code, improving performance by ~15% for
+  typical case (5-bit characters, layer 1,1, full-screen mode window).
+* Optimised string printing via PRINT command.
+* Optimised integer expression evaluator to use Z80N opcodes where possible.
+  In particular, performance of multiply increases by ~11.4x.
+* Various optimisations to BASIC parser main loop, character collection and
+  class evaluators.
+* Various space-saving, including move filename handling into an overlay.
+* Added optimised variants of several important ROM3 routines into ROM1,
+  avoiding the ROM switch overhead, and avoiding using the floating-point
+  calculator where possible.
+* Fix for IDE_STREAM_IN/OUT treating "S"/"K" channels as layer 1,1 mode window
+  when actually in layer 0.
+* Fix for previously-masked bug, causing a crash with IDE_STREAM_IN/OUT for
+  standard channels (S/K/P).
+* Tweaks to autoexec "Welcome" program.
+
+
+v1.99I (2018-08-19)
+===================
+* Split multiface settings menu into Joysticks/General/Sound, and added
+  support for changing joysticks 1 & 2, Timex, Lightpen & audiochip mode.
+* Added NextReg $09 (peripheral4) to multiface status page.
+* Added cursor left/right navigation to the multiface TAP browser.
+* TurboSound is now enabled at boot, and disabled when loading legacy SNA/Z80/TAP.
+* When entering 48 BASIC, turbosound/Timex are disabled and contention is enabled.
+* Writes to TAP files are now immediately committed, avoiding need to close the
+  TAP file to ensure all changes are flushed.
+* Fixed RST$18 in dot commands to ensure entry flags (F) are preserved for when
+  the 48K ROM routine is started.
+* Implemented rc_path_get reason (for PWD) on +3DOS drives as well as FAT drives.
+* Implemented new IDE_MOUNT 2-stage call to allow applications to control
+  changing SD cards, like the NextBASIC REMOUNT command.
+* Changed directory containing dot commands from C:/BIN to C:/DOT, to make it
+  easier to have different versions of dot commands for esxDOS and NextZXOS.
+* Newly-allocated sectors on +3DOS drives are now erased with soft-EOFs ($1a),
+  so that headerless text files can be copied from FAT drives and be treated
+  as the proper exact length (rather than a multiple of 128-byte records).
+* Updated Welcome autoexec.bas program to advertise the www.specnext.com/
+  latestdistro/ page.
+* Updated About screen credits.
+* Updated .CPM placeholder with a more detailed help page.
+* Fixed loading of Chase HQ 128K from Tape Loader or from a .TAP file from the
+  Browser.
+* Fixed issues returning string results from PROCedures which also had string
+  parameters.
+* Fixed lo-res/layer2 windows to open with the current permanent colours.
+* Fixed out-of-memory error when auto-booting Art Studio +3 .DSK from the Browser.
+* Fixed REMOUNT/IDE_MOUNT to close all swap partitions when unmounting cards.
+* Fixed NEXT #0 TO var from within AUTOEXEC.BAS, due to key mode not yet having
+  been initialised.
+* Fixed crashes in Browser if errors occured during file copying; now an error
+  beep sounds.
+* Fixed a crash if Multiface was activated with a mismatched NextZXOS ROM.
+* Fixed FAT32 access to ignore and preserve the top 4 bits of the cluster
+  number (as required by the spec).
+
+
+v1.99H (2018-08-15)
+===================
+* Completed implementation of .INSTALL and .UNINSTALL dot commands; these now
+  provide bank allocation/deallocation for drivers.
+* Updated border.drv example driver with bank allocation.
+* NextBASIC now automatically uses any installed driver with id "P" for output
+  to #3 (LLIST, LPRINT, PRINT #3 etc).
+* Added sample printer driver.
+* After a REM, no further tokenisation now occurs on the line (previously,
+  keywords would be tokenised after a colon, even though no further statements
+  are parsed or executed after a REM).
+* Added semi-colon (;) as an alternative to REM. This is intended for use with
+  dot commands (eg an assembler) so that they can parse such lines whilst
+  NextBASIC ignores them.
+* Fixes for breakpoints/memory browser messages, broken in v1.99G.
+* Ensure interrupts disabled before switching from +3DOS ROM to DivMMC ROM
+  rather than during the switch.
+
+
+v1.99G (2018-08-06)
+===================
+* Added support for .SPR files in browser.cfg using .SPREDT.
+* IY is now saved/restored and set to ERR_NR during the ISR.
+* LAYER BANK command now restricts banks to within the first 16 as required.
+* Deprecated IDE_PARTITION_RENAME/_WRITE/_WINFO/_SETINFO/_GETINFO and
+  IDE_DOS_UNPERMANENT calls.
+* Refactoring in preparation for Spanish language version support.
+* M_DOSVERSION now additionally returns ROM language in HL ("en" or "es").
+* ASCII 96 (backtick on most PCs; pound/currency symbol on Spectrum) can now
+  be used in browser.cfg and will be substituted by language code ("en" or "es").
+* Split out some functionality from the Multiface ROM into several new overlays
+  to make room for more features.
+* Added palette save & palette load options to Multiface (in screenshots menu).
+* Added new Settings menu to Multiface, allowing some core settings to be
+  modified on-the-fly.
+
+
+v1.99F (2018-07-29)
+===================
+* Various fixes & tweaks to the default AUTOEXEC.BAS welcome program.
+* Updated browser.cfg for new .NDAWPLAY which no longer needs a CLEAR.
+* Fix for filetypes becoming unrecognised in the Browser after unmounting a
+  disk image.
+* MOUNTER.BAS helper now erases itself on successful completion.
+* TAPLOAD.BAS helper shows USR0 option before 48K as this is preferable.
+* Optimised FAT directory searches to early-exit when a never-used directory
+  entry is encountered, instead of continuing to search the remaining entries.
+* Fixed a bug in the editor where pressing delete on an empty line had caused
+  the cursor to move to the top of the screen.
+* Tweaks to "About" screen.
+* Fixed paths returned by the IDE_PATH call (or PWD command) when directory
+  names contained spaces and/or extensions after a short name. This had caused
+  some oddities in the Browser when copying/pasting files.
+* Added workaround to the REMOUNT command so if the card was removed early
+  (manually, or automatically by a failing card) then the remount proceeds
+  instead of generating an error (since such an error is not recoverable).
+* Added a test for BREAK during BASIC stream input to prevent potential lockups.
+* Fixed CONTINUE to work following a trapped error, so it can be used within
+  an ON ERROR routine.
+
+
+v1.99E (2018-07-27)
+===================
+* Added a default AUTOEXEC.BAS welcome program, introducing some of the
+  features of NextZXOS.
+* Added support for .Z1 - .Z8 Infocom/Inform game files to Browser, using a
+  slightly modified version of John Elliott's ZXZVM for +3.
+* Added support for .NEX files to Browser using .NEXLOAD command.
+* Added window channel demo program (from +3e).
+* Reworked dot command error reporting, fixing the following issues:
+  + Dot command errors now appear correctly in modes other than layer 0
+  + Dot command errors can now be trapped with ON ERROR (code is always 255)
+  + An error within a dot command in AUTOEXEC.BAS no longer causes a crash
+* Fixed EDIT key in Browser (broken in v1.99B).
+* Reinstated help text for SPACE key in Browser (accidentally removed in
+  v1.99B).
+* Fixed cursor right in Browser if the current screen is full and there are
+  no further files in the directory.
+
+
+v1.99D (2018-07-19)
+===================
+* Fixed "Invalid Colour" error using Browser within Multiface replacement
+  (introduced in v1.98N).
+* Mounter helper now only accepts "Y" or "N" as answers to "boot disk" question.
+* Fixed double editing cursor seen when entering Command Line mode immediately
+  after mounting a disk from the Browser.
+
+
+v1.99C (2018-07-18)
+===================
+* Re-brand to NextZXOS, including:
+    + system files are now stored in the c:/nextzxos/ directory
+    + main ROM is now called enNextZX.rom (so config.ini needs updating)
+    + menu option is now called "Command Line" rather than NextZXOS, to avoid
+      confusion
+
+
+v1.99B (2018-07-15)
+===================
+* Improvements to +3 .DSK support:
+    + standard .DSK images are now supported (as well as extended .DSK images)
+    + any number of tracks now supported
+    + tracks with different numbers of sectors now supported
+    + any sector size is now allowed, although only 512-bytes read/written
+    + fix for hang on +3/PCW disks with non-zero but blank disk specifiers
+    + fixed disk size calculation, fixing seek errors on high track numbers
+    + All Level 9, Magnetic Scrolls and Tasman disks tried now work; all
+      disks without protection/encryption schemes should now work
+* DOS_INITIALISE is now a no-op; it shouldn't be called except by the system
+  but some games (eg Magnetic Scrolls) called it and cause their disks to become
+  unmounted.
+* Combined the .DSK/.P3D mounting helpers for the Browser, and improved with:
+    + run at maximum speed to improve performance mounting large images
+    + automatically defragment .DSK/.P3D files if necessary
+    + allow booting of .P3D as well as .DSK files
+    + restrict booting to disks mounted on A: (other drives not supported
+      by the boot process)
+    + report "Not bootable" rather than "File not found" for unbootable images
+* Fix for exiting dot commands in cases where RETADDR had been overwritten
+  by ROM routines called by the dot command.
+* Fixed M_P3DOS to correctly read the input IX parameter (HL from dot commands).
+* Fixed COPY..TO SCREEN$ (and related commands) to stop when soft-EOF ($1a)
+  reached.
+* Improved cursor left/right behaviour in Browser: if already on first/last
+  page, the highlight will instead be moved to the first/last entry on the page.
+* Added Unmount option to the Browser, allowing disk images to be easily
+  unmounted.
+* Fixed .DEFRAG dot command: this still hadn't been correctly checking the new
+  file was defragmented, due to a lack of read access on the file.
+* Added .LFN dot command to return the long filename for any short (8.3) name.
+  This is useful for filenames returned by the Browser, which are always short.
+* Added .$ dot command, allowing any other dot command to be executed with
+  parameters held in a BASIC string variable, rather than just a literal argument.
+
+
+v1.99A (2018-07-13)
+===================
+* Added support for opening system-supplied swap files (c:/nextzxos/swp-X.p3s)
+  with IDE_SWAP_OPEN.
+* Fixed low-level write return values so IDE_SWAP_OUT works correctly.
+* Optimised IDE_SWAP_IN to reduce overheads by using a single multiple-sector
+  read operation, and optimised the read to use INIs rather than INIRs.
+* Added support for opening any named file as a swap file with IDE_SWAP_OPEN.
+  This allows fast read (or write) access to unfragmented files in chunks of
+  between 0.5K and 16K, with about the same performance as the streaming API.
+* Deprecated inefficient IDE_SWAP_EX call.
+* Fixed version checks in .MEM, .DEFRAG, .MKDATA and .MKP3D dot commands which
+  prevented them from running on v1.99.
+* Enhanced LOAD "*" command to try both DOS_BOOT and LOAD "disk" to boot a
+  floppy disk image. This allows more disks to be automatically booted
+  (eg Level 9's "Lancelot").
+* Fixed incorrect remaining size calculation in FATfs file read function
+  (broken in v1.99) which prevented Pogie from loading correctly.
+
+
+v1.99 (2018-07-08)
+==================
+* The "LG" version of the ROMs now includes the latest (v07) "LG" (Looking
+  Glass) ROM from Geoff Wearmouth.
+* Optimisations in the FATfs module, to allow new features to be added.
+* The FATfs module now correctly refuses to unmap drives which have open files.
+* Implemented support for mounting +3DOS filesystem images (.P3D files)
+  as drives, with enhancements to the IDE_DOS_MAP/IDE_DOS_MAPPING calls.
+* Similarly, implemented support for mounting some +3 floppy disk images
+  (.DSK files) as drives. Only unprotected disk images in standard formats
+  are supported (tested with TasCalc and Tasword +3).
+* Added .MKDATA and .MKSWAP dot commands to create +3DOS filesystem (.P3D)
+  and swap partition (.P3S) images.
+* MOVE...IN can now be used to manually mount .P3D or .DSK images.
+* Added support for automatically mounting up to 8 .P3D or .DSK images
+  stored in the c:/nextzxos/ directory and named DRV-x.P3D, DRV-x.DSK or
+  CPM-x.P3D (where x is drive letter, A to P). In NextZXOS, DRV- files
+  have priority.
+* Added support for mounting .P3D and .DSK files using the Browser, with
+  the addition of two new helper programs.
+* Added placeholder .CPM dot command, executed by the main menu option.
+* Fixed REMOUNT to unmap all mounted drives before physical drives.
+* The RAMdisk is no longer wiped when REMOUNT occurs, allowing it to be used
+  as a temporary store for copying files between SD cards.
+* Increased size of the RAMdisk to 62K (4K was previously unnecessarily used
+  as cache buffers).
+* Fix for OPEN # being unable to open more than one file stream.
+* Fix for bug in .DEFRAG dot command which could leave the file still
+  fragmented, due to an incorrect check.
+* Fix for the Multiface corrupting 2 bytes of memory at $6000.
+
+
+v1.98N (2018-06-28)
+===================
+* Fixed up issuing of the CMD12 stop transmission command in DISK_STRMEND.
+* Fixed up creation of zero-length files: the starting cluster had been set to
+  $ffffffff instead of $00000000.
+* The ARC bit is now set on newly-created, modified and renamed files.
+* Fixed an issue where write errors on failing or write-protected cards were
+  not always being picked up, causing operations to fail but appear to succeed.
+* The IDE_BANK call and the BANK..NEW command now allocate banks starting with
+  the highest-numbered free bank. This helps conserve low bank ids (helpful as
+  Layer2's banks must be within the first 512K RAM chip).
+* Added new rc_bank_available reason for the IDE_BANK call, which returns the
+  number of currently-free banks of the specified type.
+* Added a new .MEM dot command, providing information on available memory.
+* Fixed SPECTRUM command to reset the return stack, as 48K BASIC doesn't
+  support the new control structures.
+* Fixed incorrect calculation of card capacity for SDSC cards (<=2GB).
+* Adjusted output of capacities and filesizes to always round up to the next
+  KB/MB/GB for any fractional part.
+* Memory contention is now always disabled during NextZXOS operation for maximum
+  performance, but re-enabled when loading snapshots or TAP files to ensure
+  compatibility with legacy games/demos.
+* Updated PALETTE OVER to write the transparency value to the new sprites
+  transparency register ($4b) as well as the global transparency register ($14).
+* Added the new sprites transparency register ($4b) to the multiface debug
+  status page.
+* Reset/NEW/PALETTE CLEAR now re-initialise the transparency fallback colour
+  register ($4a) to zero (black).
+* Fixed Timex mode saving/restoring in the multiface, ensuring the Timex register
+  is only read/written at points when Timex modes are enabled.
+* Renamed ROM and SYS files to reflect English language versions, and the change
+  from Gosh Wonderful to Looking Glass ROM. The filenames are now:
+    enNextZX.rom, enNextLG.rom, enNxtmmc.rom, enNextMf.rom, enOvrly.sys,
+    enEsxemu.sys, enMf1.sys.
+  The correct menu lines for config.ini therefore now take these forms (for VGA):
+    menu=ZX Spectrum Next,2,0,enNextZX.rom,enNxtmmc.rom,enNextMf.rom
+    menu=ZX Spectrum Next/LG,2,0,enNextLG.rom,enNxtmmc.rom,enNextMf.rom
+* Added a new helper, textview.bas, for viewing TXT/DOC/INI/CFG files. This now
+  displays such files at 14MHz regardless of currently-selected speed.
+* Improved performance of TAP helper, tapload.bas, by running at 14MHz.
+* Improved error reporting in .DEFRAG dot command.
+
+v1.98M (2018-06-24)
+===================
+* Added new M_SETCAPS hook to set additional capabilities in the esxDOS API.
+* Added capability to extend files using f_truncate/f_ftruncate without erasing
+  the newly-allocated section to zeros (giving a performance increase).
+* Added .DEFRAG dot command for defragmenting files.
+* Fixed .INSTALL/.UNINSTALL dot commands to show usage information if no filename
+  provided.
+
+v1.98L (2018-06-23)
+===================
+* Multiface replacement now saves/restores the current ULA palette and sets
+  the standard Spectrum colours.
+* Revamped the About page.
+
+v1.98K (2018-06-22)
+===================
+* Various fixes for the Multiface +3 replacement:
+    + Fixed crash on return in situations where MMU0 was ROM and MMU1 was RAM.
+    + Fixed viewing of 8K bank $10 in the memory browser, and saving of this
+      bank if part of a layer2 screenshot.
+    + Fixed changing pages in Browser on return if system directory handle had
+      been changed by loading an overlay or executing Browser within NMI.
+    + Fixed corruption of 2 bytes in layer2 at address $3ff8 on return, if
+      layer2 writes were enabled.
+    + Updates & fixes to About page.
+
+v1.98J (2018-06-21)
+===================
+* Various fixes for the Multiface +3 replacement:
+    + Fixed crash/hang on entry if layer2 writes were enabled
+    + Fixed installation of breakpoints straddling a 256-byte boundary in
+      standard 16K RAM pages 5, 7 & 8
+    + If breakpoints have been changed in memory, they are no longer overwritten
+      with the original contents, but automatically disabled
+    + If RAM is active in MMU0 or MMU1, the Multiface replacement can now be
+      successfully used, provided that:
+        (i) if RAM is in MMU0, the instruction at $0066 is PUSH AF
+        (ii) if RAM is in MMU1, POP AF;RET occurs somewhere between $2002
+             and $3f64 (if this is not the case, 4 bytes of MMU2 memory -
+             assumed to be the ULA screen - will be corrupted on return)
+    + Streaming operations are now cancelled before any Browser/file access
+* Added "About" page.
+* Added support for viewing .CFG and .INI files in the Browser.
+
+v1.98I (2018-06-19)
+===================
+* Fixed a bug where memory corruption of RAM8 could occur if any of the debug
+  tools options in the multiface replacement were used. This would typically
+  affect BASIC programs used in layer 1,1 modes, or new Next software using RAM8.
+* Space optimisations (particularly in messages) in multiface replacement to
+  make room for new features.
+* Added Find & Next search options to Memory Browser, allowing up to 8 hex/text
+  bytes to be searched for in current bank or all currently-paged address space.
+* Added Copy option to Memory Browser, allowing memory regions to be copied
+  or moved.
+* Added View option to Status page, allowing screen of currently-stopped
+  program to be seen.
+
+v1.98H (2018-06-17)
+===================
+* The "GW" version of the ROMs now includes the latest (v06) "LG" (Looking
+  Glass) ROM from Geoff Wearmouth.
+* Updated browser.cfg:
+    + BMP files now return to the Browser after being displayed
+    + Added support for NDR type (NextDaw Player)
+* Added new breakpoints feature to the Multiface +3 replacement.
+* Various fixes for the Multiface +3 replacement:
+    + Fixed saving of 128K snapshots if the current RAM page is not 5 or 2
+    + ROM memory is now correctly displayed (in Status & Memory Browser)
+    + Directory handles now saved/restored, so interrupting the Browser is ok
+    + Fix for spurious "?" being printed in Status/Memory Browser tools
+    + Current editor colours and screensaver settings are now respected
+* Fixed loading of ZX81 snapshots (broken in v1.98E) due to uncleared
+  data in RAM 7 causing the ZX81 emulator to hang.
+* Disabled Multiface replacement when ZX80/ZX81 snapshots are run (since
+  non-Spectrum ROM cannot support it).
+
+v1.98G (2018-06-14)
+===================
+* The "GW" version of the ROMs now includes a fix for a missing scroll prompt.
+* Fix for incorrect flag returns from IDE_BROWSER call (broken by v1.98F).
+* Added initial Multiface +3 replacement ROM with the following features:
+    + 48K/128K snapshot saving
+    + screenshot saving for current mode and layer 2 screens, plus shadows
+    + TAP file input/output selection
+    + TAP file input browser
+    + POK file loader
+    + register status viewer/editor
+    + memory viewer/editor
+    + memory bank saving
+  The Multiface +3 replacement has the following known bugs/limitations:
+    + hangs can occur if holding down a key in the TAP file browser
+    + ROM data is not correctly displayed in the memory browser/status page
+    + colours/screensaver settings are standard defaults, not user-selected
+  Requires core .34 in order to allow 48K locked mode games to be interrupted
+  Requires FW 1.07 and the following menu line(s) (or similar) in config.ini:
+    menu=ZX Spectrum Next,2,0,enNextZX.rom,nextmmc.rom,nextmf3.rom
+    menu=ZX Spectrum Next/GW,2,0,enNextGW.rom,nextmmc.rom,nextmf3.rom
+* Updated browser.cfg:
+    + TXT/DOC files are now displayed in 85-column hi-res
+    + Added support for various screenshot types:
+       - SCR   standard Spectrum screen (layer 0 or layer 1,1) as before
+       - SLR   lo-res screen (layer 1,0)
+       - SHR   hi-res screen (layer 1,2)
+       - SHC   hi-colour screen (layer 1,3)
+       - SL2   layer 2 screen
+
+v1.98F (2018-06-04)
+===================
+* The "GW" version of the ROMs now includes the latest (v05) "LG" (Looking
+  Glass) ROM from Geoff Wearmouth.
+* Fixed RST $20 hook for exiting dot commands (previously crashed due to
+  paging error).
+* Fixed IM1 interrupt routine when the DivMMC ROM is active. This failed to
+  save & disable layer2 write status early enough (ie before writing to DivMMC
+  memory). To avoid the previously-required earlier write of a stack pointer,
+  if the stack is within DivMMC RAM then the ISR is not called (this only
+  occurs in the rare case of a dot-command which relocates its stack within
+  its allocated 8K area).
+* IDE_BROWSER call now returns the LFN of the selected file (in DE) as well as
+  the short name (in HL).
+
+v1.98E (2018-05-26)
+===================
+* Added support for SNX extension, acting like SNA but leaving the file open
+  with handle=0 for further data loads under snapshot's control.
+* Implemented additional separators ; and < for browser.cfg, controlling
+  exit behaviour:
+    FOO:.foo            after executing, returns to main menu (as currently)
+    FOO;.foo            after executing, enters NextBASIC editor
+    FOO<.foo            after executing, returns to Browser
+* Updated default browser.cfg to use the new separators.
+* Fixed bug where a space was added to the command line, leading some dot
+  commands to include it as part of their filename argument. A colon is now
+  added instead.
+* Fixed the Browser to strip leading and trailing spaces from the user's input
+  during rename/mkdir to prevent accidental creation of such filenames.
+* Fixed bug where an unsuccessful copy or paste in the Browser prevented
+  rename from being accepted until the current directory was changed.
+
+v1.98D (2018-05-25)
+===================
+* The "GW" version of the ROMs now includes the latest (v04) "LG" (Looking
+  Glass) ROM from Geoff Wearmouth.
+* Implemented new command to select speed 0/1/2 (3.5/7/14MHz):
+    RUN AT speed
+* Implemented new commands to list the program (or banked section) starting
+  from a particular procedure:
+    LIST [#s;] PROC procname()
+    BANK n LIST [#s;] PROC procname()
+* Implemented new command to merge a range of program lines into a single
+  line (separated with colons):
+    LINE MERGE first,last
+* On layers 1/2 (and in windows), PRINT AT y,x now uses character coordinates
+  for consistency with layer 0 (although the number of lines/columns can change
+  depending upon what character set size is selected and whether reduced height
+  mode is enabled).
+* On layers 1/2 (and in windows), added new positioning option to PRINT, which
+  allows the print position to be specified in pixel coordinates (like PLOT):
+    PRINT POINT x,y;
+* Window control code 25 is now used to implement PRINT POINT, rather than the
+  previous simple coordinate adjustment.
+* When an error occurs, the listing in the NextBASIC editor is automatically
+  adjusted to include the line that caused the error.
+* The LAYER CLEAR command now also re-initialises the full-screen mode windows
+  so settings like the character size are restored to defaults.
+* The editor now uses its own window definitions instead of sharing BASIC's
+  full-screen mode windows. This fixes issues like:
+   + layer 1,2 (hi-res mode) seeming to default to 64/85 columns if that is
+     the mode you usually edit in
+   + Auto-running programs using layer 1,1 (standard ULA mode) defaulting to
+     51-column mode if executed from the Browser
+* The DISK_STRMEND call now returns the correct error code of esx_edevicebusy
+  if it fails.
+* Fixed a crash if an error (eg BREAK) occurs from the Tape Loader option.
+
+v1.98C (2018-05-16)
+===================
+* Moved integer expression evaluator into a new overlay to free up space in
+  the NextBASIC ROM.
+* Fixed filesizes printed by CAT EXP (broken by v1.98B).
+* Fixed integer array access via the IDE_INTEGER_VAR call.
+* Ensure the error code is cleared when an error is trapped; this bug had meant
+  it was previously impossible to cleanly finish a program with OK after any
+  error had been trapped.
+* Fixed cancellation of streaming reads at boot. Previously this only worked
+  if the card being streamed from was (i) device 0; and (ii) still selected
+  (ie no further disk i/o had occurred).
+
+v1.98B (2018-05-12) [Requires core >= 1.10.31]
+===================
+* Added workarounds for reading register 7 (turbo) to avoid speed being
+  inadvertently reduced from 14MHz to 7MHz when using layer2.
+* Fixed incorrect border colour if BASIC is in layer2 mode and editor is in
+  hi-res mode.
+* Fixed "Nonsense in BASIC" errors sometimes occurring with READ (bug
+  introduced by v1.98)
+* Fixed bug in DEFPROC which prevented integer variable parameters from working
+  in some circumstances (caused Q Parameter Error).
+* Implemented support for keyboard/driver interrupts to occur whilst DivMMC
+  is paged in, so drivers etc continue to be called during dot commands and
+  BASIC commands that are implemented in the overlay (PLOT, DRAW, CIRCLE etc)
+* Treat any .SNA file >64K as a 128K version.
+
+v1.98A (2018-05-08)
+===================
+* Fixed TILE BANK/TILE DIM to set the correct system variables when in lo-res
+  mode. This bug had prevented TILE from working correctly in lo-res.
+* Added a test for BREAK during potentially long commands: LIST, CAT, COPY.
+* Ensured that error report stays on screen until a new key has been pressed
+  (previously would sometimes go straight to listing because eg BREAK was still
+  held down).
+* Added '0' key as alternative to ENTER on menus and Browser. This allows
+  joystick navigation, provided it has been set up as the "cursor" type in
+  the Next/TBBLUE settings.
+* Reserved an extra DivMMC RAM bank (7) for future usage by NextZXOS.
+
+v1.98 (2018-04-27)
+==================
+* Implemented support for executing portions of BASIC programs in additional
+  memory banks, including the following commands:
+    BANK n LIST [#s;][l]
+    BANK n LINE l,m
+    BANK n MERGE
+    BANK n GOTO l
+    BANK n GOSUB l
+    BANK n PROC procname(paramlist) [TO resultlist]
+    BANK n RESTORE [l]
+* Integer loops may now be used in direct commands (previously doing this
+  generated a "Direct command" error).
+* Updated the Gosh Wonderful ROM to new "Looking Glass" ROM (v01) from
+  Geoff Wearmouth, which supports extended mode symbols using just symbol-shift
+  in 48K BASIC mode.
+
+v1.97H (2018-04-08)
+===================
+* Fixed saving/restoring integer variable parameters in DEFPROC/ENDPROC,
+  which previously resulted in a hang.
+* Fixed integer variable names in LOCAL command, which previously produced
+  a nonsense in BASIC error.
+
+v1.97G (2018-03-12)
+===================
+* Fixed ide_stream_in and NEXT # command with driver ("D") channels, to
+  wait for an available byte.
+* Refactored keyboard i/o to use a special pre-installed driver (id 0)
+  which can be replaced using the .install command and a suitable
+  new driver file.
+
+v1.97F (2018-03-06)
+===================
+* Fixed "out-of-screen" errors in NextZXOS mode (64/85cols), broken by v1.97E.
+* Added checks to prevent special "." and ".." directories from being renamed,
+  moved or erased.
+* Fixed "invalid colour" errors when LISTing a legacy (48K) BASIC program
+  containing embedded colour items.
+* Partially implemented IDE_PATH for +3DOS drives, so CD "M:" can now be used.
+
+v1.97E (2018-03-04)
+===================
+* Fixed problem where renaming a file sometimes resulted in the wrong LFN
+  being deleted.
+* Fixed crash in PLAY command with T (tempo) parameter.
+* Fixed hang with out-of-range PRINT AT in windows (and LAYER 1/2 full-screen).
+
+v1.97D (2018-03-03)
+===================
+* Fixed Browser to respond to shifted cursor right key (as well as 8); exposed
+  by recent keymap changes.
+* Fix for missing cursor in INPUT and Browser inputs etc (broken in v1.97C).
+* Ensure snapshots are always loaded in layer 0.
+* Ensure standard .SCR screenshots are loaded from the Browser in layer 0.
+
+v1.97C (2018-02-28)
+===================
+* Fixed bug in window printing routines, where double-width/height printing
+  routine overwrote calculator memories causing incorrect output of floating-
+  point numbers.
+
+v1.97B (2018-02-22)
+===================
+* Improved boot speed (typically ~3x faster from ROM load to menu display;
+  this went from 3.6s to 1.2s on 16GB Toshiba FlashAir with 3 partitions).
+* When tape loading occurs, border is set to red immediately so this is more
+  obvious to the user.
+* Fixed problems with automatic creation of .BAK files when overwriting existing
+  files.
+* Fixed swapping of Editor/BASIC modes and speeds etc if an error occured during
+  evaluation of a standalone expression in BASIC or the Calculator.
+* Prevented scroll pause occuring when using "Screen" option in 64/85 col mode.
+* Fixed renaming problems in the Browser, where only the short filename was
+  provided to edit for the last file in the list.
+* Fixed moving of directories to ensure the ".." special entry is correctly
+  updated to point to the new parent directory.
+* Fixed editor so that following execution of a BASIC statement/program, the
+  same lines are displayed as before (instead of returning to program top).
+* Fixed cursors becoming hidden or orphaned when switching between 32/64/85
+  columns in the Calculator.
+* Fixed syntax-checking of PWD #n and CAT #n commands (broken by v1.97 changes).
+* Fixed parsing of CAT command; now CAT- #n commands are correctly parsed.
+
+v1.97A (2018-02-19)
+===================
+* Enabled use of Z80N PixelDn instruction in text output code for windows &
+  layer 1/2 screens (requires core v1.10.17+).
+* Fixed permanent INVERSE/OVER settings for layer 1/2 modes - these were being
+  ignored.
+
+v1.97 (2018-02-19)
+==================
+* Updated PLAY command to support turbosound. 9 strings may now be specified,
+  with each set of 3 going to a different AY chip.
+* Added L,R,S parameters to PLAY command: these confine the audio output for
+  the current AY chip to either the Left or Right channels (or S to reinstate
+  stereo).
+* Reduced default volume to 13 when more than 3 PLAY strings are specified, to
+  prevent clipping.
+* Implemented DRAW, CIRCLE and POINT commands for all layer 1/2 modes. CIRCLE
+  for layer 1/2 is implemented using Bresenham's algorithm for improved speed.
+* Allow PLOT, DRAW and CIRCLE to include off-screen points on layer 1/2 modes,
+  so clipped shapes may easily be drawn without invoking out-of-screen errors.
+* Implemented support for temporary colour items for PLOT/DRAW/CIRCLE on layer 1/2.
+* Fixed temporary colour item support in layer 1/2 PRINT/INPUT statements.
+* Fixed corruption of UDGs S,T,U at NEW/reset.
+* Fixed editor to display UDGs within strings correctly, instead of replacing
+  them with new NextBASIC tokens.
+* Started using more Z80N instructions where possible for speed & space-saving,
+  particularly: NextReg, PixelAd, PixelDn, SetAe, PushVal.
+  NOTE: This change means v1.97+ requires core 1.10.14+ to run stably.
+
+v1.96A (2018-02-12)
+===================
+* Fixed TAP loader (TAPLOAD.BAS) to use the new "NEXT #n TO var" syntax.
+* Fixed ON ERROR to replace existing error handler at current level, rather
+  than installing an additional one.
+
+v1.96 (2018-02-11)
+==================
+* Implemented procedures, with new DEFPROC, PROC, ENDPROC and LOCAL commands.
+* Implemented error-trapping, with new ON ERROR, ERROR and ERROR TO commands.
+* For consistency with PROC/DRIVER/ERROR commands, changed syntax of these
+  commands:
+    DIM #n,var                  -->     DIM #n TO var
+    RETURN #n,var               -->     RETURN #n TO var
+    NEXT #n,var                 -->     NEXT #n TO var
+    BANK n PEEK offset,var      -->     BANK n PEEK offset TO var
+  (This will also apply to the as-yet-unimplemented POINT command).
+* Removed "Boot A:" menu option: unneeded as Browser will be made to auto-boot
+  any disk images that it mounts.
+* Remove NEW DATA/NEW EXP commands: these will later be replaced by .mkdata
+  and .mkswap dot commands.
+* Stubbed out FORMAT d$ command: this will later be done by .mkdsk and/or
+  .format dot commands.
+* Some refactoring to save space in the NextBASIC ROM.
+* NOTE: Due to new commands being added, some token values have changed and
+        saved NextBASIC programs may need to be re-edited to fix them.
+
+v1.95B (2018-02-06)
+===================
+* Fixed assignments to elements of integer arrays.
+* Corrected "Too many brackets" error to "Too many parentheses"
+* Renamed modulus operator from % to MOD to avoid confusion with symbol
+  introducing an integer expression.
+* Removed unary + and - operators from integer expression evaluator, as all
+  values are unsigned in range 0..65535.
+* Removed negative STEP processing in integer loops.
+
+v1.95A (2018-02-03)
+===================
+* Tape SAVEs no longer print "Start tape and press any key" message, so screens
+  can be saved without being partly overwritten.
+* INPUT now returns zero for an empty numeric input instead of causing a
+  "nonsense in BASIC" error.
+* After a "LIST n" command, the editor now uses "n" as the current line number
+  being edited (as in 48K mode).
+* Unsupported keys in menus now produce error beep instead of "success" click.
+* Fix for various editing issues in NextZXOS command-line mode, leading to odd
+  cursor movements and other problems.
+* Fix for hang in editor after loading BASIC programs from the Browser with
+  different line numbers to the previous program.
+* Fix for various cursor issues in the Calculator, especially in hi-res modes.
+* Fix for screen problems when switching column modes in the Calculator.
+* Fix for crash when LAYER 1,3 is executed in NextZXOS command-line mode.
+* Fix for extended mode cursor colour/shape not being updated when an
+  unsupported key is pressed.
+* Fix CLEAR to clear the screen in the current mode. Previously it could leave
+  the mode in an indeterminate state, causing strange effects after a CLEAR
+  or RUN in a non-standard mode.
+
+v1.95 (2018-01-28)
+==================
+* Implemented LOAD/SAVE/VERIFY...BANK and LOAD/SAVE/VERIFY...LAYER commands,
+  so banks and screens in any mode can now be loaded/saved to disk or tape
+  (or .TAP).
+* Minor fixes for LOAD/SAVE command syntax checking.
+* Removed the BANK..LOAD/SAVE commands.
+* Added RST $20 hook for dot commands to terminate and auto-start a loaded
+  program.
+* Increased maximum allowable size of RTC.SYS module to 512 bytes.
+* Implemented support for installable device drivers, with new M_DRVAPI
+  hook, IDE_DRIVER +3DOS call and DRIVER NextBASIC command.
+* Removed the FORMAT LPRINT and FORMAT LINE commands.
+* Updated Gosh Wonderful ROM to v1.33, compatible with Nirvana engines.
+
+v1.94B (2018-01-18)
+===================
+* Dot commands are now started with BC=address of entire command line, as
+  well as HL=address of command arguments
+* Implemented M_GETHANDLE to allow dot commands >8K to read their own file.
+* Implemented M_EXECCMD hook.
+* Added new M_GETERR hook for reporting/retrieving esxDOS error messages.
+
+v1.94A (2018-01-17)
+===================
+* Added support for setting the ULA clip window with the LAYER DIM command
+* Implemented the COPY f$ TO #n command
+* Improved COPY f$ TO SCREEN$/LPRINT/#n commands to cope with Unix (LF),
+  Sinclair (CR) or DOS (CRLF) line endings
+* Fixed an esxDOS error message
+
+v1.94 (2018-01-15)
+==================
+* Major rework of BASIC parser to make space for new features
+* Implemented LINE line,step command for renumbering BASIC program
+* Implemented ERASE n,m command for erasing lines of a BASIC program
+* Implemented ERASE command to erase entire BASIC program (can be used within
+  c:/nextzxos/autoexec.bas, for example)
+* Implemented REPEAT...[WHILE]...REPEAT UNTIL loops
+* Ensured all BASIC commands accessing memory banks now respect allocations
+  made by external programs using the IDE_BANK API call
+* Implemented BANK CLEAR and BANK NEW commands to explicitly free/reserve banks
+* Allow LAYER BANK command to be executed in any mode, and make layer2 banks
+  owned by BASIC
+* Added workaround for buggy esxDOS dot commands (eg .dumpmem) that create
+  files but neglect to select write access for them
+* Implemented new file streaming API, allowing files to be read under control
+  of applications with minimal OS involvement (DISK_FILEMAP,DISK_STRMSTART,
+  DISK_STRMEND hooks in esxDOS-compatible API)
+* Major rework of esxDOS-compatible API layer, including various fixes
+* Implemented the following esxDOS hooks:
+    F_TELLDIR, F_SEEKDIR, F_REWINDDIR
+    M_GETDATE, M_DOSVERSION, M_GETSETDRV
+    F_UNLINK, F_CHMOD, F_STAT, F_RENAME
+    F_FTRUNCATE, F_TRUNCATE, F_GETFREE
+* Added enhanced versions of the following esxDOS hooks:
+    M_DOSVERSION: providing info on version and mode (NextZXOS/48K mode)
+    F_READDIR: returning long filenames (LFNs) if requested
+    M_TAPEIN: allowing tape simulation mode to be selected
+* Added new M_P3DOS hook, allowing programs and dot commands to easily
+  access +3DOS/IDEDOS/NextZXOS API calls, using the RST $8 mechanism
+
+v1.93C (2018-01-05)
+===================
+* Fixed default ULA colours; previous "normal" colours were too dark.
+* Fixed PALETTE commands which were using an old out-of-date method to set 9-bit
+  colour values, which the hardware no longer supports.
+
+v1.93B (2018-01-02)
+===================
+* Fixed uninitialised variable in snapshot loader that could be overwritten
+  by BASIC program presence (eg AUTOEXEC.BAS) and cause snapshot load to fail.
+* Fixed printing of characters in layer2 which straddled an 8K boundary, due
+  to incorrect re-initialisation of stride value.
+* Added workaround to esxdos emulator for buggy dot commands (.dumpmem)
+  which fail to set write mode when opening newly-created files.
+
+v1.93A (2017-12-29)
+===================
+* Added patch to IM1 routine in 48K BASIC ROM so that games using BiFrost
+  and Nirvana multicolour engines detect NextZXOS as a 128K Spectrum and use
+  appropriate timing. (Patch not currently present in GW version of ROMs).
+* Fixed v3 Z80 snapshot loading issue where port 1ffd value was not set if
+  provided by the snapshot (and was incorrectly set to zero if not provided).
+  Fixes some 128K snapshots which use the ROM before doing their own paging
+  (eg Addams Family).
+
+v1.93 (2017-12-23)
+==================
+* Integer expressions can now be used anywhere that a numeric value is required.
+* Implemented fast FOR/NEXT loops with integer loop variables.
+* Implemented ELSE command for use in IF..THEN..ELSE constructs.
+* Fixed OPEN # to allow long filenames to be used.
+* Various space-saving optimisations.
+
+v1.92D (2017-12-22)
+===================
+* Disable Timex modes support before loading ZX80/1 snapshots, since some hi-res
+  games otherwise accidentally change modes (eg Against The Elements).
+
+v1.92C (2017-12-20)
+===================
+* Re-enabled support for second SD slot (previously disabled to save space during
+  development).
+* Fix for renumber routine generating incorrect hidden numbers in GOTOs/GOSUBs.
+* Optimised file read operations to read complete sectors direct to destination
+  instead of via sector buffers.
+* Moved tape load trap to later on ($562->$569) to support certain games (eg
+  Arc of Yesod 128).
+
+v1.92B (2017-12-17)
+===================
+* Fixed bug in TAP loading causing some games to unnecessarily be loaded using
+  a slow path, and taking much longer to load (eg Dizzy VII, Thanatos 128).
+* Added border feedback during TAP loading which really does require the
+  slow path to be used (eg Rainbow Islands).
+* Fixed the banner in the TAP loader to align stripes correctly.
+* Added "erasing..." information message during erase operations in the Browser.
+
+v1.92A (2017-12-14)
+===================
+* Implemented support for optional tape simulation during TAP file loading
+* Increased optional loading screen pause to 5 secs
+* Fixes for various non-working TAP files:
+   + Out of memory errors (eg Trans Am)
+   + Corrected return values for blocks including part of the ROM (eg Rainbow
+     Islands)
+   + Fix to cope with Chase HQ 128 protection mechanism
+* Fix for potential crash if syntax errors generated in IDE_BASIC API call
+* Fix for infinite error-checking loop/crash in esxdos emulator if line numbers
+  greater than 9999 entered
+* Fix for crashes if default streams (0..3) left redirected to user-defined
+  channels at BASIC error reports
+* Fix for crashes in renumber routine due to stack corruption
+* Fix SPECTRUM command to clear ZX printer buffer before entering 48K mode
+* Browser fixes:
+   + Fixed path display line to be cleared before updating (broken by v1.92)
+   + Added "copying..." information message during copy operations
+
+v1.92 (2017-12-12)
+==================
+* Implemented support for real-time clock, requiring valid RTC.SYS in the
+  C:/NEXTZXOS directory, and a ZX Next with RTC module. This support provides:
+   + date/timestamps when SD card files/dirs are created or updated
+   + current date and time shown is shown in menus
+* Re-write of expanded catalog command (CAT EXP). This now shows dates/times
+  of files and exact filesizes.
+* Updated the IDE_GET_LFN +3DOS call to also return time/date stamps and
+  exact filesizes.
+* Added new IDE_RTC call to query the current date and time.
+* Implemented screensaver functionality.
+* Added new SPECTRUM SCREEN$ command to select screensaver type and timeout.
+* Implemented SPECTRUM CHR$ command to select editor columns (32/64/85).
+* Implemented support for LOADing a C:/NEXTZXOS/AUTOEXEC.BAS program for setting
+  desired defaults etc.
+* Implemented support for LOADing a C:/NEXTZXOS/RUN.BAS program if RUN is
+  executed when there is no BASIC program in memory.
+* Changed the TILE and BANK...LAYER commands to use the new Z80N opcodes
+  LDIX/LDIRX for improved performance.
+* Fixed NextZXOS command line and Browser options to respect any user-defined
+  colour schemes set using the SPECTRUM INK/PAPER/BRIGHT/FLASH/ATTR commands.
+* Various fixes for user-defined colour schemes.
+* Changed the scroll pause feature for windows to use an inverted block in the
+  bottom right-hand corner instead of a flashing one, and to accept any key.
+* Fixed crash in scroll pause feature if ENTER/CAPS/EXTEND/GRAPHICS pressed.
+* Fix loading of 48K SNA snapshots where SP lies between $4000 and $4005. Not
+  normally seen, but can be created by SNASM.
+* Fixed TAP loader to clear all BASIC workspaces to prevent Out of memory errors
+  loading some games (eg TransAm).
+
+v1.91 (2017-12-05)
+==================
+* Fix for TILE commands hanging in invalid modes.
+* Rainbow stripes in banners now look consistent with original 128K machines.
+* Fixed loading of 128K SNA snapshots where page 7 was the "current" page (not
+  properly fixed in v1.86).
+* Added workaround to support some 128K TAPs (eg Thanatos 128K) which load the
+  stack including returns into the original 128K syntax ROM.
+* Fix for error reporting in PLOT command, which previously caused hangs.
+* Re-enabled PLAY command (now loaded at boot from new overlay.sys file).
+* Re-enabled renumber menu option (also present in overlay.sys).
+* Improved dot command handling so that any files left open by the dot are
+  automatically closed on exit, or if a BASIC error occurs.
+* Added installable error handlers for dot commands on RST $8;defb $95.
+
+v1.90 (2017-12-03)
+==================
+* Fix for RST$18/RST$10 calls in dot commands.
+* Fix for command length returned by IDE_BROWSER call if wildcards used.
+* Added workaround to allow some snapshots taken on 128/+2 machines whilst
+  still in 128 BASIC (eg Slightly Magic) to run in the +3/NextZXOS configuration
+  by trapping original 128K command class returns in ROM 2 and diverting to ROM 1.
+* Fix for NextBASIC banner being left on-screen during direct command execution.
+* Fix for crash if dot command executed after a previous dot command had
+  abnormally terminated (eg BREAK in screen output)
+
+v1.89 (2017-11-30)
+==================
+* Added remount/mkdir/rename/copy/paste/erase options to Browser
+* Added fine-grain control of new Browser features in IDE_BROWSER API call
+* Added new BANK...LAYER command for copying data between screen (in current
+  mode) and memory, with optional raster operations
+* Fixed TILE command to not write transparent pixels (NOTE: currently using
+  standard Z80 instructions rather than faster Z80N ldix)
+* Renumber menu option temporarily disabled due to lack of ROM space
+* Fixed operation of TAB in text windows, and modes other than LAYER 0
+* Fixed AY enable at boot
+* Fixed RST $18 (call ROM3 routine) from dot commands
+
+v1.88 (2017-11-26)
+==================
+* Rewrite of initialisation/NEW code
+    + now initialises all 3 AY chips
+    + fixed & improved border colour error "reporting" in memory test routine
+    + fixed bug where streams 4+ would be left open across a NEW although their
+      channels may have disappeared
+    + ensure required peripheral settings (Timex modes on, DivMMC auto-paging off,
+      turbo selection on, AYs on, multiface currently disabled)
+* Fixed Browser to set the currently-selected drive for LOAD and SAVE operations
+  as well as general disk operations
+* Implemented lower-screen editing for Hi-res, so "screen" editing mode is now
+  usable in 64/85 column modes
+* The NextZXOS command line menu option now has a persistent mode, so BASIC always
+  inherits the currently-selected editing mode (unlike the NextBASIC option,
+  which still has distinct display modes for editing and BASIC)
+* Extended mode symbols underneath keys Y,U,P,A,S,D,F,G now available with just
+  symbol shift+key (copyright symbol is symbol shift+Q since P already has ").
+
+v1.87 (2017-11-23)
+==================
+* Implemented line input handler for window channels. INPUT # may now be used
+  with window, file, variable and memory channels as well as the standard "K"
+  channel.
+* Implemented new IDE_WINDOW_LINEIN call to perform line input on window channels.
+* Implemented new IDE_INTEGER_VAR call to allow any of the new integer variables
+  to be read or written.
+* Implemented new REMOUNT command to allow removal/re-insertion of SD cards
+* Fixes to esxdos m_tapein/m_tapeout functions:
+    + in_open now automatically closes any current tape file
+    + in_setpos fixed to work in blocks
+    + undocumented in_getpos functionality added (cf .tapls disassembly)
+    + in_pause implemented to allow pause at loading screen
+    + added stack protection during tape load trap
+    + fully-implemented all possible exit conditions from load trap
+    + implemented save trap
+* SPECTRUM command (with no parameters) now continues executing statements
+  instead of terminating with an OK report (needed for TAP helper)
+* Added a new TAP file helper program for loading TAPs from the Browser
+* Improved system consistency validation: enNextZX.rom, nextmmc.rom and
+  esxemu.sys now all stamped with current NextZXOS version number and validated
+  at boot time.
+* Fixed potential memory/stack corruption and hangs when switching between
+  LAYER 0 and LAYER 1/2.
+* Prevented keypress at BASIC report from being passed to the menu system
+  (typically the user would press ENTER and the first menu item, ie Browser,
+  would be automatically executed).
+
+v1.86 (2017-11-14)
+==================
+* Complete re-write of windowing code:
+    + Implemented all features in all modes, with the exception of line input
+    + Optimised window character output routine in standard and Timex modes
+    + Fixed opening window channels with OPEN #
+    + Auto-pause is now enabled by default for the LAYER 1/2 screens (but
+      disabled by default for user-defined windows in all modes)
+* Browser optimisations and minor fixes
+* Fixed loading of 128K SNA snapshots where page 7 was the "current" page
+* Implemented IDE_BROWSER, IDE_BANK, IDE_BASIC and IDE_WINDOW_STRING API calls
+  (NOTE: The BASIC BANK command doesn't yet respect/use IDE_BANK)
+
+v1.85 (2017-10-27)
+==================
+* Fixed issue in tokenizer where required spaces were removed after keywords
+  ending in $ or # (eg CHR$, OPEN#)
+* Tweaked esxDOS error messages
+* Streamlined available drives boot message
+* Updated TILE command to support map widths up to 2048 (previously 256), and
+  to support 16x16 tiles as well as 8x8 tiles
+* Added TILE DIM and SPRITE DIM commands to set clip windows for layer2 and
+  sprite layer (NB: sprite clip not yet working/available in hardware)
+
+v1.84 (2017-10-25)
+==================
+* ROMs renamed (nxten2eE.rom -> enNextZX.rom, and p3divmmc.rom -> nextmmc.rom)
+  NOTE: Don't forget to update your config.ini to reflect this
+* esxDOS emulation layer is now loaded from a file, C:/NEXTZXOS/ESXEMU.BIN
+* Implemented full error reporting for dot commands
+* Fixed some issues with parts of dot command names and parameters sometimes
+  being tokenized (eg /bin would be tokenized with BIN keyword)
+* Fixed bug where dot command couldn't be entered as first statement on a
+  program line (due to calculator accepting it as an expression)
+* Fixed tokenisation problems preventing > and < being accepted in expressions
+* Dot commands can now formally be executed from anywhere by starting name
+  with . or / path character, eg to execute "mycommand" in current directory:
+  ../mycommand
+  (NOTE: Maximum 32 characters path/name in total)
+* Parameterless dot commands supported by updated browser.cfg (if named with
+  .dot extension)
+
