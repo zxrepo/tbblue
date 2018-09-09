@@ -1,3 +1,9 @@
+v2.00 (2018-09-09)
+==================
+* TurboSound is now left enabled by the TAP loader and snapshot loading. This
+  can be disabled manually in the Multiface menu if needed.
+
+
 RC1 (v1.99R) 2018-09-08
 =======================
 * Added new option to F_OPENDIR, allowing F_READDIR to use a wildcard string
