@@ -4,6 +4,31 @@ with the ESP8266, UART serial driver and the I2C bus needed for them.
 
 (c) Tim Gilberts / Infinite Imaginations and the ZX Next project
 
+18 August 2018
+--------------
+
+Updated UART.DRV ready for support of 2Mb with TBU>52 digital filter on UART
+Source is now supplied for review.  Corrects a bug in setting Registry on IRQ
+This is provided for users of the UART other than for an ESP so will get
+limited support moving forward - the version of TERMINAL.BAS/BIN will not
+get further updates but, is still preferred over .UART for complex activities
+e.g. getting a list of WiFi hotspots in busy areas which can overwhelm .UART
+
+Includes ESPAT Alpha7 which implements and updates the API previously documented
+supports output buffering.  ESPTERM.BAS is a working terminal in BASIC using
+the ESP driver for connecting to a remote TCP port as in the connect string
+- which you need to change to something useful in your environment.
+ESPHTTP.BAS allows you see how an HTML web page can be fetched using the system
+- no rendering engine is available so it is pretty raw.
+
+Updated the pluspack-autoexec.bas this file can be put in place to allow
+drivers to be autoloaded on power up.  Just take the REM away from any you
+want to use.  Holding ENTER during boot will bring up a menu so you can
+select individual drivers or just press SPACE to boot without any.
+
+Removed PI twin screen demo software as cores no longer support functionality
+ready for release.
+
 1 August 2018
 -------------
 
