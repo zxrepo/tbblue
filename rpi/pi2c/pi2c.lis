@@ -1,0 +1,740 @@
+1     0000              ;
+2     0000              ; TBBlue / ZX Spectrum Next project
+3     0000              ; Copyright (c) 2010-2018
+4     0000              ;
+5     0000              ; PI2C - Tim Gilberts and Victor Trucco
+6     0000              ;
+7     0000              ; All rights reserved
+8     0000              ;
+9     0000              ; Redistribution and use in source and synthezised forms, with or without
+10    0000              ; modification, are permitted provided that the following conditions are met:
+11    0000              ;
+12    0000              ; Redistributions of source code must retain the above copyright notice,
+13    0000              ; this list of conditions and the following disclaimer.
+14    0000              ;
+15    0000              ; Redistributions in synthesized form must reproduce the above copyright
+16    0000              ; notice, this list of conditions and the following disclaimer in the
+17    0000              ; documentation and/or other materials provided with the distribution.
+18    0000              ;
+19    0000              ; Neither the name of the author nor the names of other contributors may
+20    0000              ; be used to endorse or promote products derived from this software without
+21    0000              ; specific prior written permission.
+22    0000              ;
+23    0000              ; THIS CODE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+24    0000              ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+25    0000              ; THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+26    0000              ; PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE
+27    0000              ; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+28    0000              ; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+29    0000              ; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+30    0000              ; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+31    0000              ; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+32    0000              ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+33    0000              ; POSSIBILITY OF SUCH DAMAGE.
+34    0000              ;
+35    0000              ; You are responsible for any legal issues arising from your use of this code.
+36    0000              ;
+37    0000              ;-------------------------------------------------------------------------------
+38    0000              ;
+39    0000              ; .PI2C for ESXDOS
+40    0000              ;
+41    0000              ; Talk to the PI over i2c - given it an arbitrary address of the digital ver
+42    0000              ; of the answer to everything $42
+43    0000              
+44    0000              	org 0x2000
+45    0000              
+46    0000              	defc PORT = 0x3B
+47    0000              	defc PORT_CLOCK = 0x10 ;0x103b
+48    0000              	defc PORT_DATA = 0x11 ;0x113b
+49    0000              
+50    0000              MAIN:
+51    0000              
+52    0000  AF          	XOR A
+53    0001  32 28 04    	LD (CHKACK),A
+54    0004              
+55    0004  7C          	ld a,h
+56    0005  B5          	or l
+57    0006  CA 40 00    	JP z,CHECK_PI   ;if we dont have parameters it is a read command
+58    0009              
+59    0009  CD 39 00    	CALL IGSPA
+60    000C              
+61    000C  FE 2D       	CP '-'		;if first char not an options flag
+62    000E  20 4D       	JR NZ,end_error
+63    0010              
+64    0010  23          	INC HL
+65    0011              
+66    0011  7E          	LD A,(HL)
+67    0012  FE 64       	CP 'd'		;
+68    0014  20 16       	JR NZ,NO_DEBUG
+69    0016              
+70    0016  3E 80       	LD A,$80
+71    0018  32 28 04    	LD (CHKACK),A
+72    001B              
+73    001B  23          	INC HL
+74    001C  7E          	LD A,(HL)
+75    001D  FE 20       	CP ' '
+76    001F  C2 5D 00    	JP NZ,end_error
+77    0022              
+78    0022  CD 39 00    	CALL IGSPA
+79    0025              
+80    0025  FE 2D       	CP '-'
+81    0027  C2 5D 00    	JP NZ,end_error
+82    002A              
+83    002A  23          	INC HL
+84    002B  7E          	LD A,(HL)
+85    002C              
+86    002C              NO_DEBUG:
+87    002C  FE 77       	CP 'w'		; Write bytes
+88    002E  CA D3 00    	JP Z,WRITE_PI
+89    0031              
+90    0031  FE 72       	CP 'r'		; Read bytes
+91    0033  CA 64 00    	JP Z,READ_PI
+92    0036              
+93    0036  C3 5D 00    	JP end_error	; Give them help for all other stuff
+94    0039              
+95    0039              ;---------------------
+96    0039  7E          IGSPA:	LD A,(HL)
+97    003A  FE 20       	CP ' '
+98    003C  C0          	RET NZ
+99    003D  23          	INC HL
+100   003E  18 F9       	JR IGSPA
+101   0040              
+102   0040              
+103   0040              ;----------------------------------------------
+104   0040              CHECK_PI:
+105   0040              
+106   0040  3E 01       	LD A,1
+107   0042  32 29 04    	LD (BYTCNT),A
+108   0045              
+109   0045  CD 97 00    	CALL READ_PI_DO
+110   0048  38 05       	JR C,no_ack_error
+111   004A              
+112   004A  21 45 03    	LD HL,PiACKmessage
+113   004D  18 11       	JR print_message
+114   004F              
+115   004F              no_ack_error:
+116   004F  21 11 03    	LD HL,NoACKmessage
+117   0052  18 0C       	JR print_message
+118   0054              
+119   0054              debug_error:
+120   0054  CD 75 02    	CALL prt_hex
+121   0057  21 CE 02    	LD HL, ErrorMessage
+122   005A  CD 4A 02    	CALL print
+123   005D              
+124   005D              end_error:
+125   005D  21 76 03    	LD HL, MsgUsage
+126   0060              
+127   0060              print_message:
+128   0060  CD 4A 02    	CALL print
+129   0063  C9          	ret
+130   0064              
+131   0064              ;---------------------------------------------------
+132   0064              READ_PI:
+133   0064  E5          	PUSH HL
+134   0065  21 DA 02    	LD HL,ReadingMessage
+135   0068  CD 4A 02    	CALL print
+136   006B  E1          	POP HL
+137   006C              
+138   006C  23          	INC HL
+139   006D              	;HL point to parameters so get no of bytes to write
+140   006D  CD C7 01    	CALL CONVERT_HEX_DEC
+141   0070  DA 54 00    	JP C,debug_error; return to basic with error message
+142   0073  FE 41       	CP 65			;Cant be more than 64 bytes
+143   0075  30 DD       	JR NC,debug_error
+144   0077              
+145   0077  E5          	PUSH HL
+146   0078  32 29 04    	LD (BYTCNT),A ; store in the table
+147   007B  CD 75 02    	CALL prt_hex
+148   007E  21 E5 02    	LD HL,ReadingNoBytes
+149   0081  CD 4A 02    	CALL print
+150   0084  E1          	POP HL
+151   0085              
+152   0085  CD 97 00    	CALL READ_PI_DO
+153   0088  38 C5       	JR C,no_ack_error
+154   008A              
+155   008A  3A 29 04    	LD A,(BYTCNT)
+156   008D  21 2A 04    	LD HL,BUFFER
+157   0090  CD 35 02    	CALL print_bytes
+158   0093              
+159   0093  CD 54 02    	CALL print_newline
+160   0096              
+161   0096  C9          	RET
+162   0097              
+163   0097              
+164   0097              READ_PI_DO:
+165   0097  CD 9C 01    	call START_SEQUENCE
+166   009A              
+167   009A  2E 84       	ld l,0x84		;7bit Address 0x42 + 8th 1 Bit for read data
+168   009C  CD 4D 01    	call SEND_DATA
+169   009F  DA 41 01    	JP C, STOP_SEQUENCE_SCF
+170   00A2              
+171   00A2  3A 29 04    	LD A,(BYTCNT)
+172   00A5  6F          	ld l,A
+173   00A6  CD 4D 01    	call SEND_DATA
+174   00A9  DA 41 01    	JP C, STOP_SEQUENCE_SCF
+175   00AC              
+176   00AC  CD 9C 01    	call START_SEQUENCE
+177   00AF              
+178   00AF  2E 85       	ld l,0x85
+179   00B1  CD 4D 01    	call SEND_DATA
+180   00B4  DA 41 01    	JP C, STOP_SEQUENCE_SCF
+181   00B7              
+182   00B7              	;point to the first reg in table
+183   00B7  21 2A 04    	LD HL,BUFFER
+184   00BA              
+185   00BA  3A 29 04    	LD A,(BYTCNT)
+186   00BD  5F          	LD E,A
+187   00BE              
+188   00BE              loop_read_bytes:
+189   00BE  CD 7D 01    	call READ
+190   00C1              
+191   00C1              	;point to next byte
+192   00C1  23          	inc hl
+193   00C2              
+194   00C2              	;dec number of bytes
+195   00C2  1D          	dec e
+196   00C3  28 05       	jr z, end_read_bytes
+197   00C5              
+198   00C5              	;if don´t finish, send as ACK and loop
+199   00C5  CD 93 01    	call SEND_ACK
+200   00C8  18 F4       	jr loop_read_bytes
+201   00CA              
+202   00CA              	;we just finished to read the I2C, send a NACK and STOP
+203   00CA              end_read_bytes:
+204   00CA  3E 01       	LD A,1
+205   00CC  CD 94 01    	call SEND_ACK_NACK
+206   00CF              ;	call SEND_NACK
+207   00CF              
+208   00CF  CD 35 01    	CALL STOP_SEQUENCE_CCF
+209   00D2              
+210   00D2  C9          	RET
+211   00D3              
+212   00D3              
+213   00D3              
+214   00D3              
+215   00D3              ;---------------------------------------------------
+216   00D3              WRITE_PI:
+217   00D3              
+218   00D3  E5          	PUSH HL
+219   00D4  21 F6 02    	LD HL,WritingMessage
+220   00D7  CD 4A 02    	CALL print
+221   00DA  E1          	POP HL
+222   00DB              
+223   00DB  11 2A 04    	LD DE,BUFFER
+224   00DE  0E 40       	LD C,64
+225   00E0              
+226   00E0              LOOP_READ_BYTES:
+227   00E0  23          	INC HL
+228   00E1  7E          	LD A,(HL)
+229   00E2  FE 0D       	CP 13
+230   00E4  28 0A       	JR Z,DONE_READ_BYTES
+231   00E6              
+232   00E6  CD C7 01    	CALL CONVERT_HEX_DEC
+233   00E9  38 0C       	jr c,ERROR_READ_BYTES		; return to basic with error message if needed
+234   00EB              
+235   00EB  12          	LD (DE),A 			; store in the table
+236   00EC              
+237   00EC  13          	INC DE
+238   00ED  0D          	DEC C
+239   00EE  20 F0       	JR NZ,LOOP_READ_BYTES
+240   00F0              
+241   00F0              DONE_READ_BYTES:
+242   00F0  3E 40       	LD A,64
+243   00F2  91          	SUB C				; See how many bytes read
+244   00F3  30 05       	JR NC,ALL64
+245   00F5              
+246   00F5  F6 80       	OR @10000000		;Set high bit as syntax flag
+247   00F7              
+248   00F7              ERROR_READ_BYTES:
+249   00F7  C3 54 00    	JP debug_error		; None was a syntax error
+250   00FA              
+251   00FA              ALL64:
+252   00FA              ;	INC A
+253   00FA  32 29 04    	LD (BYTCNT),A
+254   00FD              
+255   00FD  CD 75 02    	CALL prt_hex
+256   0100  21 01 03    	LD HL,WritingNoBytes
+257   0103  CD 4A 02    	CALL print
+258   0106              
+259   0106  CD 0D 01    	CALL WRITE_PI_DO
+260   0109              
+261   0109  DA 4F 00    	JP C,no_ack_error
+262   010C              
+263   010C  C9          	RET
+264   010D              
+265   010D              
+266   010D              WRITE_PI_DO:
+267   010D              
+268   010D  CD 9C 01    	call START_SEQUENCE
+269   0110              
+270   0110  2E 84       	ld l,0x84 		;7bit Address 0x64 0110100 + 8th Zero Bit for write data
+271   0112  CD 4D 01    	call SEND_DATA
+272   0115  DA 41 01    	JP C,STOP_SEQUENCE_SCF
+273   0118              
+274   0118  3A 29 04    	LD A,(BYTCNT)
+275   011B              
+276   011B  6F          	ld L,A 			;We are going to send xxxxx bytes *** TODO inc a checksum
+277   011C  CD 4D 01    	call SEND_DATA
+278   011F  DA 41 01    	JP C,STOP_SEQUENCE_SCF
+279   0122              
+280   0122  3A 29 04    	LD A,(BYTCNT)
+281   0125  11 2A 04    	LD DE,BUFFER
+282   0128              
+283   0128              WRITE_PI_LOOP:
+284   0128  F5          	PUSH AF
+285   0129  1A          	LD A,(DE)
+286   012A  6F          	LD L,A
+287   012B  CD 4D 01    	call SEND_DATA
+288   012E  38 10       	JR C,STOP_SEQUENCE_SCF_POPAF
+289   0130  13          	INC DE
+290   0131  F1          	POP AF
+291   0132  3D          	DEC A
+292   0133  20 F3       	JR NZ,WRITE_PI_LOOP
+293   0135              
+294   0135              ;	JP STOP_SEQUENCE_CCF
+295   0135              
+296   0135              STOP_SEQUENCE_CCF:
+297   0135  CD AC 01    	CALL SDA0
+298   0138  CD BF 01    	CALL SCL1
+299   013B  CD AF 01    	CALL SDA1
+300   013E  FB          	EI
+301   013F  C9          	RET
+302   0140              
+303   0140              STOP_SEQUENCE_SCF_POPAF:
+304   0140  F1          	POP AF
+305   0141              
+306   0141              STOP_SEQUENCE_SCF:
+307   0141  CD AC 01    	CALL SDA0
+308   0144  CD BF 01    	CALL SCL1
+309   0147  CD AF 01    	CALL SDA1
+310   014A  FB          	EI
+311   014B  37          	SCF
+312   014C  C9          	RET
+313   014D              
+314   014D              ;---------------------------------------------------
+315   014D              SEND_DATA:
+316   014D              
+317   014D              	;8 bits
+318   014D  26 08       	ld h,8				;7
+319   014F              
+320   014F              SEND_DATA_LOOP:
+321   014F              
+322   014F              	;next bit
+323   014F  CB 05       	RLC L				;8
+324   0151              
+325   0151  7D          	ld a,L				;4
+326   0152  CD B1 01    	CALL SDA			;17 + xxx
+327   0155              
+328   0155  CD B5 01    	call PULSE_CLOCK		;17 + xxx
+329   0158              
+330   0158  25          	dec h				;4
+331   0159  20 F4       	jr nz, SEND_DATA_LOOP		;12 or 7
+332   015B              
+333   015B              WAIT_ACK:
+334   015B              
+335   015B              	;free the line to wait the ACK
+336   015B  CD AF 01    	CALL SDA1			;17 + xxx
+337   015E              
+338   015E              ;	JR PULSE_CLOCK			;12
+339   015E              	;so we now do the same but, check for an ACK coming back!
+340   015E              	;http://www.gammon.com.au/forum/?id=10896 useful to see the timing diagrams
+341   015E  CD BF 01    	CALL SCL1			;17	;17 +
+342   0161              
+343   0161  21 04 00    	LD HL,4				;loop for a short while looking for the ACK
+344   0164              
+345   0164              WAIT_ACK_LOOP:
+346   0164  06 11       	LD B,PORT_DATA			;7
+347   0166  ED 78       	IN A,(C)			;12
+348   0168  0F          	RRCA
+349   0169  38 01       	JR C,LINE_HIGH
+350   016B              
+351   016B  24          	INC H				;Something on the bus pulled SDA low - count how long
+352   016C              
+353   016C              LINE_HIGH:
+354   016C  2D          	DEC L
+355   016D  20 F5       	JR NZ,WAIT_ACK_LOOP
+356   016F              
+357   016F  CD BC 01    	CALL SCL0			;If stitched back into RTC etc could be a JP to save a byte this will CCF due to XOR A
+358   0172              
+359   0172  7C          	LD A,H
+360   0173  D6 02       	SUB 2				;Carry will be set if we did not receive at least duration 2 of pulse.
+361   0175              
+362   0175              ;Suppress ACK test if required.
+363   0175  21 28 04    	LD HL,CHKACK
+364   0178  CB 7E       	BIT 7,(HL)		;Does not affect carry
+365   017A  C8          	RET Z			;if not supressed
+366   017B              
+367   017B  B7          	OR A			;Otherwise carry clear
+368   017C  C9          	RET
+369   017D              
+370   017D              
+371   017D              ;---------------------------------------------------
+372   017D              ;-- Read 8 bits from the bus - no automatic ACK
+373   017D              READ:
+374   017D              
+375   017D              ;	free the data line
+376   017D  CD AF 01    	CALL SDA1			;17 + xxx
+377   0180              
+378   0180              ; lets read 8 bits
+379   0180  16 08       	ld D,8				;7
+380   0182              
+381   0182              READ_LOOP:
+382   0182              	;clock is high
+383   0182  CD BF 01    	CALL SCL1			;17 + xxx
+384   0185              
+385   0185              	;read the bit
+386   0185  06 11       	ld b,PORT_DATA			;7
+387   0187  ED 78       	in a,(c)			;12
+388   0189              
+389   0189  0F          	RRCA				;4
+390   018A  CB 16       	RL (HL)				;15
+391   018C              
+392   018C              	;clock is low
+393   018C  CD BC 01    	CALL SCL0			;17 + xxx
+394   018F              
+395   018F  15          	dec d				;4
+396   0190              
+397   0190              	;go to next bit
+398   0190  20 F0       	jr nz, READ_LOOP		;12 or 7
+399   0192              
+400   0192              	;finish the byte read
+401   0192  C9          	ret				;10
+402   0193              
+403   0193              ;-- ACK the bus, if A-1 can enter to send a NACK at second entry
+404   0193              
+405   0193              SEND_ACK:
+406   0193              
+407   0193  AF          	xor a  				;4
+408   0194              
+409   0194              SEND_ACK_NACK:
+410   0194              
+411   0194  CD B1 01    	CALL SDA			;17 + xxx
+412   0197              
+413   0197  CD B5 01    	call PULSE_CLOCK		;17 + xxx
+414   019A              
+415   019A  18 13       	JR SDA1				;12
+416   019C              
+417   019C              
+418   019C              ;---------------------------------------------------
+419   019C              START_SEQUENCE:
+420   019C  F3          	DI
+421   019D              
+422   019D              	;high in both i2c, before begin
+423   019D  3E 01       	ld a,1				;7	;Could save this by calling SCL1 not SCL...
+424   019F  0E 3B       	ld c, PORT			;7
+425   01A1  CD C1 01    	CALL SCL 			;17 + xxx
+426   01A4  CD B1 01    	CALL SDA			;17 + xxx
+427   01A7              
+428   01A7              	;high to low when clock is high
+429   01A7  CD AC 01    	CALL SDA0			;17 + xxx
+430   01AA              
+431   01AA              	;low the clock to start sending data
+432   01AA  18 15       	JR SCL				;12
+433   01AC              
+434   01AC              
+435   01AC              ;---------------------------------------------------
+436   01AC              SDA0:
+437   01AC  AF          	xor a 				;4
+438   01AD  18 02       	jr SDA				;12
+439   01AF              SDA1:
+440   01AF  3E 01       	ld a,1				;7
+441   01B1              SDA:
+442   01B1  06 11       	ld b,PORT_DATA			;7
+443   01B3  18 0E       	JR SCLO				;12
+444   01B5              ;One byte less to use out later - does mean we have same delay as Clock
+445   01B5              ;	 OUT (c), a
+446   01B5              ;	 ret
+447   01B5              
+448   01B5              PULSE_CLOCK:
+449   01B5  CD BF 01    	CALL SCL1			;17
+450   01B8  00          	NOP
+451   01B9  CD BF 01    	CALL SCL1			;Lengthen high state
+452   01BC              
+453   01BC              SCL0:
+454   01BC  AF          	xor a 				;4
+455   01BD  18 02       	jr SCL				;12
+456   01BF              SCL1:
+457   01BF  3E 01       	ld a,1				;7
+458   01C1              SCL:
+459   01C1  06 10       	ld b,PORT_CLOCK			;7
+460   01C3  ED 79       SCLO:	OUT (c), a			;12
+461   01C5  00          	NOP				;Wait 16 t states or approx 4usec at 4Mhz so more like 5 at 3.5
+462   01C6              
+463   01C6  C9          	ret				;10
+464   01C7              
+465   01C7              
+466   01C7              
+467   01C7              ;---------------------------------------------------
+468   01C7              CONVERT_HEX_DEC:
+469   01C7              
+470   01C7  CD DA 01    	CALL CONVERT_HEX_DEC_DIGIT
+471   01CA  38 27       	JR C,DIGIT_ERROR
+472   01CC              
+473   01CC  07          	RLCA	; A*16
+474   01CD  07          	RLCA
+475   01CE  07          	RLCA
+476   01CF  07          	RLCA
+477   01D0              
+478   01D0  47          	LD B,A
+479   01D1              
+480   01D1  23          	INC HL
+481   01D2              
+482   01D2  CD DA 01    	CALL CONVERT_HEX_DEC_DIGIT
+483   01D5  38 1C       	JR C,DIGIT_ERROR
+484   01D7              
+485   01D7  80          	ADD A,B
+486   01D8              
+487   01D8  B7          	or a; clear the carry
+488   01D9  C9          	ret
+489   01DA              
+490   01DA              ;---------------------------------------------------
+491   01DA              CONVERT_HEX_DEC_DIGIT:
+492   01DA  7E          	LD a,(HL)
+493   01DB              	;test ascii for 0 to 9
+494   01DB  FE 30       	CP 48
+495   01DD  38 14       	JR C,DIGIT_ERROR
+496   01DF              
+497   01DF  FE 3A       	CP 58				;This is a colon - why we need a string but in this case is just first char above 9...
+498   01E1  38 0C       	JR C,ONLY_0TO9
+499   01E3              
+500   01E3  E6 DF       	AND @11011111			;Force upper case
+501   01E5              
+502   01E5  FE 41       	CP 'A'
+503   01E7  38 0A       	JR C,DIGIT_ERROR
+504   01E9              
+505   01E9  FE 47       	CP 'G'
+506   01EB  30 06       	JR NC,DIGIT_ERROR
+507   01ED              
+508   01ED  D6 07       	SUB 7				;Offset for A to be after 9
+509   01EF              
+510   01EF              ONLY_0TO9:
+511   01EF              
+512   01EF  D6 30       	sub 48 				; convert asc to number
+513   01F1              
+514   01F1  B7          	OR A
+515   01F2  C9          	RET
+516   01F3              
+517   01F3              DIGIT_ERROR:
+518   01F3              
+519   01F3  37          	SCF
+520   01F4  C9          	RET
+521   01F5              
+522   01F5              
+523   01F5              
+524   01F5              
+525   01F5              
+526   01F5              
+527   01F5              ;---------------------------------------------------
+528   01F5              NUMBER_TO_ASC:
+529   01F5  7E          	LD a,(HL)
+530   01F6              
+531   01F6              	; get just the upper bits
+532   01F6  CB 2F       	SRA A
+533   01F8  CB 2F       	SRA A
+534   01FA  CB 2F       	SRA A
+535   01FC  CB 2F       	SRA A
+536   01FE  C6 30       	add 48 ;convert number to ASCII
+537   0200  47          	LD b,a
+538   0201              
+539   0201              	;now the lower bits
+540   0201  7E          	LD a,(HL)
+541   0202  E6 0F       	and 0x0f ;just the lower bits
+542   0204  C6 30       	add 48 ;convert number to ASCII
+543   0206  4F          	LD c,a
+544   0207              
+545   0207  C9          	ret
+546   0208              
+547   0208              
+548   0208              
+549   0208              
+550   0208              ;---------------------------------------------------
+551   0208              
+552   0208              ;-- Print out DE and BC registers.
+553   0208  C5          print_regs:		push BC
+554   0209  D5          			push DE
+555   020A              
+556   020A  21 B7 02    			ld HL, str_DE
+557   020D  CD 4A 02    			call print
+558   0210  E1          			pop hl
+559   0211  CD 70 02    			call prt_hex_16
+560   0214  CD 54 02    			call print_newline
+561   0217              
+562   0217  21 BE 02    			ld HL, str_BC
+563   021A  CD 4A 02    			call print
+564   021D  E1          			pop hl
+565   021E  CD 70 02    			call prt_hex_16
+566   0221              
+567   0221  CD 54 02    			call print_newline
+568   0224              
+569   0224  C9          			ret
+570   0225              
+571   0225              
+572   0225              ;-- Print A rows of 8 bytes at HL
+573   0225  F5          print_row:		PUSH AF
+574   0226  E5          			PUSH HL
+575   0227  CD 54 02    			call print_newline
+576   022A  E1          			POP HL
+577   022B              
+578   022B  3E 08       			LD A,8
+579   022D  CD 35 02    			CALL print_bytes
+580   0230              
+581   0230  F1          			POP AF
+582   0231  3D          			DEC A
+583   0232  20 F1       			JR NZ,print_row
+584   0234              
+585   0234  C9          			RET
+586   0235              
+587   0235              ;-- Print A bytes at HL
+588   0235  F5          print_bytes:		PUSH AF
+589   0236  E5          			PUSH HL
+590   0237  7E          			LD A,(HL)
+591   0238  CD 75 02    			call prt_hex
+592   023B  CD 6B 02    			CALL space
+593   023E  E1          			POP HL
+594   023F  23          			INC HL
+595   0240  F1          			POP AF
+596   0241  3D          			DEC A
+597   0242  20 F1       			JR NZ,print_bytes
+598   0244              
+599   0244  C9          			RET
+600   0245              
+601   0245              ;---------------------------------------------
+602   0245              
+603   0245              
+604   0245  E1          sprint:			pop	hl
+605   0246  CD 4A 02    			call print
+606   0249  E9          			jp (hl)
+607   024A              
+608   024A  7E          print:			ld	a,(hl)
+609   024B  23          			inc hl
+610   024C  B7          			or a
+611   024D  C8          			ret z
+612   024E  CB 7F       			bit 7,a
+613   0250  C0          			ret nz
+614   0251  D7          			rst 16
+615   0252  18 F6       			jr print
+616   0254              
+617   0254  21 CC 02    print_newline:		ld hl,newline
+618   0257  CD 4A 02    			call print
+619   025A  C9          			ret
+620   025B              
+621   025B  30 31 32 33 34 35 36 37 38 39 41 42 43 44 45 46 
+                        hextab:			DEFM	"0123456789ABCDEF"
+622   026B              
+623   026B  3E 20       space:			ld	a,' '
+624   026D  C3 10 00    			jp 16
+625   0270              
+626   0270  7C          prt_hex_16:		ld	a,h
+627   0271  CD 75 02    			call prt_hex
+628   0274  7D          			ld a,l
+629   0275              
+630   0275  F5          prt_hex:		push af
+631   0276  1F          			rra
+632   0277  1F          			rra
+633   0278  1F          			rra
+634   0279  1F          			rra
+635   027A  CD 7E 02    			call prt_hex_4
+636   027D  F1          			pop af
+637   027E              
+638   027E  E5          prt_hex_4:		push hl
+639   027F  E6 0F       			and	15
+640   0281  C6 5B       			add a,hextab&255
+641   0283  6F          			ld l,a
+642   0284  CE 02       			adc a,hextab/256
+643   0286  95          			sub l
+644   0287  67          			ld h,a
+645   0288  7E          			ld a,(hl)
+646   0289  E1          			pop hl
+647   028A  C3 10 00    			jp 16
+648   028D              
+649   028D  01 10 27    prt_dec:		ld bc,10000
+650   0290  CD AB 02    			call dl
+651   0293  01 E8 03    			ld bc,1000
+652   0296  CD AB 02    			call dl
+653   0299  01 64 00    			ld bc,100
+654   029C  CD AB 02    			call dl
+655   029F  01 0A 00    			ld bc,10
+656   02A2  CD AB 02    			call dl
+657   02A5  7D          			ld a,l
+658   02A6  C6 30       			add a,'0'
+659   02A8  C3 10 00    			jp 16
+660   02AB              
+661   02AB  3E 2F       dl:			ld a,'0'-1
+662   02AD              
+663   02AD  3C          lp2:			inc a
+664   02AE  B7          			or a
+665   02AF  ED 42       			sbc hl,bc
+666   02B1  30 FA       			jr nc,lp2
+667   02B3  09          			add hl,bc
+668   02B4  C3 10 00    			jp 16
+669   02B7              
+670   02B7              
+671   02B7  44 45 20 20 3A 20 
+                        str_DE:		DEFM "DE  : "
+672   02BD  00          		DEFB 0
+673   02BE  42 43 20 20 3A 20 
+                        str_BC:		DEFM "BC  : "
+674   02C4  00          		DEFB 0
+675   02C5  52 54 43 20 3A 20 
+                        str_REG:	DEFM "RTC : "
+676   02CB  00          		DEFB 0
+677   02CC              
+678   02CC  0D 00       newline:	DEFB 13,0
+679   02CE              
+680   02CE              
+681   02CE  20 2D 20 45 72 72 6F 72 2E 0D 0D 00 
+                        ErrorMessage:	DEFM " - Error.",13,13,0
+682   02DA              
+683   02DA  52 65 61 64 69 6E 67 20 30 78 00 
+                        ReadingMessage: DEFM "Reading 0x",0
+684   02E5  20 62 79 74 65 73 20 66 72 6F 6D 20 50 49 0D 0D 00 
+                        ReadingNoBytes:	DEFM " bytes from PI",13,13,0
+685   02F6              
+686   02F6  57 72 69 74 69 6E 67 20 30 78 00 
+                        WritingMessage: DEFM "Writing 0x",0
+687   0301  20 62 79 74 65 73 20 74 6F 20 50 49 2E 0D 0D 00 
+                        WritingNoBytes:	DEFM " bytes to PI.",13,13,0
+688   0311              
+689   0311  4E 6F 20 41 43 4B 20 6F 6E 20 61 64 64 72 65 73 73 20 73 65 6C 65 63 74 2E 0D 
+                        NoACKmessage:	DEFM "No ACK on address select.",13
+690   032B  50 72 6F 62 61 62 6C 79 20 6E 6F 20 50 49 20 61 74 20 30 78 34 32 2E 0D 0D 00 
+                        		DEFM "Probably no PI at 0x42.",13,13,0
+691   0345              
+692   0345  47 6F 74 20 61 6E 20 41 43 4B 20 66 72 6F 6D 20 64 65 76 69 63 65 2E 0D 
+                        PiACKmessage:	DEFM "Got an ACK from device.",13
+693   035D  50 72 6F 62 61 62 6C 79 20 61 20 50 49 20 61 74 20 30 78 34 32 2E 0D 0D 00 
+                        		DEFM "Probably a PI at 0x42.",13,13,0
+694   0376              
+695   0376  50 49 32 43 20 56 30 2E 31 20 75 73 61 67 65 3A 20 0D 
+                        MsgUsage: defm "PI2C V0.1 usage: ",13
+696   0388  70 69 32 63 20 3C 45 4E 54 45 52 3E 
+                        	  defm "pi2c <ENTER>"
+697   0394  0D          	  defb 13
+698   0395  53 65 65 20 69 66 20 50 49 20 72 65 73 70 6F 6E 64 73 20 77 69 74 68 20 61 6E 20 41 43 4B 
+                        	  defm "See if PI responds with an ACK"
+699   03B3  0D 0D       	  defb 13,13
+700   03B5  70 69 32 63 20 7B 2D 64 7D 20 2D 77 48 48 7B 48 48 7D 3C 45 4E 54 45 52 3E 
+                        	  defm "pi2c {-d} -wHH{HH}<ENTER>"
+701   03CE  0D          	  defb 13
+702   03CF  20 2D 20 77 72 69 74 65 20 75 70 74 6F 20 36 34 20 30 78 48 48 
+                        	  defm " - write upto 64 0xHH"
+703   03E4  0D 0D       	  defb 13,13
+704   03E6  70 69 32 63 20 7B 2D 64 7D 20 2D 72 4E 4E 3C 45 4E 54 45 52 3E 
+                        	  defm "pi2c {-d} -rNN<ENTER>"
+705   03FB  0D          	  defb 13
+706   03FC  2D 72 4E 4E 20 2D 20 72 65 61 64 20 30 78 4E 4E 20 62 79 74 65 73 20 
+                        	  defm "-rNN - read 0xNN bytes "
+707   0413  0D 0D       	  defb 13,13
+708   0415  2D 64 20 2D 20 6E 6F 20 41 43 4B 20 74 65 73 74 
+                        	  defm "-d - no ACK test"
+709   0425  0D 0D 00    	  defb 13,13,0
+710   0428              
+711   0428  00          CHKACK:	  DEFB 0
+712   0429              
+713   0429  00          BYTCNT:	  DEFB 0
+714   042A  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+      044A  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+                        BUFFER:	  DEFS 64
+715   046A  00          CHKSUM:	  DEFB 0
+716   046B              
+717   046B              
