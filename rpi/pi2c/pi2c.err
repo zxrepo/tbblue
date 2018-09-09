@@ -1,0 +1,27 @@
+Error at file 'pi2c.asm' line 69: syntax error
+Error at file 'pi2c.asm' line 362: syntax error
+Error at file 'pi2c.asm' line 97: symbol 'READ_PI_DO' not defined
+Error at file 'pi2c.asm' line 175: symbol 'loop_read_regs' not defined
+Error at file 'pi2c.asm' line 208: integer '-135' out of range
+Error at file 'pi2c.asm' line 210: integer '-139' out of range
+Error at file 'pi2c.asm' line 213: symbol 'REGNUM' not defined
+Error at file 'pi2c.asm' line 219: symbol 'BYT' not defined
+Error at file 'pi2c.asm' line 253: symbol 'REGCNT' not defined
+Error at file 'pi2c.asm' line 256: symbol 'HexLead' not defined
+Error at file 'pi2c.asm' line 260: symbol 'HexTail' not defined
+Error at file 'pi2c.asm' line 276: symbol 'STOP_SEQUENCE_CCF_POP' not defined
+Error at file 'pi2c.asm' line 303: symbol 'STOP_SEQENCE_CCF' not defined
+Error at file 'pi2c.asm' line 98: symbol 'READ_PI_DO' not defined
+Error at file 'pi2c.asm' line 176: symbol 'loop_read_regs' not defined
+Error at file 'pi2c.asm' line 209: integer '-135' out of range
+Error at file 'pi2c.asm' line 211: integer '-139' out of range
+Error at file 'pi2c.asm' line 214: symbol 'REGNUM' not defined
+Error at file 'pi2c.asm' line 220: symbol 'BYT' not defined
+Error at file 'pi2c.asm' line 254: symbol 'REGCNT' not defined
+Error at file 'pi2c.asm' line 257: symbol 'HexLead' not defined
+Error at file 'pi2c.asm' line 261: symbol 'HexTail' not defined
+Error at file 'pi2c.asm' line 277: symbol 'STOP_SEQUENCE_CCF_POP' not defined
+Error at file 'pi2c.asm' line 304: symbol 'STOP_SEQENCE_CCF' not defined
+Error at file 'pi2c.asm' line 241: symbol 'REGCNT' not defined
+Error at file 'pi2c.asm' line 259: symbol 'STOP_SEQUENCE_CCF_POP' not defined
+Error at file 'pi2c.asm' line 286: symbol 'STOP_SEQENCE_CCF' not defined
