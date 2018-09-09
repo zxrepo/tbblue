@@ -1,7 +1,8 @@
-; TBBlue / ZX Spectrum Next project
-; Copyright (c) 2010-2018
 ;
-; MOUSE.DRV Chris Cowley, Garry Lancaster and Tim Gilberts
+; TBBlue / ZX Spectrum Next project
+; Copyright (c) 2010-2018 
+;
+; ESPATDRV.DRV - Tim Gilberts based on Sample Driver from Garry Lancaster
 ;
 ; All rights reserved
 ;
@@ -35,15 +36,17 @@
 ;
 ;-------------------------------------------------------------------------------
 ; ***************************************************************************
-; * Simple example NextOS driver file                                       *
+; * Interrupt driven Driver for Network                                     *
 ; ***************************************************************************
 ;
-; This file generates the actual mouse.drv file which can be installed or
+; File Version Alpha 7
+;
+; This file generates the actual espatdrv.drv file which can be installed or
 ; uninstalled using the .install/.uninstall commands.
 ;
-; The driver itself (mouse.asm) must first be built.
+; The driver itself (espatdrv.asm) must first be built.
 ;
-; Assemble this file with: pasmo mouse_drv.asm mouse.drv
+; Assemble this file with: pasmo espatdrv_drv.asm espat.drv
 
 
 ; ***************************************************************************
@@ -52,7 +55,7 @@
 ; Pull in the symbol file for the driver itself and calculate the number of
 ; relocations used.
 
-        include "mouse.sym"
+        include "espatdrv.sym"
 
 relocs  equ     (reloc_end-reloc_start)/2
 
@@ -69,7 +72,7 @@ relocs  equ     (reloc_end-reloc_start)/2
 
         defm    "NDRV"          ; .DRV file signature
 
-        defb    $7e+$80         ; 7-bit unique driver id in bits 0..6
+        defb    'N'+$80         ; 7-bit unique driver id in bits 0..6
                                 ; bit 7=1 if to be called on IM1 interrupts
 
         defb    relocs          ; number of relocation entries (0..255)
@@ -86,7 +89,7 @@ relocs  equ     (reloc_end-reloc_start)/2
 ; ***************************************************************************
 ; The driver + relocation table should now be included.
 
-        incbin  "mouse.bin"
+        incbin  "espatdrv.bin"
 
 
 ; ***************************************************************************

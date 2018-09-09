@@ -1,7 +1,7 @@
 ; TBBlue / ZX Spectrum Next project
 ; Copyright (c) 2010-2018
 ;
-; MOUSE.DRV Chris Cowley, Garry Lancaster and Tim Gilberts
+; UARTDRV.DRV Victor Trucco, Garry Lancaster and Tim Gilberts
 ;
 ; All rights reserved
 ;
@@ -34,16 +34,13 @@
 ; You are responsible for any legal issues arising from your use of this code.
 ;
 ;-------------------------------------------------------------------------------
-; ***************************************************************************
-; * Simple example NextOS driver file                                       *
-; ***************************************************************************
 ;
-; This file generates the actual mouse.drv file which can be installed or
+; This file generates the actual uart.drv file which can be installed or
 ; uninstalled using the .install/.uninstall commands.
 ;
-; The driver itself (mouse.asm) must first be built.
+; The driver itself (uart.asm) must first be built.
 ;
-; Assemble this file with: pasmo mouse_drv.asm mouse.drv
+; Assemble this file with: pasmo uart_drv.asm uart.drv
 
 
 ; ***************************************************************************
@@ -52,7 +49,7 @@
 ; Pull in the symbol file for the driver itself and calculate the number of
 ; relocations used.
 
-        include "mouse.sym"
+        include "uartdrv.sym"
 
 relocs  equ     (reloc_end-reloc_start)/2
 
@@ -69,7 +66,7 @@ relocs  equ     (reloc_end-reloc_start)/2
 
         defm    "NDRV"          ; .DRV file signature
 
-        defb    $7e+$80         ; 7-bit unique driver id in bits 0..6
+        defb    'U'+$80         ; 7-bit unique driver id in bits 0..6
                                 ; bit 7=1 if to be called on IM1 interrupts
 
         defb    relocs          ; number of relocation entries (0..255)
@@ -86,7 +83,7 @@ relocs  equ     (reloc_end-reloc_start)/2
 ; ***************************************************************************
 ; The driver + relocation table should now be included.
 
-        incbin  "mouse.bin"
+        incbin  "uartdrv.bin"
 
 
 ; ***************************************************************************

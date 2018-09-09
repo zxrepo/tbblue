@@ -1,3 +1,39 @@
+; TBBlue / ZX Spectrum Next project
+; Copyright (c) 2010-2018
+;
+; MOUSE.DRV Chris Cowley, Garry Lancaster and Tim Gilberts
+;
+; All rights reserved
+;
+; Redistribution and use in source and synthezised forms, with or without
+; modification, are permitted provided that the following conditions are met:
+;
+; Redistributions of source code must retain the above copyright notice,
+; this list of conditions and the following disclaimer.
+;
+; Redistributions in synthesized form must reproduce the above copyright
+; notice, this list of conditions and the following disclaimer in the
+; documentation and/or other materials provided with the distribution.
+;
+; Neither the name of the author nor the names of other contributors may
+; be used to endorse or promote products derived from this software without
+; specific prior written permission.
+;
+; THIS CODE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+; THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+; PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE
+; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+; POSSIBILITY OF SUCH DAMAGE.
+;
+; You are responsible for any legal issues arising from your use of this code.
+;
+;-------------------------------------------------------------------------------
 ; ***************************************************************************
 ; * Simple example NextOS driver                                            *
 ; ***************************************************************************
@@ -16,6 +52,9 @@
 ; v0p2b correct bugs in Sprite and Pattern number - forward port to v0p4
 ; v0p3 abandoned track
 ; v0p4 experiment with Mouse Acceleration - see www.c64os.com/post?p=62
+; v0p5 simple support for Wheel as per TBU 49 - returned as top part of buttons
+; so any code needs to mask off bottom three bits for buttons - we had to
+; disable detection so may get random effects now if not present.
 
 ; ***************************************************************************
 ; * Entry points                                                            *
@@ -314,17 +353,20 @@ mouse_btn:
 		LD	BC,64223
 		IN	A,(C)
 
-		CP	255
-		JR	NZ,end_pointer
+;		CP	255
+;		JR	NZ,end_pointer
 
-		SCF			; probably no mouse if port floating
-		RET
+;		SCF			; probably no mouse if port floating
+;		RET
+;As of V5 cannot use that as wheel at 15 with three buttons and the 1 = 255
 
 end_pointer:
 		XOR	%00000111	; Invert bits for simplicity
-		AND	%00000111	; Only keep the three buttons.
+		AND	%11110111	; Only keep the three buttons & wheel
 		
 reloc_12:	LD	(LastButton),A	; Save in LastButton
+
+		AND	%00000111	; Check buttons only
 
 		XOR	255		; This will set the Z flag (if no 
 		RET			; buttons) and clear the carry
