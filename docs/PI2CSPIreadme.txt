@@ -13,10 +13,10 @@ programs that allow you to use the PI as a HDMI second screen shadowing the
 ULA screen.
 
 If you wish to use a full Linux on the PI then these notes and sample programs
-should help as that haw become theoretically possible.
+should help as that now becomes theoretically possible.
 
 First of all the PI only acts as a MASTER for these two buses and so does the
-Next without MASTER/MASTER support so it is a bit bashing exercise both sides.
+Next without MASTER/MASTER support, so it is a bit bashing exercise both sides.
 Actually the Next has a hardware SPI master but, the PI does not have a way
 to use a hardware slave - Sorry talk to the relevant people.
 
@@ -24,7 +24,7 @@ Anyway let's start with the i2c bus.
 ------------------------------------
 
 This is useful to learn more as it is low speed and runs on stock Raspibian at
-the 80-100KHz the Next SPI bus can achieve in Software - and some software is
+the 80-100KHz the Next i2c bus can achieve in Software - and some software is
 already installed to use it on Raspibian.
 
 DO NOT ENABLE i2c ON THE PI
@@ -46,6 +46,8 @@ the pins!
 Instructions are in the header but, once compiled with:
 
 gcc -o pig2i2c pig2i2c.c
+
+you can type:
 
 sudo pigpiod -s 2		- starts the daemon which allows us to use gpio
 
@@ -91,9 +93,11 @@ on the bus...
 What Next
 ---------
 
-Next Step is to allow pig2i2c it to send an ACK and return bytes to the PI
+Next Step is to allow pig2i2c it to send an ACK and return bytes to the Next...
 
-... turn it into a daemon that can run and wait for instructions from the Next:
+then
+
+... turn it into a daemon that can run and wait for instructions from the Next.
 
 The plan is to use the Length byte top two bits to encode a command to go
 with the length.
@@ -143,7 +147,7 @@ Other connected GPIO's
 ----------------------
 
 That would be telling... and would assume I actually knew without looking at the
-VHDL... or understood that... or any were - they AREN't by the way, they are
+VHDL... or understood that... or any were.  They AREN't by the way, they are
 all floating so with some soldered wires you COULD use them for other things.
 It also means you could hook up a bigger (or second) PI using i2c only on the
 J15 connector...  It could even be an Arduino but, those things were always
@@ -172,7 +176,7 @@ HEADER	NAME		BCM	WiringPI
 On the Next:
 
 Port 0xE7 now selects the Raspberry PI on bits 2 (/CE0) and 3 (/CE1).
-Victor comments: "For some reason the Pi SPI port have 2 CS lines... With a
+Victor comments: "For some reason the PI SPI port have 2 CS lines... With a
 quick search I believe both can be used, but to keep the things simple, I'm
 using CE 0 on bit 2 port E7."
 
@@ -186,7 +190,7 @@ high...  The CE lines are normally high and LOWERED for a select (hence _N)
 https://velesoft.speccy.cz/zx/divide/divide_plus/diwide.html)
 
 This does of course mean you will never be able to talk to the Microdrive or
-interface 1 whithout the PI getting stuff on those pins... so be careful. It
+interface 1 without the PI getting stuff on those pins... so be careful. It
 is a real shame the designers of the DivIDE didn't use 0xE7 for data instead
 of 0xEB...
 
@@ -197,7 +201,7 @@ exchange happens you need to be piping back the bit as well when the CLK rises
 according to Victor.
 
 You can obviously throttle the data rate sent but, the bits have to dance to
-the 38Mhz clock signal the FPGA hardware module generates. 
+the 28Mhz clock signal the FPGA hardware module generates. 
 
 Victor also suggests that either IRQ for /CS and FIRQ to CLK or FIRQ to /CS and
 rising detect on CLK would both cope with the data rate.  For Linux it is the
