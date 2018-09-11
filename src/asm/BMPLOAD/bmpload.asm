@@ -61,8 +61,7 @@ LORES_ENABLE		= %10000000
 	org	$6000
 start
 	ld ix,testfile
-	call loadbmp
-	xor a:ret
+	jp loadbmp
 
 testfile db "norm.bmp",0
 	
@@ -77,7 +76,7 @@ start
 	ld	(de),a:inc hl:inc de:djnz .bl
 .dn	xor a:ld	(de),a
 	ld	ix,filename
-	call loadbmp
+	jp loadbmp
 finish
 	xor	a:ret
 
@@ -86,9 +85,12 @@ finish
 ;-------------------------------
 
 loadbmp
-	push ix:call setdrv:pop ix:call fopen
-	ld	ix,header:ld bc,0x36:call fread
-	ld	ix,palette:ld bc,0x400:call fread
+	ld (stackptr),sp
+	ld sp,mystack
+	
+	push ix:call setdrv:pop ix:call fopen:ld a,2:jp c,fileError
+	ld	ix,header:ld bc,0x36:call fread:ld a,3:jp c,fileError
+	ld	ix,palette:ld bc,0x400:call fread:ld a,3:jp c,fileError
 	ld	hl,palette:ld de,nextpal:ld b,0
 .lp	ld	a,(hl):inc hl:add a,16:jr nc,.nb:ld a,255
 .nb	rlca:rlca:push af:and 3:ld c,a
@@ -107,7 +109,7 @@ loadbmp
 	ld a,(header+25):bit 7,a:jr z,.nm
 	ld a,191:sub b:ld b,a
 .nm	ld a,b:dec a:and $e0:rlca:rlca:rlca:add a,LAYER_2_PAGE*2:NEXTREG_A MMU_REGISTER_6
-	ld a,b:dec a:and $1f:or $c0:ld h,a:ld l,0:push hl:pop ix:ld bc,256:call fread
+	ld a,b:dec a:and $1f:or $c0:ld h,a:ld l,0:push hl:pop ix:ld bc,256:call fread:ld a,3:jp c,fileError
 	pop bc:djnz .bl
 	call fclose
 	ld a,($5b5c):add a,a:NEXTREG_A MMU_REGISTER_6
@@ -120,11 +122,22 @@ loadbmp
 	NEXTREG_nn PALETTE_VALUE_REGISTER, 	$e3
 	ld hl,$5800:ld de,$5801:ld bc,$2ff:ld (hl),$47:ldir
 	xor a:out (254),a
+	ld sp,(stackptr)
 	ret
 
 ;--------------------
 fileError
-	ld a,6:out (254),a
+	out (254),a
+	call fclose
+	ld a,($5b5c):add a,a:NEXTREG_A MMU_REGISTER_6
+	ld	bc,4667:xor a:out (c),a
+	ld a, GRAPHIC_PRIORITIES_SLU + GRAPHIC_SPRITES_VISIBLE:SetSpriteControlRegister		; set image priorities
+	; set transparency on ULA
+	NEXTREG_nn PALETTE_CONTROL_REGISTER, 0
+	NEXTREG_nn PALETTE_CONTROL_REGISTER, 0
+	NEXTREG_nn PALETTE_INDEX_REGISTER, 	$18
+	NEXTREG_nn PALETTE_VALUE_REGISTER, 	$e3
+	ld sp,(stackptr)
 	ret
 ;-------------
 setdrv
@@ -137,7 +150,7 @@ fcreate
 	ld b,FA_OVERWRITE:db 62
 drive	db 0
 	push ix:pop hl:rst $08:db F_OPEN
-	ld (handle),a:jp c, fileError
+	ld (handle),a
 	ret
 ;--------------
 fread
@@ -151,6 +164,8 @@ fclose
 	ret
 
 ;-------------
+
+stackptr dw	0
 
 header	db	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 		db	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -172,6 +187,12 @@ filename	db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+mystack
 emptyline	db		".bmpload <filename> to load image to background",13,0
 
 palette		db	0
