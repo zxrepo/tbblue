@@ -23,7 +23,8 @@ Use the Browser to change the speed to 14Mhz - the editor and the assembly are
 really improved with this speed boost.  If you forget just tap F8 of course.
 
 Then use Mode 0 to load SPED53EN.TAP (or .RUN SPED53EN.TAP) from the tools
-directory.
+directory. You can also simply choose SPED53.BAS and it will ask you
+which language version you want to use.
 
 If you exit to BASIC (Capital B) then it will print an address:
 
@@ -328,9 +329,9 @@ option 0.
 
 For some more background:
 
-https://github.com/chernandezba/zesarux/blob/master/src/my_soft/spectrum/vintage/sped52.txt
+https://github.com/chernandezba/zesarux/blob/master/src/my_soft/spectrum/sped
 
-Licence
+License
 -------
 
     SPED53 - integrated Assembler/Monitor and Disassembler for the 128K Spectrum
