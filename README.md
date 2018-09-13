@@ -23,7 +23,7 @@ This is a necessary step as this is the **official** distribution and legality /
   
 Acknowledgments / Copyrights  
 ============================
-All software contained herewith is © by its respective author and is provided under license.  
-Sinclair and ZX Spectrum are © Amstrad / Sky plc and are used with permission under license.  
-NexZXOS and NextBASIC are © Garry Lancaster.  
-TBBlue and Spectrum Next are © SpecNext Ltd.  
+All softwares contained herewith are © by their respective authors and provided under license.  
+**_Sinclair_** and **_ZX Spectrum_** are © **Amstrad / Sky plc** and are used with permission under license.  
+**_NextZXOS_** and **_NextBASIC_** are © **Garry Lancaster**.  
+**_TBBlue_** and **_Spectrum Next_** are © **Victor Trucco**, **Fabio Belavenuto** and **SpecNext Ltd**.  
