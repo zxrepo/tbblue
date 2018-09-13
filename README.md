@@ -4,7 +4,7 @@ Current versions
 ================  
 
 |Title |Version|RC?  	|  
-|---	|---	|---	|  
+|---	|--:	|---	|  
 |*TBBlue*| **1.00** |RC1|  
 |*NextZXOS*|**2.00**|RC2|  
 |*Core*|**2.00.00**	|RC2|  
