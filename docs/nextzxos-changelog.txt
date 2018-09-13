@@ -2,6 +2,10 @@ v2.00 (2018-09-09)
 ==================
 * TurboSound is now left enabled by the TAP loader and snapshot loading. This
   can be disabled manually in the Multiface menu if needed.
+* Timex mode is now only disabled in the TAP loader for USR0 and 48K modes
+  (fixes Nextipeded).
+* Fixed use of new Z80N add instructions to avoid any assumptions on flag effects.
+* Added a wait-for-key in the Browser after displaying a .BMP image.
 
 
 RC1 (v1.99R) 2018-09-08
