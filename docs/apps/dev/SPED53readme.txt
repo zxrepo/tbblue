@@ -364,7 +364,7 @@ SPED53.BAS   - Loader with language selection (Must use on DivMMC ESXDOS)
 SPED53EN.TAP - English version of the Assembler (Can load direct on NextZXOS)
 SPED53ES.TAP - Spanish version of the Assembler (Can load direct on NextZXOS)
 
-sources/sped52
+sources/sped53
 
 SPE53AEN.TAP - English source (and object code) for SPED53 1.2 (A) ENglish
 SPE53AES.TAP - Spanish source (and object code) for SPED53 1.2 (A) ESpañol
