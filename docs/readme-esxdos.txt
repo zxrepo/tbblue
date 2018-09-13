@@ -1,5 +1,5 @@
 Users wishing to use esxDOS with their boards / cased ZX Spectrum Next computers
-need to first download 0.8.6b4 (minimum) esxDOS distribution from 
+need to first download the 0.8.6 (minimum) esxDOS distribution from 
 www.esxdos.org and then do the following under NextZXOS
 
 1. Create two folders on the root folder named c:/bin/ and c:/sys/ by giving:
