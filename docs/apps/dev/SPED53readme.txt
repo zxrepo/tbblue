@@ -12,7 +12,7 @@ we can now provide an on machine tool to learn a bit of assembly language.
 This is no toy either - in the spirit of Open Source it includes its own
 source code under GNU GPL - yes that's correct it is written in itself!
 
-Anyway all spelling errors in SPED52 EN(glish) and this document are due to
+Anyway all spelling errors in SPED53 EN(glish) and this document are due to
 Tim Gilberts.  The original ES (Spanish) version is also provided and they
 should be functionally identical, only the text has changed.
 
@@ -22,7 +22,7 @@ To run it:
 Use the Browser to change the speed to 14Mhz - the editor and the assembly are
 really improved with this speed boost.  If you forget just tap F8 of course.
 
-Then use Mode 0 to load SPED52EN.TAP (or .RUN SPED52EN.TAP) from the tools
+Then use Mode 0 to load SPED53EN.TAP (or .RUN SPED53EN.TAP) from the tools
 directory.
 
 If you exit to BASIC (Capital B) then it will print an address:
@@ -179,7 +179,7 @@ object code you have saved from the tap.  Then you will be able to use
 the Debug tools in the NextZXOS MF to look at memory - this is a whole other
 topic which will be covered elsewhere.
 
-Or like a real grown up IDE you can use the built in tools for SPED52 which
+Or like a real grown up IDE you can use the built in tools for SPED53 which
 includes what is called a 'Monitor/Dissasembler' to allow you to see what is
 happening to the regsisters and memory and turn the numbers back into a
 human form.
@@ -251,12 +251,12 @@ The block in current use is shown in the top right. Using G as a command
 G 0,1,2 (and eventually 3-xxx) will allow you to go to that block if it has
 been started.
 
-To see this you can load the source code for SPED52 itself as it uses 2 and a
+To see this you can load the source code for SPED53 itself as it uses 2 and a
 bit blocks...
 
 Source Code
 -----------
-Attach the SPE52AEN.TAP for English or SPE52AES.TAP for Spanish which will be in
+Attach the SPE53AEN.TAP for English or SPE53AES.TAP for Spanish which will be in
 the sources folder.  Just use L to load the first set of blocks!
 
 You can then go to each block and use E to edit them and look through the
@@ -333,7 +333,7 @@ https://github.com/chernandezba/zesarux/blob/master/src/my_soft/spectrum/vintage
 Licence
 -------
 
-    SPED52 - integrated Assembler/Monitor and Disassembler for the 128K Spectrum
+    SPED53 - integrated Assembler/Monitor and Disassembler for the 128K Spectrum
     Copyright (C) 1997 César Hernández Bañó
 
     This program is free software: you can redistribute it and/or modify
@@ -359,18 +359,23 @@ Manifest
 
 tools/
 
-SPED52.BAS   - Loader with language selection (Must use on DivMMC ESXDOS)
-SPED52EN.TAP - English version of the Assembler (Can load direct on NextZXOS)
-SPED52ES.TAP - Spanish version of the Assembler (Can load direct on NextZXOS)
+SPED53.BAS   - Loader with language selection (Must use on DivMMC ESXDOS)
+SPED53EN.TAP - English version of the Assembler (Can load direct on NextZXOS)
+SPED53ES.TAP - Spanish version of the Assembler (Can load direct on NextZXOS)
 
 sources/sped52
 
-SPE52AEN.TAP - English source (and object code) for SPED52 1.1 (A) ENglish
-SPE52AES.TAP - Spanish source (and object code) for SPED52 1.1 (A) ESpañol
+SPE53AEN.TAP - English source (and object code) for SPED53 1.2 (A) ENglish
+SPE53AES.TAP - Spanish source (and object code) for SPED53 1.2 (A) ESpañol
 
 docs/
 
-readmeSPED52.txt
+readmeSPED53.txt
+
+SPED53 changes
+--------------
+
+Fixed bug when saving object code, was saving always from 49152
 
 
 Release 2 changes
@@ -381,6 +386,6 @@ Fixed duplicate "para" in Spanish Version text
 Added note on Source debugging: DPR means: DePuRacion (debugging in Spanish)
 
 Bug on ESXDOS 0.8.5 on original ZX128 where keyboard fails to work - fixed with
-SPED52.BAS loader instead of direct boot of TAP files...
+SPED53.BAS loader instead of direct boot of TAP files...
 
 
