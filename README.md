@@ -8,7 +8,7 @@ Current versions
 |*TBBlue*| **1.00** |RC1|  
 |*NextZXOS*|**2.00**|RC2|  
 |*Core*|**2.00.00**	|RC2|  
-|*Firmware*|**1.10a**|  |  
+|*Firmware*|**1.10b**|  |  
   
   
 Contributor Requests
