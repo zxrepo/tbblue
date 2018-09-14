@@ -1,7 +1,4 @@
 ;-------------------------------
-; .bmpconv 
-; © Jim Bagley 2018
-;-------------------------------
 	device zxspectrum48
 ;-------------------------------
 
@@ -185,7 +182,7 @@ convbmp
 .w1	ld (mapWidth),hl
 	ld hl,(header+22):ld (scrHeight),hl:srl h:rr l:srl h:rr l:srl h:rr l:ld a,(use8x8s):or a:jr nz,.h1:srl h:rr l
 .h1	ld (mapHeight),hl
-	ld	ix,palette:ld bc,0x400:call fread:ld a,2:jp c,fileError
+	ld	hl,(header+10):ld bc,-0x36:add hl,bc:ld c,l:ld b,h:ld ix,palette:call fread:ld a,2:jp c,fileError
 	ld	hl,palette:ld de,nextpal:ld b,0
 .lp	ld	a,(hl):inc hl:add a,16:jr nc,.nb:ld a,255
 .nb	rlca:rlca:push af:and 3:ld c,a
@@ -231,6 +228,8 @@ convbmp
 .n8	ld hl,(tmpX):add hl,de:pop bc:dec bc:ld a,b:or c:jr nz,.xx
 	ld hl,(mapY):inc hl:ld (mapY),hl
 	ld hl,(tmpY):add hl,de:pop bc:dec bc:ld a,b:or c:jr nz,.yy
+	
+;.st jp .st
 	
 	ld de,palext:call setfilename:call setdrv:ld ix,filename:call fcreate
 	ld ix,nextpal:ld bc,512:call fwrite
@@ -477,7 +476,7 @@ tileBuffer	db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
-lineName	db		"gas.bmp" ;if testing put your command line in here without the bmpconv eg "-8 -b test.bmp"
+lineName	db		"bg00_2.bmp" ;if testing put your command line in here without the bmpconv eg "-8 -b test.bmp"
 			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0

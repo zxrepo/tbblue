@@ -1,7 +1,4 @@
 ;-------------------------------
-;.bmpload 
-; © Jim Bagley 2018
-;-------------------------------
 	device zxspectrum48
 ;-------------------------------
 
@@ -66,7 +63,7 @@ start
 	ld ix,testfile
 	jp loadbmp
 
-testfile db "norm.bmp",0
+testfile db "bg00_2.bmp",0
 	
 	ELSE
 	
@@ -93,7 +90,7 @@ loadbmp
 	
 	push ix:call setdrv:pop ix:call fopen:ld a,2:jp c,fileError
 	ld	ix,header:ld bc,0x36:call fread:ld a,3:jp c,fileError
-	ld	ix,palette:ld bc,0x400:call fread:ld a,3:jp c,fileError
+	ld hl,(header+10):ld bc,-0x36:add hl,bc:ld c,l:ld b,h:ld ix,palette:call fread:ld a,3:jp c,fileError
 	ld	hl,palette:ld de,nextpal:ld b,0
 .lp	ld	a,(hl):inc hl:add a,16:jr nc,.nb:ld a,255
 .nb	rlca:rlca:push af:and 3:ld c,a
@@ -107,13 +104,19 @@ loadbmp
 .pl	ld a,(hl):inc hl:NEXTREG_A PALETTE_VALUE_BIT9_REGISTER
 	ld a,(hl):inc hl:NEXTREG_A PALETTE_VALUE_BIT9_REGISTER
 	djnz .pl
-	ld	b,192
+
+	ld a,(header+25):bit 7,a:jr z,.norm
+	ld hl,(header+22):ld a,h:cpl:ld h,a:ld a,l:cpl:ld l,a:inc hl:ld (header+22),hl	; invert Y size
+.norm
+
+	ld	a,(header+22):ld b,a
 .bl	push bc
 	ld a,(header+25):bit 7,a:jr z,.nm
-	ld a,191:sub b:ld b,a
+	ld a,(header+22):dec a:sub b:ld b,a
 .nm	ld a,b:dec a:and $e0:rlca:rlca:rlca:add a,LAYER_2_PAGE*2:NEXTREG_A MMU_REGISTER_6
-	ld a,b:dec a:and $1f:or $c0:ld h,a:ld l,0:push hl:pop ix:ld bc,256:call fread:pop bc:ld a,3:jp c,fileError
+	ld a,b:dec a:and $1f:or $c0:ld h,a:ld l,0:push hl:pop ix:ld bc,(header+18):call fread:pop bc:ld a,3:jp c,fileError
 	djnz .bl
+
 	call fclose
 	ld a,($5b5c):and 7:add a,a:NEXTREG_A MMU_REGISTER_6
 	ld	bc,4667:ld a,2:out (c),a

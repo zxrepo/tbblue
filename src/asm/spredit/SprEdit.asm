@@ -1,7 +1,4 @@
 ;-------------------------------
-; .spredit 
-; © Jim Bagley 2018
-;-------------------------------
 	device zxspectrum48
 ;-------------------------------
 
@@ -211,11 +208,30 @@ start
 
 	call setdrv:ld ix,filename:ld a,(ix+0):or a:call nz,loadto8000
 
+	ld hl,nextpal:ld c,0
+.pp	ld (hl),c:inc hl:ld a,c:rra:and 1:ld (hl),a:inc hl:inc c:jr nz,.pp
+	ld hl,filename:ld de,palname:call changeext
+	ld ix,palname:ld a,(ix+0):or a:jr z,.sp
+	call fopen:jr c,.sp
+	ld ix,nextpal:ld bc,$200:call fread
+	call fclose
+	ld hl,nextpal:ld c,0:ld b,0
+.sc	ld a,(hl):inc hl:inc hl:cp $e3:jr nz,.ne:ld b,c
+.ne	inc c:jr nz,.sc
+	ld hl,nextpal:ld a,b:ld c,a:ld b,0:ld (e3col),a:add hl,bc:ld (hl),$e3
+.sp
+	NEXTREG_nn PALETTE_CONTROL_REGISTER,%10000
+	NEXTREG_nn PALETTE_INDEX_REGISTER, 	0
+	ld	hl,nextpal:ld b,0
+.pl	ld a,(hl):inc hl:NEXTREG_A PALETTE_VALUE_BIT9_REGISTER
+	ld a,(hl):inc hl:NEXTREG_A PALETTE_VALUE_BIT9_REGISTER
+	djnz .pl
+
 	ld	de,$0000
 .l	push de:ld bc,$0000:call vramfill:pop de:inc d:ld a,d:cp 192:jr nz,.l
 	ld	de,$5080
-.l2	push de:ld bc,$80e3:call vramfill:pop de:inc d:ld a,d:cp $80:jr nz,.l2
-	ld	hl,$4000:ld de,$4001:ld bc,$1800:ld (hl),l:ldir:ld (hl),$38:ld bc,$2ff:ldir:ld a,7:out (254),a
+.l2	push de:ld bc,(e3col):ld b,$80:call vramfill:pop de:inc d:ld a,d:cp $80:jr nz,.l2
+	ld	hl,$4000:ld de,$4001:ld bc,$1800:ld (hl),l:ldir:ld (hl),$38:ld bc,$2ff:ldir:ld a,0:out (254),a
 	ld hl,$5950:ld b,2
 .l3	push hl:push bc:ld e,l:ld d,h:inc e:ld (hl),0*8+4:ld bc,15:ldir:pop bc:pop hl:ld de,32:add hl,de:djnz .l3
 	ld b,4
@@ -250,6 +266,19 @@ noname
 	db	22,0*8,3*8,"SprEdit filename.spr"
 	db	0
 	xor a:ret
+
+changeext
+	ld a,(hl):inc hl:ld (de),a:inc de:or a:jr nz,changeext
+	dec	de
+	dec de:ld a,(de):cp ".":jr z,.got
+	dec de:ld a,(de):cp ".":jr z,.got
+	dec de:ld a,(de):cp ".":jr z,.got
+	dec de:ld a,(de):cp ".":jr z,.got
+	xor a:ld (palname),a
+	ret
+.got ld hl,nxp:inc de
+.gl ld a,(hl):ld (de),a:inc hl:inc de:or a:jr nz,.gl:ret
+nxp	db "nxp",0
 
 savefile	push hl:push bc:call fcreate:pop bc:pop ix:jr c,failsave:push bc:call fwrite:pop de:ld a,c:cp e:jr nz,failsave:ld a,b:cp d:jr nz,failsave:call fclose:xor a:ret
 failsave	scf:ret
@@ -342,18 +371,25 @@ DMAW	dw 0,0
 	db %01010100, %00000010, %01101000,%00000010,%10101101,$5b,%10000010,$cf,$87
 DMALen	equ $-DMA
 ;-------------
-	IFDEF testing
-;cursorspr	db		"cursor.spr",0
-;filename	db		"DKSprite.spr",0
-filename	db		"kev.spr",0
-	ELSE
-;cursorspr	db		"\\bin\\cursor.spr",0
-filename	db	"noname.spr"
+filename	db	"test.spr"
 			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-	ENDIF
+
+palname		dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+nextpal	db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+		db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+		db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+		db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+		db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+		db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+		db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+		db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 emptyline	db		".SPREDIT <filename> to load     sprite images to sprite VRAM andedit them",13,0
 
@@ -396,6 +432,8 @@ rmousey	dw	0
 dmousex	db	0
 dmousey	db	0
 
+e3col	db	$e3
+
 animframe	db	0
 animtable	db	0,1,2,3,4,5,6,7
 animcount	db	0
@@ -426,7 +464,11 @@ editlp
 	call WaitVertical192
 	xor  a:ld bc,$303b:out (c),a
 	ld	a,(gameframe):rra:rra:and 1:ld (spri),a
-	ld de,$00c0+32:ld l,32:ld bc,$008c:call SetSprite4x4
+	
+	ld c,0
+.cl	push bc:ld a,c:and 15:add a,a:add a,a:add a,192:ld e,a:ld a,c:rra:rra:and 15*4:ld d,a:ld a,c:call plot4x4:pop bc:inc c:jr nz,.cl
+	
+;	ld de,$00c0+32:ld l,32:ld bc,$008c:call SetSprite4x4
 	ld	a,(sprnumber):ld l,a:add a,a:add a,a:add a,a:add a,a:add a,$20-2:ld e,a:adc a,0:sub e:ld d,a:ld a,l:and $30:add a,$80+$20-2:ld l,a:ld b,0:ld c,$8a:call SetSprite2x2
 
 	ld a,(cursorx):and $0f:add a,a:add a,a:add a,a:add a,$20-1:ld e,a:ld d,0:ld a,(cursory):and $0f:add a,a:add a,a:add a,a:add a,$20-1:ld l,a:ld bc,(spri):set 7,c:call SetSprite
@@ -517,7 +559,7 @@ editlp
 	ld	a,(gameframe):and 7:ld c,a:ld e,a:ld d,0:ld hl,animtable:add hl,de:ld a,e:add a,a:add a,a:add a,a:add a,a:add a,$80:ld e,a:ld d,$40
 	ld	a,(animcount):ld b,a:ld a,c:cp b:jr nc,.zz
 	ld	a,(hl):call draw16x16:jr .xx
-.zz	ld c,$e3:call fill16x16
+.zz	push af:ld a,(e3col):ld c,a:pop af:call fill16x16 ;ld c,$e3:call fill16x16
 .xx
 
 	ld	a,(debkeys+KEY_G):and KEYAND_G:jr z,.ng
@@ -633,7 +675,8 @@ editlp
 	ld	a,(debkeys+KEY_S):and KEYAND_S:jr z,.ns
 	ld	hl,savetext:call prt
 	ld	a,20:ld bc,$303b:out (c),a:ld a,(cursorx):and $0f:add a,a:add a,a:add a,a:add a,$20-2:ld e,a:ld d,0:ld a,(cursory):and $0f:add a,a:add a,a:add a,a:add a,$20-1:ld l,a:ld bc,$0087:call SetSprite
-	ld	ix,filename:ld hl,$8000:ld bc,$4000:call savefile:ld hl,saveOktext:jr nc,.ds:ld hl,saveFailtext
+	ld	ix,filename:ld hl,$8000:ld bc,$4000:call savefile:ld hl,saveFailtext:jr c,.ds
+	ld	ix,palname:ld hl,saveOktext:ld a,(ix+0):or a:jr z,.ds:ld hl,nextpal:ld bc,$200:call savefile:ld hl,saveFailtext:jr c,.ds:ld hl,saveOktext
 .ds	call prt:call pausekey:call showhelp
 .ns
 
@@ -837,6 +880,15 @@ plot8x8
 .l	ld	(hl),a:inc hl:djnz .l
 	ld	de,256-8:add hl,de:pop af:ld c,7
 .c	ld	(hl),0:inc l:ld b,7
+.b	ld	(hl),a:inc hl:djnz .b
+	add	hl,de:dec c:jr nz,.c
+	ret
+
+plot4x4
+	push af:ld a,d:rlca:rlca:rlca:and 7:add a,LAYER_2_PAGE:NEXTREG_A MMU_REGISTER_6:ld a,d:and 31:or $c0:ld h,a:ld l,e:xor a:ld b,4
+.l	ld	(hl),a:inc hl:djnz .l
+	ld	de,256-4:add hl,de:pop af:ld c,3
+.c	ld	(hl),0:inc l:ld b,3
 .b	ld	(hl),a:inc hl:djnz .b
 	add	hl,de:dec c:jr nz,.c
 	ret
