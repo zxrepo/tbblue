@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include "hardware.h"
 #include "vdp.h"
+#include "config.h"
 #include "ff.h"				// read/write
 
 /* Defines */
@@ -548,7 +549,7 @@ static unsigned char iedit() {
 					*value = 0;
 				}
 			} 
-			if (type == 2 ) 
+			else if (type == 2 ) 
 			{
 				if (*value < 6) 
 				{
@@ -572,7 +573,14 @@ static unsigned char iedit() {
 			}
 			else 
 			{
-				*value = 1 - *value;
+				if (*value == 0)
+				{
+					*value = 1;
+				}
+				else
+				{
+					*value = 0;
+				}
 			}
 			
 		} else if (button_up == 1) {
@@ -863,55 +871,55 @@ void main()
 
 		if ( strncmp ( line, "scandoubler=", 12) == 0) 
 		{
-			scandoubler[0] = atoi( line + 12);
+			scandoubler[0] = CLAMP(atoi( line + 12), MAX_SCANDOUBLER);
 		} 
 		else if ( strncmp ( line, "50_60hz=", 8) == 0) 
 		{
-			freq5060[0] = atoi( line + 8);
+			freq5060[0] = CLAMP(atoi( line + 8), MAX_FREQ5060);
 		} 
 		else if ( strncmp ( line, "timex=", 6) == 0) 
 		{
-			timex[0] = atoi( line + 6);
+			timex[0] = CLAMP(atoi( line + 6), MAX_TIMEX);
 		} 
 		else if ( strncmp ( line, "psgmode=", 8) == 0) 
 		{
-			psgmode[0] = atoi( line + 8);
+			psgmode[0] = CLAMP(atoi( line + 8), MAX_PSGMODE);
 		} 
 		else if ( strncmp ( line, "intsnd=", 7) == 0) 
 		{
-			intsnd[0] = atoi( line + 7);
+			intsnd[0] = CLAMP(atoi( line + 7), MAX_INTSND);
 		}
  		else if ( strncmp ( line, "stereomode=", 11) == 0) 
 		{
-			stereomode[0] = atoi( line + 11);
+			stereomode[0] = CLAMP(atoi( line + 11), MAX_STEREOMODE);
 		} 
 		else if ( strncmp ( line, "turbosound=", 11) == 0) 
 		{
-			turbosound[0] = atoi( line + 11);
+			turbosound[0] = CLAMP(atoi( line + 11), MAX_TURBOSOUND);
 		} 
 		else if ( strncmp ( line, "covox=", 6) == 0) 
 		{
-			covox[0] = atoi( line + 6);
+			covox[0] = CLAMP(atoi( line + 6), MAX_COVOX);
 		} 
 		else if ( strncmp ( line, "divmmc=", 7) == 0) 
 		{
-			divmmc[0] = atoi( line + 7);
+			divmmc[0] = CLAMP(atoi( line + 7), MAX_DIVMMC);
 		} 
 		else if ( strncmp ( line, "mf=", 3) == 0) 
 		{
-			mf[0] = atoi( line + 3);
+			mf[0] = CLAMP(atoi( line + 3), MAX_MF);
 		} 
 		else if ( strncmp ( line, "joystick1=", 10) == 0) 
 		{
-			joystick1[0] = atoi( line + 10);
+			joystick1[0] = CLAMP(atoi( line + 10), MAX_JOYSTICK1);
 		} 
 		else if ( strncmp ( line, "joystick2=", 10) == 0) 
 		{
-			joystick2[0] = atoi( line + 10);
+			joystick2[0] = CLAMP(atoi( line + 10), MAX_JOYSTICK2);
 		} 
 		else if ( strncmp ( line, "ps2=", 4) == 0) 
 		{
-			ps2[0] = atoi( line + 4);
+			ps2[0] = CLAMP(atoi( line + 4), MAX_PS2);
 		} 
 //		else if ( strncmp ( line, "alternativePS2=", 15) == 0) 
 //		{
@@ -919,19 +927,19 @@ void main()
 //		} 
 		else if ( strncmp ( line, "dac=", 4 ) == 0) 
 		{
-			dac[0] = atoi( line + 4);
+			dac[0] = CLAMP(atoi( line + 4), MAX_DAC);
 		} 
 		else if ( strncmp ( line, "lightpen=", 9 ) == 0) 
 		{
-			lightpen[0] = atoi( line + 9);
+			lightpen[0] = CLAMP(atoi( line + 9), MAX_LIGHTPEN);
 		} 
 		else if ( strncmp ( line, "scanlines=", 10 ) == 0) 
 		{
-			scanlines[0] = atoi( line + 10 );
+			scanlines[0] = CLAMP(atoi( line + 10 ), MAX_SCANLINES);
 		} 
 		else if ( strncmp ( line, "turbo=", 6 ) == 0) 
 		{
-			ena_turbo[0] = atoi( line + 6 );
+			ena_turbo[0] = CLAMP(atoi( line + 6 ), MAX_TURBO);
 		} 
 		else if ( strncmp ( line, "default=", 8) == 0) 
 		{
