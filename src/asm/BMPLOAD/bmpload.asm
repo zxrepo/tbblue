@@ -109,10 +109,10 @@ loadbmp
 	ld a,(header+25):bit 7,a:jr z,.nm
 	ld a,191:sub b:ld b,a
 .nm	ld a,b:dec a:and $e0:rlca:rlca:rlca:add a,LAYER_2_PAGE*2:NEXTREG_A MMU_REGISTER_6
-	ld a,b:dec a:and $1f:or $c0:ld h,a:ld l,0:push hl:pop ix:ld bc,256:call fread:ld a,3:jp c,fileError
-	pop bc:djnz .bl
+	ld a,b:dec a:and $1f:or $c0:ld h,a:ld l,0:push hl:pop ix:ld bc,256:call fread:pop bc:ld a,3:jp c,fileError
+	djnz .bl
 	call fclose
-	ld a,($5b5c):add a,a:NEXTREG_A MMU_REGISTER_6
+	ld a,($5b5c):and 7:add a,a:NEXTREG_A MMU_REGISTER_6
 	ld	bc,4667:ld a,2:out (c),a
 	ld a, GRAPHIC_PRIORITIES_SUL + GRAPHIC_SPRITES_VISIBLE:SetSpriteControlRegister		; set image priorities
 	; set transparency on ULA
@@ -120,6 +120,7 @@ loadbmp
 	NEXTREG_nn PALETTE_CONTROL_REGISTER, 0
 	NEXTREG_nn PALETTE_INDEX_REGISTER, 	$18
 	NEXTREG_nn PALETTE_VALUE_REGISTER, 	$e3
+	ld hl,$4000:ld de,$4001:ld bc,$17ff:ld (hl),l:ldir
 	ld hl,$5800:ld de,$5801:ld bc,$2ff:ld (hl),$47:ldir
 	xor a:out (254),a
 	ld sp,(stackptr)
@@ -129,9 +130,9 @@ loadbmp
 fileError
 	out (254),a
 	call fclose
-	ld a,($5b5c):add a,a:NEXTREG_A MMU_REGISTER_6
+	ld a,($5b5c):and 7:add a,a:NEXTREG_A MMU_REGISTER_6
 	ld	bc,4667:xor a:out (c),a
-	ld a, GRAPHIC_PRIORITIES_SLU + GRAPHIC_SPRITES_VISIBLE:SetSpriteControlRegister		; set image priorities
+	ld a, GRAPHIC_PRIORITIES_SUL + GRAPHIC_SPRITES_VISIBLE:SetSpriteControlRegister		; set image priorities
 	; set transparency on ULA
 	NEXTREG_nn PALETTE_CONTROL_REGISTER, 0
 	NEXTREG_nn PALETTE_CONTROL_REGISTER, 0
