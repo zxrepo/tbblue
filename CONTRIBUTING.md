@@ -26,7 +26,7 @@ This means: put your application where it should go; For a game put it under **g
   
 ### 6. If you contribute software update the changelog and wiki. ###  
 
-Don't forgert to update the changelog and wiki pages; it's important as the distribution grows!  
+Don't forget to update the changelog and wiki pages; it's important as the distribution grows!  
 
 ### 7. Do not modify the System folders and files: /nextzxos, /tbblue, /tbblue/config.ini and /TBBLUE.FW ###
   
