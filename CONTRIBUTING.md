@@ -56,8 +56,14 @@ Since this is the **official** distribution, it cannot contain material that it'
   f. You **can** contribute a core of a system that's *status-uknown* but you must also be prepared for it to be removed from the official distribution if it's found in violation of any IP law.   
   
 The IP laws governing the TBBlue distribution are the IP laws of the United Kingdom at the time of this writing (September 2018).  
+
+### 13. You can use the entirety of the distribution in other projects if it's unchanged but these projects cannot hold the Sincair or Next names ###  
+
+This is not actually part of the contribution guidelines but it's also a good place to mention. This distribution contains VHDL and schematics to build a system 100% compatible to the **ZX Spectrum Next**. This is fully legal, however you cannot use neither the ZX Spectrum Next nor Sinclair names are these are trademarked by their respective owners and their usage is governed by license agreements.
+If you create your own machine based on the schematics and code, you can refer to it with your own chosen name, as **Next-Compatible** or **TBBlue-compatible**. You **cannot** use the Sinclair logo in any boot screen, advertising, promotional material if it's not an _actual_ **ZX Spectrum Next** (cased or in board-only form) produced by SpecNext Ltd. You are additionally required to display the TBBlue logo upon boot on your machines/emulators that incorporate all **ZX Spectrum Next** features.  
+
   
-### 12. By contributing to the TBBlue distribution you're acknowledging that all the above are in-force and that you agree to them ###  
+### 14. By contributing to the TBBlue distribution you're acknowledging that all the above are in-force and that you agree to them ###  
 
 This is self-explanatory we believe and it's the easiest way to bypass all the otherwise-required legalese  
 
