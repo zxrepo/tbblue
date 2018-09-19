@@ -8,7 +8,7 @@ You found your way here thanks to your interest in the ZX Spectrum Next project 
 This means that you may find the source for **MANY**, but not **ALL** pieces of software here. This stems directly from SpecNext Ltd's license to use the Sinclair name.  
 Remember this is a collection of software but not a software itself. It also contains documents, images and other media and therefore should not be considered in the same vain as one piece of software because it's not. This also allows contributors to choose their own license; you can contribute something that's GPL 3, MIT or be fully closed-source.  
 
-### 2. All ROM images contained herewith with the exception of the NextZXOS MF module are copyrighted Amstrad / Sky plc or are jointly copyrighted by Amstrad and their author (ie NextZXOS, LG, GW ROMS)  ###
+### 2. All ROM images contained herewith with the exception of the NextZXOS MF and divMMC modules are copyrighted Amstrad / Sky plc or are jointly copyrighted by Amstrad and their author (ie NextZXOS, LG, GW ROMS)  ###
 
 This means that if you wish to contribute a ROM image you either need to have permission by Amstrad / Sky plc to do so, own the work or have express permission to do so. In all cases other than the rom images provided by SpecNext Ltd you will need to include the license in the /docs/licenses folder with your full name and redacted email (which you will have to provide to SpecNext Ltd for idemnification)  
 
@@ -24,9 +24,9 @@ This means that you're responsible to distribute all sources together with the e
 
 This means: put your application where it should go; For a game put it under **games/&lt;platform>/&lt;nameofgame>** for a tool under **tools/&lt;type of tool>/&lt;name_of_tool>**, store the documents under **/docs/** (follow the structure; it's quite easy) and if you can put a small **readme.txt** file in the folder with your application. dot commands should go under **/dot/** and anything extra pertaining to them (or versions specifically made for esxDOS but carry the same name) should go under **/dot/extra/**  
 
-### 6. Do not modify the System folders and files: /nextzxos, /tbblue, /nextzxos/autoexec.bas, /nextzxos/browser.cfg, /nextzxos/tapeload.bas /tbblue/config.ini and /TBBLUE.FW ###
+### 6. Do not modify the System folders and files: /nextzxos, /tbblue, /tbblue/config.ini and /TBBLUE.FW ###
   
-If you have a driver or ROM that MUST be included there and a requisite modification to **autoexec.bas**, **browser.cfg**, **tapeload.bas** or **config.ini** add it as a *basename-&lt;name_of_file>.&lt;ext>* with clear instructions on how and where it should be merged by the user. The distribution **must be operable at all times** ergo the main folders and files must not be disturbed from their working state. End-users expect the distribution to be downloaded straight to their SD cards and booted directly from there. If in doubt confer with the rest of the contributors. Only authors of specific extensions/rom images/drivers that have been previously vetted as working can proceed to modify the files after they confer with the OS maintainer (Garry Lancaster) and the TBBlue main maintainer (Phoebus Dokos).
+If you suggest an modification in any system file and/or folder add it as a *basename-&lt;name_of_file>.&lt;ext>* with clear instructions on how and where it should be merged by the user. The distribution **must be operable at all times** ergo the system folders and files must not be disturbed from their working state. End-users expect the distribution to be downloaded straight to their SD cards and booted directly from there. If in doubt confer with the rest of the contributors. Only authors of specific extensions/rom images/drivers that have been previously vetted as working can proceed to modify files in the system folder after they confer with the OS maintainer (Garry Lancaster) and the TBBlue main maintainer (Phoebus Dokos).
 
 ### 7. If you contribute software without a stated license, this is considered closed source without source code and open source if it includes sources under /src ###
 
