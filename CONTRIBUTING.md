@@ -31,23 +31,22 @@ If you suggest an modification in any system file and/or folder add it as a *bas
 ### 7. If you contribute software without a stated license, this is considered closed source without source code and open source if it includes sources under /src ###
 
 This means that if you do not include a license file under **/docs/licenses/** but without source code under **/src/** your work will be automatically considered first as **further distribution denied** or in the second case as **open source/further distribution granted**  
-
-### 8. By contributing to the TBBlue distribution you're acknowledging that all the above are in-force and that you agree to them ###  
-
-This is self-explanatory we believe and it's the easiest way to bypass all the otherwise-required legalese  
   
-### 9. All the software / documentation you contribute belongs to you unless you state otherwise ###  
+### 8. All the software / documentation you contribute belongs to you unless you state otherwise ###  
 
 This means that you retain the copyright of all the works you contribute herewith and you can at any given moment choose to remove it from the distribution without explanation or without any ramification except if you've given up on this right when you initially contribute (in which case you will have stated so in the accompanying license).
 
-### 10. You cannot remove or modify software in the distribution belonging to others if its license does not allow so, if you lack permission ###  
+### 9. You cannot remove or modify software in the distribution belonging to others if its license does not allow so, if you lack permission ###  
 
-This means, that if another author has contributed software to the distribution, you cannot remove it or modify it without his/her express permission (except in cases outlined in #11 below) if the software's license doesn't allow so.  
+This means, that if another author has contributed software to the distribution, you cannot remove it or modify it without his/her express permission (except in cases outlined in #10 below) if the software's license doesn't allow so.  
   
-### 11. Software that was contributed illegally shall be removed without explanation ###  
+### 10. Software that was contributed illegally shall be removed without explanation ###  
   
 Basically, what this means is that if you contribute anything that's not legal and could violate the Sinclair license from Amstrad / Sky plc will be removed immediately when found. If you are in the team of maintainers then you CAN remove someone else's contribution if it's in violation of a license or copyright law.
+  
+### 11. By contributing to the TBBlue distribution you're acknowledging that all the above are in-force and that you agree to them ###  
 
+This is self-explanatory we believe and it's the easiest way to bypass all the otherwise-required legalese  
 
 
 
