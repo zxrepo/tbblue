@@ -48,21 +48,21 @@ Basically, what this means is that if you contribute anything that's not legal a
 
 Since this is the **official** distribution, it cannot contain material that it's illegal, trademarked and distributed without permission or have a license that does not allow distribution. You can however post VHDL source code as long as the core is not built. Since the above doesn't make much sense without examples let's give examples
 
-  a. You **cannot** contribute a core synthesising wholly denied IP. For example you cannot contribute a Jupiter Ace core. You can distribute VHDL code that could be used to synthesise it but not the core itself.  
-  b. You **cannot** contribute a core synthesising partly denied IP. For example you cannot contribute a modified Spectrum Next core that has a synthesised clone of a Yamaha&trade; FM audio Sound Generator.  You can also here contribute VHDL that can be used to synthesise it.  
-  c. You **can** contribute a core for which you have obtained permission to distribute.  
-  d. You **cannot** contribute a core for a machine that violated IP laws in the first place. Eg. You cannot contribute a Microdigital TK core  
-  e. You **can** contribute a core containing hardware functionality that was created in *clean-room* conditions. However you **cannot** distribute any rom image that addresses it that may be copyrighted if you do not possess an express permission.  
-  f. You **can** contribute a core of a system that's *status-uknown* but you must also be prepared for it to be removed from the official distribution if it's found in violation of any IP law.   
+  * You **cannot** contribute a core synthesising wholly denied IP. For example you cannot contribute a Jupiter Ace core. You can distribute VHDL code that could be used to synthesise it but not the core itself.  
+  * You **cannot** contribute a core synthesising partly denied IP. For example you cannot contribute a modified Spectrum Next core that has a synthesised clone of a Yamaha&trade; FM audio Sound Generator.  You can also here contribute VHDL that can be used to synthesise it.  
+  * You **can** contribute a core for which you have obtained permission to distribute.  
+  * You **cannot** contribute a core for a machine that violated IP laws in the first place. Eg. You cannot contribute a Microdigital TK core  
+  * You **can** contribute a core containing hardware functionality that was created in *clean-room* conditions. However you **cannot** distribute any rom image that addresses it that may be copyrighted if you do not possess an express permission.  
+  * You **can** contribute a core of a system that's *status-uknown* but you must also be prepared for it to be removed from the official distribution if it's found in violation of any IP law.   
   
 The IP laws governing the TBBlue distribution are the IP laws of the United Kingdom at the time of this writing (September 2018).  
 
 ### 13. You can use the entirety of the distribution in other projects if it's unchanged but these projects cannot hold the Sincair or Next names ###  
 
 This is not actually part of the contribution guidelines but it's also a good place to mention. This distribution contains VHDL and schematics to build a system 100% compatible to the **ZX Spectrum Next**. This is not only 100% legal as this is a fully open system, it's even encouraged in the spirit of innovation always born from the *Sinclair* legacy, however due to licensing restrictions the following need apply:  
-  a.  you *cannot* use neither the **ZX Spectrum Next** and **Sinclair** names in any combination thereof, as these are trademarked by their respective owners and their usage is governed by license agreements and IP laws.  
-  b.  If you create your own machine based on the schematics and code included herewith, you can refer to it with your **own chosen name**, as **ZX Next-Compatible** or **TBBlue-compatible**.   
-  c.  You **cannot** use the **Sinclair** logo in any boot screen, advertising or promotional material if it's not an _actual_ **ZX Spectrum Next** (cased or in board-only form) produced by **SpecNext Ltd**. You are additionally required to display the TBBlue logo upon boot on your machines/emulators that incorporate all **ZX Spectrum Next** features.  
+  * You *cannot* use either the **ZX Spectrum Next** or **Sinclair** names or any combination of them thereof, as these are trademarked by their respective owners and their usage is governed by license agreements and IP laws.  
+  * If you create your own machine based on the schematics and code included herewith, you can refer to it with your **own chosen name**, as **ZX Next-Compatible** or **TBBlue-compatible**.   
+  * You **cannot** use the **Sinclair** logo in any boot screen, advertising or promotional material if it's not an _actual_ **ZX Spectrum Next** (cased or in board-only form) produced by **SpecNext Ltd**. You are additionally required to display the TBBlue logo upon boot on your machines/emulators that incorporate all **ZX Spectrum Next** features.  
 
   
 ### 14. By contributing to the TBBlue distribution you're acknowledging that all the above are in-force and that you agree to them ###  
