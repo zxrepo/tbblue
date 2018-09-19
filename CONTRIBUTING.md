@@ -26,7 +26,7 @@ This means: put your application where it should go; For a game put it under **g
 
 ### 6. Do not modify the System folders and files: /nextzxos, /tbblue, /nextzxos/autoexec.bas, /nextzxos/browser.cfg, /tbblue/config.ini and /TBBLUE.FW ###
   
-If you have a driver or ROM that MUST be included there and a requisite modification to **autoexec.bas**, **browser.cfg** or **config.ini** add it as a *basename-&lt;name_of_file>.&lt;ext>* with clear instructions on how and where it should be merged by the user. The distribution **must be operable at all times** ergo the main folders and files must not be disturbed from their working state. End-users expect the distribution to be downloaded straight to their SD cards and booted directly from there. If in doubt confer with the rest of the contributors.  
+If you have a driver or ROM that MUST be included there and a requisite modification to **autoexec.bas**, **browser.cfg** or **config.ini** add it as a *basename-&lt;name_of_file>.&lt;ext>* with clear instructions on how and where it should be merged by the user. The distribution **must be operable at all times** ergo the main folders and files must not be disturbed from their working state. End-users expect the distribution to be downloaded straight to their SD cards and booted directly from there. If in doubt confer with the rest of the contributors. Only authors of specific extensions/rom images/drivers that have been previously vetted as working can proceed to modify the files after they confer with the OS maintainer (Garry Lancaster) and the TBBlue main maintainer (Phoebus Dokos).
 
 ### 7. If you contribute software without a stated license, this is considered closed source without source code and open source if it includes sources under /src ###
 
