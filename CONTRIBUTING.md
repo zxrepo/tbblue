@@ -44,7 +44,7 @@ This means, that if another author has contributed software to the distribution,
   
 Basically, what this means is that if you contribute anything that's not legal and could violate the Sinclair license from Amstrad / Sky plc will be removed immediately when found. If you are in the team of maintainers then you CAN remove someone else's contribution if it's in violation of a license or copyright law.
   
-### 12. Core contributions MUST observe Intellectual Property laws ###  
+### 11. Core contributions MUST observe Intellectual Property laws ###  
 
 Since this is the **official** distribution, it cannot contain material that it's illegal, trademarked and distributed without permission or have a license that does not allow distribution. You can however post VHDL source code as long as the core is not built. Since the above doesn't make much sense without examples let's give examples
 
@@ -57,7 +57,7 @@ Since this is the **official** distribution, it cannot contain material that it'
   
 The IP laws governing the TBBlue distribution are the IP laws of the United Kingdom at the time of this writing (September 2018).  
 
-### 13. You can use the entirety of the distribution in other projects if it's unchanged but these projects cannot hold the Sincair or Next names ###  
+### 12. You can use the entirety of the distribution in other projects if it's unchanged but these projects cannot hold the Sincair or Next names ###  
 
 This is not actually part of the contribution guidelines but it's also a good place to mention. This distribution contains VHDL and schematics to build a system 100% compatible to the **ZX Spectrum Next**. This is not only 100% legal as this is a fully open system, it's even encouraged in the spirit of innovation always born from the *Sinclair* legacy, however due to licensing restrictions the following need apply:  
   * You *cannot* use either the **ZX Spectrum Next** or **Sinclair** names or any combination of them thereof, as these are trademarked by their respective owners and their usage is governed by license agreements and IP laws.  
@@ -65,7 +65,7 @@ This is not actually part of the contribution guidelines but it's also a good pl
   * You **cannot** use the **Sinclair** logo in any boot screen, advertising or promotional material if it's not an _actual_ **ZX Spectrum Next** (cased or in board-only form) produced by **SpecNext Ltd**. You are additionally required to display the TBBlue logo upon boot on your machines/emulators that incorporate all **ZX Spectrum Next** features.  
 
   
-### 14. By contributing to the TBBlue distribution you're acknowledging that all the above are in-force and that you agree to them ###  
+### 13. By contributing to the TBBlue distribution you're acknowledging that all the above are in-force and that you agree to them ###  
 
 This is self-explanatory we believe and it's the easiest way to bypass all the otherwise-required legalese  
 
