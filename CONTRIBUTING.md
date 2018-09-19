@@ -50,8 +50,9 @@ Since this is the **official** distribution, it cannot contain material that it'
 
   a. You **cannot** contribute a core synthesising wholly denied IP. For example you cannot contribute a Jupiter Ace core. You can distribute VHDL code that could be used to synthesise it but not the core itself.  
   b. You **cannot** contribute a core synthesising partly denied IP. For example you cannot contribute a modified Spectrum Next core that has a synthesised clone of a Yamaha&trade; FM audio Sound Generator.  You can also here contribute VHDL that can be used to synthesise it.  
-  c. You **can** contribute a core for which you have obtained permission to distribute.
-  d. You **cannot** contribute a core for a machine that violated IP laws in the first place. Eg. You cannot contribute a Microdigital TK core
+  c. You **can** contribute a core for which you have obtained permission to distribute.  
+  d. You **cannot** contribute a core for a machine that violated IP laws in the first place. Eg. You cannot contribute a Microdigital TK core  
+  e. You **can** contribute a core of a system that's *status-uknown* but you must also be prepared for it to be removed from the official distribution if it's found in violation of any IP law.  
   
 The IP laws governing the TBBlue distribution are the IP laws of the United Kingdom at the time of this writing (September 2018).  
   
