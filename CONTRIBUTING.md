@@ -38,7 +38,7 @@ This means that you retain the copyright of all the works you contribute herewit
 
 ### 9. You cannot remove or modify software in the distribution belonging to others if its license does not allow so, if you lack permission ###  
 
-This means, that if another author has contributed software to the distribution, you cannot remove it or modify it without his/her express permission (except in cases outlined in #10 below) if the software's license doesn't allow so.  
+This means, that if another author has contributed software to the distribution, you cannot remove it or modify it without his/her express permission (except in cases outlined in #10 below) if the software's license doesn't allow so. Excepted from the above is the current principal maintainer of the distribution (At the time of writing Phoebus Dokos) who has permission to remove software as well as modify the organisation of the distribution in order to maintain license compliance and usability. Eg. the principal maintainer is allowed to remove illegal software, to remove incompatible software, to update software versions (modification) but is **not** allowed to remove software altogether without first acquiring permission from the author if the aforementioned cases are not true. This ensures that the distribution is at all times impartial in its governance.
   
 ### 10. Software that was contributed illegally shall be removed without explanation ###  
   
