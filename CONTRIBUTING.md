@@ -44,7 +44,18 @@ This means, that if another author has contributed software to the distribution,
   
 Basically, what this means is that if you contribute anything that's not legal and could violate the Sinclair license from Amstrad / Sky plc will be removed immediately when found. If you are in the team of maintainers then you CAN remove someone else's contribution if it's in violation of a license or copyright law.
   
-### 11. By contributing to the TBBlue distribution you're acknowledging that all the above are in-force and that you agree to them ###  
+### 12. Core contributions MUST observe Intellectual Property laws ###  
+
+Since this is the **official** distribution, it cannot contain material that it's illegal, trademarked and distributed without permission or have a license that does not allow distribution. You can however post VHDL source code as long as the core is not built. Since the above doesn't make much sense without examples let's give examples
+
+  a. You **cannot** contribute a core synthesising wholly denied IP. For example you cannot contribute a Jupiter Ace core. You can distribute VHDL code that could be used to synthesise it but not the core itself.  
+  b. You **cannot** contribute a core synthesising partly denied IP. For example you cannot contribute a modified Spectrum Next core that has a synthesised clone of a Yamaha&trade; FM audio Sound Generator.  You can also here contribute VHDL that can be used to synthesise it.  
+  c. You **can** contribute a core for which you have obtained permission to distribute.
+  d. You **cannot** contribute a core for a machine that violated IP laws in the first place. Eg. You cannot contribute a Microdigital TK core
+  
+The IP laws governing the TBBlue distribution are the IP laws of the United Kingdom at the time of this writing (September 2018).  
+  
+### 12. By contributing to the TBBlue distribution you're acknowledging that all the above are in-force and that you agree to them ###  
 
 This is self-explanatory we believe and it's the easiest way to bypass all the otherwise-required legalese  
 
