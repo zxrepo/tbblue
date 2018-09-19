@@ -6,7 +6,7 @@ You found your way here thanks to your interest in the ZX Spectrum Next project 
 ### 1. TBBlue is open but not necessarily fully open sourced.  ###
 
 This means that you may find the source for **MANY**, but not **ALL** pieces of software here. This stems directly from SpecNext Ltd's license to use the Sinclair name.  
-Remember this is a collection of software but not a software itself. It also contains documents, images and other media and therefore should not be considered in the same vein as one piece of software because it's not. This also allows contributors to choose their own license; you can contribute something that's GPL 3, MIT or be fully closed-source.  
+Remember this is a collection of software but not a software itself. It also contains *documents*, *images* and *other media* and therefore should not be considered in the same vein as one piece of software because it's not. This also allows contributors to choose their own license; you can contribute something that's **GPL 3**, **MIT**, something else, be in the **public domain** or alternatively **fully closed-source**.  
 
 ### 2. All ROM images contained herewith with the exception of the NextZXOS MF and divMMC modules are copyrighted Amstrad / Sky plc or are jointly copyrighted by Amstrad and their author (ie NextZXOS, LG, GW ROMS)  ###
 
