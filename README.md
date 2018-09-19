@@ -24,6 +24,8 @@ This is a necessary step as this is the **official** distribution and legality /
 Acknowledgments / Copyrights  
 ============================
 All softwares contained herewith are © by their respective authors and provided under license.  
-**_Sinclair_** and **_ZX Spectrum_** are © **Amstrad / Sky plc** and are used with permission under license.  
+**_Sinclair_**, **_ZX 80_**, **_ZX 81_** and **_ZX Spectrum_** are © **Amstrad / Sky plc** and are used with permission under license.  
+The **_ZX 80_** and **_ZX 81_** *EMULATORS* are © **Paul Farrow**.  
+**_Gosh Wonderful_** and **_Looking Glass_** are © **Geoff Wearmouth**.  
 **_NextZXOS_** and **_NextBASIC_** are © **Garry Lancaster**.  
 **_TBBlue_** and **_Spectrum Next_** are © **Victor Trucco**, **Fabio Belavenuto** and **SpecNext Ltd**.  
