@@ -14,7 +14,7 @@ This means that if you wish to contribute a ROM image you either need to have pe
 
 ### 3. If you fork or want to distribute the project you need to abide by 1. and 2. above.  ###
 
-This means that if you decide to fork, you can only fork the parts for which express permission has been given by their respective license or directly by their authors. For example in order to distribute the LG rom, you will need to contact its author first AND Amstrad/Sky plc. Also as a second example, you can fork/distribute almost all contents of the **/dot/** folder except for the parts relating to NextZXOS for which you will need to contact the NextZXOS author directly.  
+This means that if you decide to fork, you can only fork the parts for which express permission has been given by their respective license or directly by their authors. For example in order to distribute the LG rom, you will need to contact its author first AND Amstrad/Sky plc. Also as a second example, you can fork/distribute almost all contents of the **/dot/** folder.  
   
 ### 4. No open sourced software contained herewith must be distributed without observing the terms of its license.  ###
   
