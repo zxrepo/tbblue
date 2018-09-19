@@ -10,7 +10,7 @@ Remember this is a collection of software but not a software itself. It also con
 
 ### 2. All ROM images contained herewith with the exception of the NextZXOS MF and divMMC modules are copyrighted Amstrad / Sky plc or are jointly copyrighted by Amstrad and their author (ie NextZXOS, LG, GW ROMS)  ###
 
-This means that if you wish to contribute a ROM image you either need to have permission by Amstrad / Sky plc to do so, own the work or have express permission to do so. In all cases other than the rom images provided by SpecNext Ltd you will need to include the license in the **/docs/licenses folder** with your full name and redacted email (which you will have to provide to SpecNext Ltd for idemnification)  
+This means that if you wish to contribute a ROM image you either need to have permission by Amstrad / Sky plc to do so, own the work or have express permission to do so. In all cases other than the rom images provided by SpecNext Ltd you will need to include the license in the **/docs/licenses** folder with your **full name** and **redacted email** (which you will have to provide to SpecNext Ltd for idemnification)  
 
 ### 3. If you fork or want to distribute the project you need to abide by 1. and 2. above.  ###
 
