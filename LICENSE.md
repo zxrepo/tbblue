@@ -4,10 +4,10 @@ The Next License
 The license itself is Copyright (c) 2018 Phoebus Dokos / SpecNext Ltd
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of the **TBBlue Distribution** (software, documents,associated media files, schematics and production notes (the "_Distribution_"), to deal in the distribution in
+of the **TBBlue Distribution** (software, documents, associated media files, schematics and production notes) (the "_Distribution_"), to deal in the distribution in
 its entirety without restriction, including without limitation the rights to use, 
-copy, publish and distribute exact copies of the Distribution, and to permit 
-persons to whom the Software is furnished to do so, subject to the following 
+copy, publish and distribute exact copies of the _Distribution_, and to permit 
+persons to whom the _Distribution_ is furnished to do so, subject to the following 
 conditions:
 
 * This _Distribution_ **cannot be sold**. Furthermore you **cannot** charge a duplication
@@ -18,7 +18,7 @@ conditions:
    herewith cannot be distributed nor modified legally without the permission of
    Amstrad / Sky plc.  
 * Modifications of parts of this _Distribution_ are permitted pursuant to their 
-   individual licenses. Individiual parts licenses of the distribution **supersede**
+   individual licenses. Individual parts licenses of the distribution **supersede**
    the force of the Next License.
 * Copyrighted names and trademarks contained within this _Distribution_ are not
    transferred with the _Distribution_ itself and remain the property of their 
