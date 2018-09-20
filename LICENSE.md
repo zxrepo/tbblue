@@ -50,7 +50,7 @@ conditions:
    any violations of copyright stemming from individual contributions to the 
    _Distribution_ other than the contribution of itself. 
 * An exception to the transmission, copying of the _Distribution_'s entirety is allowed as to _NOT_ include source code where this is applicable provided the copy includes a link to the source code itself. This is to ease distribution in cases of reduced available space and/or bandwidth.  
-* 
+  
 
 ----------------------------------------------------------------------------------
 THE DISTRIBUTION (SOFTWARE, DOCUMENTS, MEDIA, SCHEMATICS AND ALL OTHER CONSTITUENT PARTS) IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
