@@ -11,7 +11,8 @@ persons to whom the _Distribution_ is furnished to do so, subject to the followi
 conditions:
 
 * This _Distribution_ **cannot be sold**. Furthermore you **cannot** charge a duplication
-   fee.  
+   fee.
+* The _"Sinclair/ZX Spectrum Next"_ logo screen **cannot** be used by other systems built from the schematics / source code contained herewith nor can the derivative systems be identified as _"ZX Spectrum Next"_ computers **unless** they are produced by SpecNext Ltd. In case of a system that is an exact replica of the *TBBlue mainboard* built without further modifications, the builder *must* replace the startup screen with one that displays the _TBBlue_ logo (included in the sources). In case of a modified replica, that uses the same VHDL sources, the builder can sport any logo/name of their choosing name in the resulting core **except** the aforementioned.  
 * Certain parts of the _Distribution_ can place their own restrictions on 
   copying, modification, merging and distribution and these are independent and
    **supersede** the force of the Next license. For example, ROM images contained 
