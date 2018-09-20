@@ -11,15 +11,15 @@ copy, publish and distribute exact copies of the Distribution, and to permit
 persons to whom the Software is furnished to do so, subject to the following 
 conditions:
 
-* This distribution cannot be sold. Furthermore you cannot charge a duplication
+* This distribution **cannot be sold**. Furthermore you **cannot** charge a duplication
    fee.  
 * Certain parts of the distribution can place their own restrictions on 
   copying, modification, merging and distribution and these are independent and
-   supersede the force of the Next license. For example, ROM images contained 
+   **supersede** the force of the Next license. For example, ROM images contained 
    herewith cannot be distributed nor modified legally without the permission of
    Amstrad / Sky plc.  
 * Modifications of parts of this Distribution are permitted pursuant to their 
-   individual licenses. Individiual parts licenses of the distribution supersede
+   individual licenses. Individiual parts licenses of the distribution **supersede**
    the force of the Next License.
 * Copyrighted names and trademarks contained within this Distribution are not
    transferred with the Distribution itself and remain the property of their 
@@ -37,14 +37,14 @@ conditions:
    all copies or substantial portions of the Distribution together with ALL 
    individual licenses of all constituent parts of the distribution.
 * All software parts of this Distribution are considered automatically 
-   "Closed Source"/"Further distribution denied" individually if they are *NOT* 
-   accompanied by a license and "Open Source"/"Further distribution permitted" 
-   under the MIT license if they include source code located under /src/ even 
-   if they don't include a license. If they DO include a license (found under 
-   /docs/licenses) that license shall be in force.  
+   **"Closed Source"/"Further distribution denied"** individually if they are **NOT** 
+   accompanied by a license and **"Open Source"/"Further distribution permitted**" 
+   under the **MIT license** if they include source code located under */src/* even 
+   if they don't include a license. If they **DO** include a license (found under 
+   */docs/licenses*) that license shall be in force.  
 * All media/document parts of this Distribution are considered automatically to 
-   be covered by the Attribution-NonCommercial-ShareAlike CC BY-NC-SA license if
-   they do not include a license under /docs/licenses otherwise the latter 
+   be covered by the **Attribution-NonCommercial-ShareAlike CC BY-NC-SA** license if
+   they **do not** include a license under */docs/licenses* otherwise the latter 
    license is in force.
 * All contributors to the Distribution are individually responsible for the 
    legality of their submissions and SpecNext Ltd. shall not be held liable for 
@@ -52,5 +52,5 @@ conditions:
    Distribution other than the contribution of itself. 
 
 ----------------------------------------------------------------------------------
-THE DISTRIBUTION(SOFTWARE, DOCUMENTS, MEDIA, SCHEMATICS AND ALL OTHER CONSTITUENT PARTS) IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+THE DISTRIBUTION (SOFTWARE, DOCUMENTS, MEDIA, SCHEMATICS AND ALL OTHER CONSTITUENT PARTS) IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
