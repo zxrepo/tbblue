@@ -266,7 +266,7 @@ int main(int argc, char **argv)
    
    atexit(cleanup);
    
-   puts("\nDZX7: LZ77/LZSS decompression\n(C) 2015 Einar Saukas\n\nv1.1 zx-next 48k z88dk.org\n");
+   puts("\nDZX7: LZ77/LZSS decompression\n(C) 2015 Einar Saukas\n\nv1.1 spectrum z88dk.org\n");
 
    // process optional parameters
    
