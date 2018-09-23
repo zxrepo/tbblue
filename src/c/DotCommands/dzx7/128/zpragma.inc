@@ -9,7 +9,7 @@
 
 // limit the size of printf
 
-#pragma printf = "%s %u %lu %c"
+#pragma printf = "%s %u %lu"
 
 // room for one exit function
 

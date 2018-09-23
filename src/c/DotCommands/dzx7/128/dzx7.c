@@ -56,6 +56,11 @@ unsigned int output_index;
 unsigned long input_size;
 unsigned long output_size;
 
+struct esx_stat es;
+
+struct esx_cat catalog;
+struct esx_lfn lfn;
+
 unsigned int partial_counter;
 
 unsigned char bit_mask;
@@ -159,9 +164,10 @@ void save_output(void)
       output_size += output_index;
       output_index = 0;
       
-      // tick spinner for each 16k written
+      // print percentage progress
 
-      user_interaction_spin();
+      printf("%03u%%" "\x08\x08\x08\x08", input_size * 100 / es.size);
+      user_interaction();
    }
 }
 
@@ -235,7 +241,7 @@ void cleanup(void)
    if (ifp != 0xff) esx_f_close(ifp);
    if (ofp != 0xff) esx_f_close(ofp);
 
-   puts(" ");
+   puts("    ");
 
    ZXN_NEXTREGA(REG_TURBO_MODE, old_cpu_speed);
 }
@@ -244,14 +250,14 @@ void cleanup(void)
 
 int main(int argc, char **argv)
 {
-   static unsigned char forced_mode;
+   static unsigned char forced_mode;   
    unsigned char i;
 
    // initialization
    
    old_cpu_speed = ZXN_READ_REG(REG_TURBO_MODE);
    ZXN_NEXTREG(REG_TURBO_MODE, RTM_14MHZ);
-   
+
    atexit(cleanup);
    
    puts("\nDZX7: LZ77/LZSS decompression\n(C) 2015 Einar Saukas\n\nv1.1 zx-next 128k z88dk.org\n");
@@ -270,13 +276,35 @@ int main(int argc, char **argv)
    
    if (argc == i + 1)
    {
-      input_name = argv[i];
-      input_name_sz = strlen(input_name);
+      // operate on the lfn name to ensure file extension can be inferred
+      
+      strcpy(output_name, argv[i]);
+      
+      catalog.filter = ESX_CAT_FILTER_SYSTEM | ESX_CAT_FILTER_LFN;
+      catalog.filename = p3dos_cstr_to_pstr(output_name);
+      catalog.cat_sz = 2;
+      
+      lfn.cat = &catalog;
+      
+      if (esx_dos_catalog(&catalog) == 1)
+      {
+         esx_ide_get_lfn(&lfn, &catalog.cat[1]);
+         
+         input_name = lfn.filename;
+         input_name_sz = strlen(lfn.filename);
+      }
+      else
+      {
+         input_name = argv[i];
+         input_name_sz = strlen(input_name);
+      }
 
+      // generate output filename
+      
       if ((input_name_sz > 4) && (stricmp(input_name + input_name_sz - 4, ".ZX7") == 0))
          snprintf(output_name, sizeof(output_name), "%.*s", input_name_sz - 4, input_name);
       else
-         return error("Can't infer output filename");
+         exit(error("Can't infer output filename"));
    }
    else if (argc == i + 2)
    {
@@ -287,7 +315,7 @@ int main(int argc, char **argv)
    {
       printf(".%s [-f] inname.zx7 [outname]\n"
              "-f Overwrite output file\n", argv[0]);
-      return 0;
+      exit(0);
    }
    
    if (stricmp(output_name, input_name) == 0)
@@ -297,7 +325,10 @@ int main(int argc, char **argv)
    
    if ((ifp = esx_f_open(input_name, ESX_MODE_OPEN_EXIST | ESX_MODE_R)) == 0xff)
       exit(error("Can't open input file %s", input_name));
-  
+   
+   if (esx_f_fstat(ifp, &es))
+      exit(error("Can't stat input file %s", input_name));
+
    // check output file
 
    if ((ofp = esx_f_open(output_name, forced_mode ? (ESX_MODE_OPEN_CREAT_TRUNC | ESX_MODE_W) : (ESX_MODE_OPEN_CREAT_NOEXIST | ESX_MODE_W))) == 0xff)
@@ -309,6 +340,6 @@ int main(int argc, char **argv)
    
    // done!
    
-   printf(" \nFile decompressed from %lu to %lu bytes!", input_size, output_size);
+   printf("File decompressed from %lu to %lu bytes!", input_size, output_size);
    return 0;
 }

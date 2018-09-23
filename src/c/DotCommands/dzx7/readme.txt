@@ -25,14 +25,22 @@
  
  Modified for the zx-next by z88dk.org
  
+ Primary source:
+ http://www.worldofspectrum.org/infoseekid.cgi?id=0027996&loadpics=3
+ 
+ Secondary source:
+ https://github.com/z88dk/z88dk/tree/master/src/zx7
+ 
  zx7 requires a 32k buffer to decompress the source file.
  
- The 128k version, which runs when NextOS is in its normal mode of operation,
+ The 128k version, which runs when NextZXOS is in its normal mode of operation,
  is a dotn command that allocates this memory from the operating system.  This
- means it will never interfere with basic and will always be able to run.
+ means it will never interfere with basic and it will always be able to run.  It
+ also operate on the lfn version of the filename to determine the output
+ filename.
  
  The 48k version uses the top 32k of main memory for the buffer.  It requires
- RAMTOP to be set to 32767 in order to run and an error message will print
+ RAMTOP to be below 32768 in order to run and an error message will print
  if that is not the case.  The user is expected to "CLEAR 32767" and then re-try.
  In the future, a new version may save the top 32k to a temporary file and
  restore that on exit so that no RAMTOP check will be necessary.  This will
