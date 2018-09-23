@@ -58,6 +58,8 @@ unsigned int output_index;
 unsigned long input_size;
 unsigned long output_size;
 
+struct esx_stat es;
+
 unsigned int partial_counter;
 
 unsigned char bit_mask;
@@ -83,7 +85,7 @@ int error(char *fmt, ...)
    for (p = ebuf; p = strchr(p, '\n'); )
       *p = '\r';
    
-   ebuf[strlen(ebuf)-1] += 0x80;  
+   ebuf[strlen(ebuf) - 1] += 0x80;  
    return (int)ebuf;
 }
 
@@ -161,9 +163,10 @@ void save_output(void)
       output_size += output_index;
       output_index = 0;
       
-      // tick spinner for each 16k written
+      // print percentage progress
 
-      user_interaction_spin();
+      printf("%03u%%" "\x08\x08\x08\x08", input_size * 100 / es.size);
+      user_interaction();
    }
 }
 
@@ -231,15 +234,17 @@ void decompress(void)
 // cleanup on exit
 
 static unsigned char old_cpu_speed;
+static unsigned char mode_zxnext;
 
 void cleanup(void)
 {
    if (ifp != 0xff) esx_f_close(ifp);
    if (ofp != 0xff) esx_f_close(ofp);
 
-   puts(" ");
+   puts("    ");
 
-   ZXN_NEXTREGA(REG_TURBO_MODE, old_cpu_speed);
+   if (mode_zxnext)
+      ZXN_NEXTREGA(REG_TURBO_MODE, old_cpu_speed);
 }
 
 // program start
@@ -251,8 +256,13 @@ int main(int argc, char **argv)
    
    // initialization
    
-   old_cpu_speed = ZXN_READ_REG(REG_TURBO_MODE);
-   ZXN_NEXTREG(REG_TURBO_MODE, RTM_14MHZ);
+   mode_zxnext = (esx_m_dosversion() != ESX_DOSVERSION_ESXDOS);
+   
+   if (mode_zxnext)
+   {
+      old_cpu_speed = ZXN_READ_REG(REG_TURBO_MODE);
+      ZXN_NEXTREG(REG_TURBO_MODE, RTM_14MHZ);
+   }
    
    atexit(cleanup);
    
@@ -262,7 +272,7 @@ int main(int argc, char **argv)
    
    for (i = 1; (i < (unsigned char)argc) && (*argv[i] == '-'); ++i)
    {
-      if (!stricmp(argv[i], "-f"))
+      if (stricmp(argv[i], "-f") == 0)
          forced_mode = 1;
       else
          return error("Invalid parameter %s", argv[i]);
@@ -270,15 +280,15 @@ int main(int argc, char **argv)
    
    // determine output filename
    
-   if (argc == i+1)
+   if (argc == i + 1)
    {
       input_name = argv[i];
       input_name_sz = strlen(input_name);
 
-      if ((input_name_sz > 4) && (!stricmp(input_name + input_name_sz - 4, ".ZX7")))
+      if ((input_name_sz > 4) && (stricmp(input_name + input_name_sz - 4, ".ZX7") == 0))
          snprintf(output_name, sizeof(output_name), "%.*s", input_name_sz - 4, input_name);
       else
-         return error("Can't infer output filename");
+         exit(error("Can't infer output filename"));
    }
    else if (argc == i + 2)
    {
@@ -289,22 +299,25 @@ int main(int argc, char **argv)
    {
       printf(".dzx7 [-f] inname.zx7 [outname]\n"
              "-f Overwrite output file\n\n");
-      return 0;
+      exit(0);
    }
    
-   if (!stricmp(output_name, input_name))
+   if (stricmp(output_name, input_name) == 0)
       return error("In and out files are same");
 
    // check for sufficient memory in main bank
    
-   if (z80_wpeek(23730) >= (unsigned int)BUFFER_ADDR)
-      return error("M RAMTOP no good (%u)", (unsigned int)BUFFER_ADDR - 1);
+   if (z80_wpeek(__SYSVAR_RAMTOP) >= (unsigned int)BUFFER_ADDR)
+      exit(error("M RAMTOP no good (%u)", (unsigned int)BUFFER_ADDR - 1));
    
    // open input file
    
    if ((ifp = esx_f_open(input_name, ESX_MODE_OPEN_EXIST | ESX_MODE_R)) == 0xff)
       exit(error("Can't open input file %s", input_name));
-   
+
+   if (esx_f_fstat(ifp, &es))
+      exit(error("Can't stat input file %s", input_name));
+
    // check output file
 
    if ((ofp = esx_f_open(output_name, forced_mode ? (ESX_MODE_OPEN_CREAT_TRUNC | ESX_MODE_W) : (ESX_MODE_OPEN_CREAT_NOEXIST | ESX_MODE_W))) == 0xff)
@@ -316,6 +329,6 @@ int main(int argc, char **argv)
    
    // done!
    
-   printf(" \nFile decompressed from %lu to %lu bytes!", input_size, output_size);
+   printf("File decompressed from %lu to %lu bytes!", input_size, output_size);
    return 0;
 }
