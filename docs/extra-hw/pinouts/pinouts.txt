@@ -82,3 +82,28 @@ b.  20 - 25mm magnet, impedance 8 - 16 ohm
 
 Pin 1 or 2 = negative, pin 3 or 4 = positive for Piezo type. 
 For normal coned type speaker the polarity does not matter.
+
+
+CN1 - VGA/RGB connector
+=======================
+
+GND--------------------|
+N/C----------------|   |
+BLUE-----------|   |   |
+GREEN------|   |   |   |
+RED----|   |   |   |   |
+      1|  2|  3|  4|  5|
+-------|---|---|---|---|------
+\      *   *   *   *   *     /
+ \ 6-*--7*--8*--9*-10*-|    /
+  \    *   *   *   *   *   /
+   \---|---|---|---|---|--/
+     11| 12| 13| 14| 15|
+       |   |   |   |   |
+N/C----|   |   |   |   |
+N/C--------|   |   |   |
+H-SYNC---------|   |   |
+V-SYNC-------------|   |
+N/C--------------------|
+ 
+Note: Pins 6,7,8,9,10,& 5 are all GND
