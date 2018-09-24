@@ -53,3 +53,24 @@ SD_CS2      4|   | 7    SD_MISO
 BT_RST      5|   | 6 NMI_DIVMMC 
 -------------|* *|-------------
              -----
+             
+             
+             
+J3 - Beeper connector
+=====================
+
+___________________
+|  *   *   *   *  |
+---|---|---|---|---
+  1|  2|  3|  4|
+   |   |   |   |
+   |   |   |   |
+   --|--   --|--
+    -|      +|
+    
+Accepts:
+a. Standard PC Piezo speaker -or-
+b.  20 - 25mm magnet, impedance 8 - 16 ohm
+
+Pin 1 or 2 = negative, pin 3 or 4 = positive for Piezo type. 
+For normal coned type speaker the polarity does not matter.
