@@ -3,17 +3,18 @@ ZX Spectrum Next Conn. Pinouts
 
 Author:  Phoebus R. Dokos
 Date:	 2018-09-24
-Version: 1.2
+Version: 1.3
 
 Changelog
 ---------
+2018-09-24: 1.3 Added CN1 VGA
 2018-09-24: 1.2 Added J3 Speaker
-2018-09-24: 1.1 Added J13 d/card
+2018-09-24: 1.1 Added J13 Sd/card
 2018-09-24: 1.0 Added J15 GPIO
 
 
 
--------------------------------
+----------------------------------
 J15 - GPIO
 ==========
 Type: 2 x 10 IDC 2.54mm spc.
