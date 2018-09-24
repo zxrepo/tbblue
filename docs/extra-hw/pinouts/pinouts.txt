@@ -1,20 +1,23 @@
 ZX Spectrum Next Conn. Pinouts
 -------------------------------
 
-Author: Phoebus R. Dokos
-Date:	2018-09-24
-Version:	1.1
+Author:  Phoebus R. Dokos
+Date:	 2018-09-24
+Version: 1.2
 
 Changelog
 ---------
-2018-09-24: 1.1 Added SD d/card
-2018-09-24: 1.0 Added J15
+2018-09-24: 1.2 Added J3 Speaker
+2018-09-24: 1.1 Added J13 d/card
+2018-09-24: 1.0 Added J15 GPIO
 
 
 
 -------------------------------
 J15 - GPIO
 ==========
+Type: 2 x 10 IDC 2.54mm spc.
+      Male Pin Header
 
 GND         1|---|20        GND	  
 -------------|* *|-------------
@@ -41,6 +44,9 @@ GND        10|   |11        GND
              
 J13 - Daughtercard connector 
 ============================
+Type: 2 x 5 IDC 2.54mm spc.
+      Male Pin Header
+
 
 NMI_MF      1|---|10      SD_CS	  
 -------------|* *|-------------
@@ -58,6 +64,8 @@ BT_RST      5|   | 6 NMI_DIVMMC
              
 J3 - Beeper connector
 =====================
+Type: 1 x 4 IDC 2.54mm spc.
+      Male Pin Header
 
 ___________________
 |  *   *   *   *  |
