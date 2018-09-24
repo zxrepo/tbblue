@@ -482,7 +482,7 @@ lineName	db		"bg00_2.bmp" ;if testing put your command line in here without the 
 			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
-emptyline	db		".bmpload <-options> <filename>",13
+emptyline	db		".bmpconv <-options> <filename>",13
 			db		"to convert image to Next format.",13
 			db		"tiles or bitmap.",13
 			db		"options :-",13
