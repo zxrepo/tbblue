@@ -1,10 +1,15 @@
-The TBBlue uses two I/O ports on the register/data system, to send and read information about hardware and settings.
+The TBBlue uses two I/O ports on the register/data system, to send and read 
+information about hardware and settings.
 
-Port 0x243B (9275) is write-only and is used to set the registry number, listed below.
+Port 0x243B (9275) is write-only and is used to set the register number, listed
+below.
 
-Port 0x253B (9531) is used to access the registry value, the registry being either only a few bits or all bits only read, write or read/write, depending on the registry number set.
+Port 0x253B (9531) is used to access the register value, the register being 
+either only a few bits or all bits only read, write or read/write, depending on 
+the register number set.
 
-Some registers are accessible only during the initialization process (IPL and modules).
+Some registers are accessible only during the initialization process 
+(IPL and modules).
 
 Registers:
 (R) 0x00 (00) => Machine ID
@@ -17,8 +22,10 @@ Registers:
 (R/W) 0x02 (02) => Reset:
   bits 7-3 = Reserved, must be 0
   bit 2 = (R) Power-on reset (PoR)
-  bit 1 = (R/W) Reading 1 indicates a Hard-reset. If written 1 causes a Hard Reset.
-  bit 0 = (R/W) Reading 1 indicates a Soft-reset. If written 1 causes a Soft Reset.
+  bit 1 = (R/W) Reading 1 indicates a Hard-reset. 
+                If written 1 causes a Hard Reset.
+  bit 0 = (R/W) Reading 1 indicates a Soft-reset. 
+                If written 1 causes a Soft Reset.
 
 (R/W) 0x03 (03) => Set machine type, only in IPL or config mode:
    A write in this register disables the IPL 
@@ -59,12 +66,16 @@ Registers:
       110 = MD 2 (3 or 6 button joystick port 0x37)
 
 (R/W) 0x06 (06) => Peripheral 2 setting:
-  bit 7 = Enable turbo mode (0 = disabled, 1 = enabled)(0 after a PoR or Hard-reset)
-  bit 6 = DAC chip mode (0 = I2S, 1 = JAP) (Only VTrucco board, 0 after a PoR or Hard-reset)
+  bit 7 = Enable turbo mode (0 = disabled, 1 = enabled)
+                            (0 after a PoR or Hard-reset)
+  bit 6 = DAC chip mode (0 = I2S, 1 = JAP) 
+                        (Only VTrucco board, 0 after a PoR or Hard-reset)
   bit 5 = Enable Lightpen (1 = enabled)(0 after a PoR or Hard-reset)
   bit 4 = DivMMC automatic paging (1 = enabled)(0 after a PoR or Hard-reset)
   bit 3 = Enable Multiface (1 = enabled)(0 after a PoR or Hard-reset)
-  bit 2 = PS/2 mode (0 = keyboard, 1 = mouse)(exchanges the keyboard/mouse pins on the PS/2 connector)(0 after a PoR or Hard-reset)
+  bit 2 = PS/2 mode (0 = keyboard, 1 = mouse)
+                    (exchanges the keyboard/mouse pins on the PS/2 connector)
+                    (0 after a PoR or Hard-reset)
   bits 1-0 = Audio chip mode (00 = AY, 10 = YM, 10 = Disabled)
 
 (R/W) 0x07 (07) => Turbo mode:
@@ -111,8 +122,10 @@ Registers:
 
 (R/W) 0x14 (20) => Global transparency color
   bits 7-0 = Transparency color value (0xE3 after a reset)
-  (Note this value is 8-bit only, so the transparency is compared only by the MSB bits of the final colour)
-  (Note2 this only affects Layer 2, ULA and LoRes. Sprites uses register 0x4B for transparency)
+             (Note: this value is 8-bit only, so the transparency is compared 
+              only by the MSB bits of the final colour)
+             (Note2: this only affects Layer 2, ULA and LoRes. Sprites use 
+              register 0x4B for transparency)
 
 (R/W) 0x15 (21) => Sprite and Layers system
   bit 7 - LoRes mode, 128 x 96 x 256 colours (1 = enabled)
@@ -172,7 +185,8 @@ Registers:
   bits 7-0 = Active line LSB (0-255)(Reset to 0 after a reset)
 
 (R/W) 0x22 (34) => Line Interrupt control
-  bit 7 = (R) INT flag, 1=During INT (even if the processor has interrupt disabled)
+  bit 7 = (R) INT flag, 1=During INT 
+              (even if the processor has interrupt disabled)
   bits 6-3 = Reserved, must be 0
   bit 2 = If 1 disables original ULA interrupt (Reset to 0 after a reset)
   bit 1 = If 1 enables Line Interrupt (Reset to 0 after a reset)
@@ -192,12 +206,14 @@ Registers:
   bits 7-1 = Reserved, must be 0
   bit 0 = MSB data
 
-(W) 0x2B (43) => Low data to Keymap (writing this register the address is auto-incremented)
+(W) 0x2B (43) => Low data to Keymap 
+                 (writing this register the address is auto-incremented)
   bits 7-0 = LSB data
 
 (W) 0x2D (45) => SoundDrive (SpecDrum) port 0xDF mirror
  bits 7-0 = Data to be written at Soundrive
- this port cand be used to send data to the SoundDrive using the Copper co-processor
+            (this port cand be used to send data to the SoundDrive using the
+             Copper co-processor)
 
 (R/W) 0x32 (50) => LoRes Offset X
   bits 7-0 = X Offset (0-255)(Reset to 0 after a reset)
@@ -219,18 +235,21 @@ Registers:
   Layer 2 and Sprite palettes works as "full ink" mode)
  
 (R/W) 0x41 (65) => Palette Value (8 bit colour)
-  bits 7-0 = Colour for the palette index selected by the register 0x40. Format is RRRGGGBB
-  Note the lower blue bit colour will be an OR between bit 1 and bit 0. 
-  After the write, the palette index is auto-incremented to the next index, 
-  if the auto-increment is enabled at reg 0x43.
-  The changed palette remains until a Hard Reset.
+  bits 7-0 = Colour for the palette index selected by the register 0x40. 
+             (Format is RRRGGGBB -  Note the lower blue bit colour will be an OR
+              between bit 1 and bit 0. After the write, the palette index is 
+              auto-incremented to the next index, if the auto-increment is 
+              enabled at reg 0x43. The changed palette remains until a Hard 
+              Reset.)
 
 (R/W) 0x42 (66) => Palette Format
-  bits 7-0 = Number of the last ink colour entry on palette. (Reset to 15 after a Reset)
-  This number can be 1, 3, 7, 15, 31, 63, 127 or 255.
-  The 255 value enables the full ink colour mode and 
-  all the the palette entries are inks but the paper will be the colour at position 128.
-  (only applies to Enhanced ULA palette. Layer 2 and Sprite palettes works as "full ink")
+  bits 7-0 = Number of the last ink colour entry on palette. 
+            (Reset to 15 after a Reset)
+            (This number can be 1, 3, 7, 15, 31, 63, 127 or 255. The 255 value 
+             enables the full ink colour mode and all the the palette entries 
+             are inks but the paper will be the colour at position 128. 
+             Note: only applies to Enhanced ULA palette. Layer 2 and Sprite 
+             palettes work always as "full ink")
 
 (R/W) 0x43 (67) => Palette Control
   bit 7 = '1' to disable palette write auto-increment.
@@ -244,8 +263,8 @@ Registers:
   bit 3 = Select Sprites palette (0 = first palette, 1 = secondary palette)
   bit 2 = Select Layer 2 palette (0 = first palette, 1 = secondary palette)
   bit 1 = Select ULA palette (0 = first palette, 1 = secondary palette)
-  bit 0 = Disable the standard Spectrum flash feature to enable the extra colours.
-  (0 after a reset)
+  bit 0 = Disable the standard Spectrum flash feature to enable the extra 
+          colours. (0 after a reset)
 
 (R/W) 0x44 (68) => Palette Value (9 bit colour)
   Two consecutive writes are needed to write the 9 bit colour
@@ -254,9 +273,9 @@ Registers:
   2nd write. 
      bit 7-1 = Reserved, must be 0
      bit 0 = lsb B
-  After the two consecutives writes the palette index is auto-incremented 
-  if the auto-increment is enable at reg 0x43.
-  The changed palette remais until a Hard Reset.
+              (After the two consecutives writes the palette index is 
+               auto-incremented if the auto-increment is enabled by reg 0x43.
+               The changed palette remais until a Hard Reset.)
 
 (R/W) 0x4A (74) => Transparency colour fallback
   bits 7-0 = Set the 8 bit colour.
