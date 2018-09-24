@@ -1,11 +1,11 @@
 # .STRINGS dot command
 
-To use, copy "STRINGS" to the sd card's BIN directory.
+To use, copy "STRINGS" to the sd card's DOT directory.
 
 ## Compiling
 
 ```
-zcc +zxn -v -startup=30 -clib=sdcc_iy -SO3 --max-allocs-per-node200000 --opt-code-size @zproject.lst -o strings -pragma-include:zpragma.inc -subtype=dot -Cz"--clean" -create-app
+zcc +zxn -v -startup=30 -clib=sdcc_iy -SO3 --max-allocs-per-node200000 --opt-code-size @zproject.lst -o strings -pragma-include:zpragma.inc -subtype=dot-n -Cz"--clean" -create-app
 ```
 
 ## Usage
@@ -32,7 +32,7 @@ The help text is reproduced here:
 
 no -o,-a prints to screen
 
-strings v1.2 spectrum z88dk.org
+strings v1.2 zx-next z88dk.org
 ~~~
 
 ## Examples

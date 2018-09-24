@@ -93,7 +93,7 @@ void cleanup(void)
    if (fin != 0xff) esx_f_close(fin);
    if (fout != 0xff) esx_f_close(fout);
    
-   puts(" ");
+   puts("    ");
 
    if (mode_zxnext)
       ZXN_NEXTREGA(REG_TURBO_MODE, old_cpu_speed);
@@ -214,7 +214,6 @@ int main(int argc, char **argv)
          
          if (st.size > 0)
          {
-            esx_f_read(fout, rbuffer, 1);   // reported bug: esxdos cannot seek unless r/w has occurred first
             esx_f_seek(fout, st.size, ESX_SEEK_SET);
             
             if (errno)
@@ -223,11 +222,15 @@ int main(int argc, char **argv)
       }
    }
    
+   // record input file size
+   
+   if (esx_f_fstat(fin, &st))
+      return error("%u: Can't stat %s", errno, options.infile);
+   
    // strings
    // relying on default initialization of some vars here
    
    rptr  = rbuffer;
-   
    rsize = esx_f_read(fin, rbuffer, sizeof(rbuffer));
    
    if (errno)
@@ -263,8 +266,7 @@ int main(int argc, char **argv)
          
          // heartbeat
          
-         if (fout != 0xff)
-            user_interaction_spin();
+         printf("%03u%%" "\x08\x08\x08\x08", (unsigned int)(roffset * 100 / st.size));
       }
 
 end_match:
