@@ -39,8 +39,8 @@ GND        10|   |11        GND
              -----
              
              
-Daughtercard connector 
-======================
+J13 - Daughtercard connector 
+============================
 
 NMI_MF      1|---|10      SD_CS	  
 -------------|* *|-------------
