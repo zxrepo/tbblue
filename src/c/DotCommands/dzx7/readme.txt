@@ -36,7 +36,7 @@
  The 128k version, which runs when NextZXOS is in its normal mode of operation,
  is a dotn command that allocates this memory from the operating system.  This
  means it will never interfere with basic and it will always be able to run.  It
- also operate on the lfn version of the filename to determine the output
+ also operates on the lfn version of the filename to determine the output
  filename.
  
  The 48k version uses the top 32k of main memory for the buffer.  It requires
@@ -44,4 +44,4 @@
  if that is not the case.  The user is expected to "CLEAR 32767" and then re-try.
  In the future, a new version may save the top 32k to a temporary file and
  restore that on exit so that no RAMTOP check will be necessary.  This will
- be acceptable to dot commands whose running time would dominate disk save/load time.
+ be acceptable for dot commands whose running time would dominate disk save/load time.

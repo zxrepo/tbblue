@@ -165,7 +165,7 @@ void save_output(void)
       
       // print percentage progress
 
-      printf("%03u%%" "\x08\x08\x08\x08", input_size * 100 / es.size);
+      printf("%03u%%" "\x08\x08\x08\x08", (unsigned int)(input_size * 100 / es.size));
       user_interaction();
    }
 }
