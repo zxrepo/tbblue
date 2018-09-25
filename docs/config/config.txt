@@ -1,8 +1,8 @@
-
 The config.ini file
 -------------------
 Author:  Phoebus R. Dokos
 Date:	 2018-09-24
+License: CC BY-NC-SA
 Version: 1.0
 
 Changelog
