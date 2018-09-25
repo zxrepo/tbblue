@@ -1,0 +1,260 @@
+
+The config.ini file
+-------------------
+Author:  Phoebus R. Dokos
+Date:	 2018-09-24
+Version: 1.0
+
+Changelog
+---------
+2018-09-24: 1.0 Initial version
+
+Introduction
+============
+Configuration of your ZX Spectrum Next computer can be done in two ways:
+1. Via the Boot Screen (by pressing <SPACEBAR> while booting and then entering 
+   the Editor Module with "E")
+2. Via the config.ini file
+
+The second method provides access to some settings not found on the regular ZX 
+Spectrum Next Editor Module, adding a machine personality, changing the machine
+type for said personality, provide alternate ROM images and even more 
+importantly setting your monitor if it doesn't work out of the box.
+Config.ini is a regular text file, located in the c:/tbblue/ folder of your boot
+SD Card and it's read upon first boot after an F1 reset or cold boot.
+
+Config.ini groups
+=================
+There are two basic groups of settings in the config.ini each one with it's own
+sections/parts:
+1. The global settings; or settings that apply to ALL the machine personalities
+-and-
+2. The per-personality settings (which also double as singular menu entries for 
+each personality you setup)
+
+Global Settings
+===============
+Global settings are set one-per-line with each setting's name followed by an '='
+sign and the value of the setting
+
+These are:
+1. scandoubler
+This sets the scandoubler ON (1) or OFF (0). Scandoubler is needed for modern 
+hires monitors but should be turned off for older monitors. If you're using a 
+PS/2 keyboard this setting can also be changed on the fly by pressing F2 other-
+wise on a Spectrum membrane keyboard you'll need to press M1 (on the side of the
+machine) + 2
+
+Default setting:
+scandoubler=1
+
+
+2.50_60hz 
+This sets the main frequency of the display to 50Hz(0) or 60Hz(1). If you're 
+using a VGA monitor or are located in a country that uses 60Hz mains, chances 
+are your monitor will lock at 60Hz. (But that's not all you need... look further
+down in the per-personality settings section). 
+If you're using a PS/2 keyboard this setting can also be changed on the fly by 
+pressing F3 (or M1+3)
+
+Default setting:
+50_60hz=1
+
+
+3. timex 
+This enables Timex modes (HiRes and Multicolour) if set to (1)
+
+Default setting:
+timex=1
+
+4.psgmode
+psgmode sets the on board PSG mode to AY (0), YM (1) or disabled (2)
+
+Default setting:
+psgmode=0
+
+5.stereomode
+stereomode changes the stereophonic (Left-Center-Right) ordering of the PSG 
+channels from ABC (0) to ACB (1)
+
+Default setting:
+stereomode=1
+
+6.intsnd
+
+Intsnd enables (1) or disables (0) the internal beeper.
+
+Default setting:
+intsnd=1
+
+7.turbosound
+Turbosound disables(0) or enables(1) the additional 2 AYs to give you either an 
+option of 3 or 9 channels of PSG audio
+
+Default setting:
+turbosound=1
+
+8.covox
+The Covox setting enables (1) or disables (0) the onboard SpecDRUM / Covox 
+Soundrive compatible DAC hardware.
+
+Default setting:
+covox=1
+
+9.divmmc
+This enables (1) or disables (0) the onboard divMMC. This won't affect boot but
+will make the divMMC hardware unavailable to the selected personality. If this 
+is enabled, then *if* the setting is *NOT* overriden by the per-personality 
+settings as outlined in the following section, then a ROM image file named 
+esxmmc.rom is expected to be located in c:/tbblue/.
+
+Default setting:
+divmmc=0
+
+10. mf
+This enables (1) or disables (0) the onboard MF-compatible hardware. It, too can
+be overridden by the per-personality setting as outlined in the following 
+section. If it is however enabled and the ROM filename is NOT overriden, then it
+can be one of the following according to selected machine type. If machine type 
+is 0 (48K) then the rom filename expected is mf.rom, if machine type is 1 (128K)
+then the rom filename expected is mf128.rom and if it's 2 (+2/+3) then the 
+expected rom filename is mf3.rom. These rom image files must be user provided 
+and then placed in the c:/tbblue/ folder.
+
+Default setting:
+mf=0
+
+11. joystick1
+joystick1 (and joystick2 that follows) sets the first port joystick type to one
+of the following options: 
+0 = Sinclair 2 (67890)
+1 = Kempston 1 (port 0x1F)
+2 = Cursor (56780)
+3 = Sinclair 1 (12345)
+4 = Kempston 2 (port 0x37)
+5 = MD 1 (3 or 6 button joystick port 0x1F)
+-or-
+6 = MD 2 (3 or 6 button joystick port 0x37)
+
+
+Default setting:
+joystick1=2
+
+12. joystick2
+This setting is as the previous one and accepts the same options (some of which 
+are mutually exclusive i.e. if you select a Kempston 1 for joystick1 you cannot 
+select a Kempston 1 for the second port as well)
+
+Default setting:
+joystick2=0
+
+13. ps2
+This setting rewires internally the PS/2 port to have the mouse connector as 
+first PS/2 device(1) rather than the default which is keyboard(0). This 
+facilitates plugging in a PS/2 mouse without a Y-splitter cable if you already 
+have a membrane keyboard attached or a regular cased Next.
+
+Default setting:
+ps2=0
+
+14. lightpen
+This allows the use of a Microdigital lightpen interface. It's unavailable on ZX
+Spectrum Next boards and can be safely disregarded
+
+Default setting:
+lightpen=0
+
+15. scanlines
+This setting produces a cosmetic scanline-like effect of variable intensity from
+totally disabled (0), to 75% (1), 50% (2) and 25% (3).
+Scanlines are also controlled on the fly with the F8 key on the PS/2 keyboard 
+(or M1+8)
+
+Default setting:
+scanlines=0
+
+16. dac
+The dac setting only applies to the Vtrucco development board and can be safely 
+disregarded as it doesn't apply to the ZX Spectrum Next.
+
+Default setting:
+dac=1
+
+17. turbo
+turbo, enables(1) or disables (0) access to speeds over the standard 3.58Mhz. If
+enabled, speed can be also overriden on the fly with the F7 key on a PS/2 
+keyboard (or M1+7)
+
+Default setting:
+turbo=1
+
+18. default
+this setting bridges the global configuration section with the per-personality 
+configuration section/menu and selects which of the machine personalities that 
+follow will be the one that boots by default. Entries are 0-based so the default
+(9) actually means the 10th entry in the list
+
+Default setting:
+default=9
+
+Per-Personality Settings
+========================
+The per-personality settings group serves three functions:
+1. Create a boot menu entry per-line
+2. Describe each machine personality's type as well as the display that's 
+   connected to it
+3. Override -if required- some global settings specifically for that personality
+
+You will need one line starting with "menu=" per-personality up to a maximum of 
+15 lines as follows:
+
+menu="Name of machine",Type,Display,Main_ROM_Image_File,
+      divMMC_ROM_Image_File,MF_ROM_Image_File
+
+"Name of machine" is a meaninful name describing what this machine-personality 
+                  is. 
+                  Note: Make sure that the name is 32 characters long or shorter
+                  as specifically for the Boot menu/Editor modules only standard
+                  Spectrum resolution and fonts are supported.
+
+e.g. ZX Spectrum 128K UK
+
+Type can be one of the following: 0 (48K Spectrum), 
+                                  1 (128K/+2 -grey- Spectrum), 
+                                  2 (+2A/+3/Next), 
+                                  3 (Soviet clone-style timings 128K Spectrum)
+
+The type affects both the available memory, paging mechanism as well as ULA type
+and timings of the machine personality. This setting can also be further 
+modified after boot by modifying the appropriate Next hardware registers
+
+Display can be a number from 0 to 6 for VGA or 7 for HDMI. This takes as a 
+base the 50_60hz setting in the Global settings group and modifies the sync 
+frequency in steps of approximately 1Hz to facilitate screen "lock" according to
+your monitor. The higher the number the more the machine will speed-up although 
+timings of all peripherals stay constant relative to one another. Setting 7 
+(HDMI) completely modifies the timings to make the display compatible with 
+modern HDMI monitors as well as changing the aspect ratio and border size 
+(Especially for the 60Hz HDMI setting 7). 
+Many HDMI monitors will work with a setting of 0 to 6 however ALL HDMI monitors 
+will work with a setting of 7.
+
+Main_ROM_Image_File is a ROM image file that's appropriate for the machine type
+you've selected in the previous setting e.g. 48.rom for a standard 48K ZX 
+Spectrum and which MUST be located in c:/tbblue/.
+
+divMMC_ROM_Image_File. If this is set, then the global divMMC setting is 
+overriden and the filename defined is used in lieu of the default esxmmc.rom. 
+This rom image file is also expected to be found in c:/tbblue/ and lastly,
+
+MF_ROM_Image_File, if this is set then the Global configuration for MF hardware 
+is overriden, the hardware is enabled and the rom image file used is the one you
+specify. This file should also be located in c:/tbblue/
+
+
+e.g. menu=ZX Spectrum 128K,1,7,128Kalt.rom 
+will add a boot menu entry that's enabling the 128K toastrack type with a bug 
+fixed rom named 128Kal.rom and HDMI display type. If divMMC is enabled in global
+settings this will require the presence of an esxDOS rom and if MF is enabled 
+then it will require the presence of MF128.ROM
+
