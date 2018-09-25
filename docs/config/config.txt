@@ -1,6 +1,7 @@
 The config.ini file
 -------------------
-Author:  Phoebus R. Dokos
+Author:  Phoebus R. Dokos (based on work by: V.Trucco, Garry Lancaster &
+                           Allen Allbright)
 Date:	 2018-09-24
 License: CC BY-NC-SA
 Version: 1.0
