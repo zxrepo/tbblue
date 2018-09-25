@@ -36,7 +36,11 @@ each personality you setup)
 Global Settings
 ===============
 Global settings are set one-per-line with each setting's name followed by an '='
-sign and the value of the setting
+sign follwed by the value of the setting
+
+Note: Starting with FW version 1.10b, if you modify the config.ini and enter 
+non-acceptable values for each setting, the FW upon boot will replace these
+values with the smallest acceptable one.
 
 These are:
 1. scandoubler
