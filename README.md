@@ -29,5 +29,5 @@ All softwares contained herewith are © by their respective authors and provided
 **_divMMC_** is © **Mario Prato**.  
 The **_ZX 80_** and **_ZX 81_** *EMULATORS* are © **Paul Farrow**.  
 **_Gosh Wonderful_** and **_Looking Glass_** are © **Geoff Wearmouth**.  
-**_NextZXOS_** and **_NextBASIC_** are © **Garry Lancaster**.  
+_**+3e**_, **_NextZXOS_** and **_NextBASIC_** are © **Garry Lancaster**.  
 **_TBBlue_** and **_Spectrum Next_** are © **Victor Trucco**, **Fabio Belavenuto** and **SpecNext Ltd**.  
