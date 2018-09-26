@@ -92,7 +92,7 @@ on the zxnDMA.
 |---------------+-----------------------------+---------+---------------------|
 |WR2            |Port B configuration         | 0XXXX000|                     |
 |---------------+-----------------------------+---------+---------------------|
-|WR3            |Activation	                  | 1XXXXX00|It's best to use WR6 |
+|WR3            |Activation                   | 1XXXXX00|It's best to use WR6 |
 |---------------+-----------------------------+---------+---------------------|
 |WR4            |Port B, Timing and Interrupt | 1XXXXX01|                     |
 |               |configuration	              |         |                     |
