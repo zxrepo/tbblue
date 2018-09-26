@@ -348,6 +348,8 @@ Programming examples
 
 1. Assembly
 ----------
+Short example program to DMA memory to the screen then DMA a sprite image from 
+memory to sprite RAM, and then showing said sprite scroll across the screen.
 
 ;--------------------------------------------------
 device zxspectrum48
@@ -392,40 +394,63 @@ org $2000
 ENDIF
 
 start
-ld hl,$0000:ld de,$4000:ld bc,$800:call TransferDMA ; copy some random data to the screen pointing to ROM for now, for purpose of showing how to do a DMA copy.
+ld   hl,$0000
+ld   de,$4000
+ld   bc,$800
+call TransferDMA                  ; copy some random data to the screen pointing
+                                  ; to ROM for now, for the purpose of showing 
+                                  ; how to do a DMA copy.
+ld   a,0                          ; sprite image number we want to update
+ld   bc,SPRITE_STATUS_SLOT_SELECT
+out  (c),a                        ; set the sprite image number
+ld   bc,1*256                     ; number to transfer (1)
+ld   hl,testsprite                ; from 
+call TransferDMASprite            ; transfer to sprite ram
 
-ld a,0 ; sprite image number we want to update
-ld bc,SPRITE_STATUS_SLOT_SELECT:out (c),a ; set the sprite image number
-ld bc,1*256 ; number to transfer (1)
-ld hl,testsprite ; from 
-call TransferDMASprite ; transfer to sprite ram
+nextreg 21,1                      ; turn sprite on. for more info on this check 
+                                  ; out https://www.specnext.com/tbblue-io-port-system/
+ld   de,0
+ld   (xpos),de                    ; set initial X position ( doesn't need it for
+                                  ; this demo, but if you run the .loop again it
+                                  ; will continue from where it was
+ld   a,$20
+ld   (ypos),a                     ; set initial Y position
 
-nextreg 21,1 ; turn sprite on. for more info on this check out https://www.specnext.com/tbblue-io-port-system/
-
-ld de,0:ld (xpos),de ; set initial X position ( doesn't need it for this demo, but if you run the .loop again it will continue from where it was
-ld a,$20:ld (ypos),a ; set initial Y position
 .loop
-ld a,0 ; sprite number we want to position
-ld bc,SPRITE_STATUS_SLOT_SELECT:out (c),a
-ld de,(xpos)
-ld hl,(ypos) ; ignores H so doing this rather than ld a,(ypos):ld l,a
-ld bc,(image) ; not flipped or palette shifted
+ld   a,0                          ; sprite number we want to position
+ld   bc,SPRITE_STATUS_SLOT_SELECT
+out  (c),a
+ld   de,(xpos)
+ld   hl,(ypos)                    ; ignores H so doing this rather than 
+                                  ; ld a,(ypos):ld l,a
+ld   bc,(image)                   ; not flipped or palette shifted
 call SetSprite
 
 halt
 
-ld de,(xpos):inc de:ld (xpos),de
-ld a,d:cp $01:jr nz,.loop ; if high byte of xpos is not 1 ( right of screen )
-ld a,e:cp $20+1:jr nz,.loop ; if low byte is not $21 just off the right of the screen, $20 is off screen but as the INC DE is just above and not updated sprite after it, it needs to be $21
+ld   de,(xpos)
+inc  de
+ld   (xpos),de
+ld   a,d
+cp   $01
+jr   nz,.loop                     ; if high byte of xpos is not 1 (right of 
+                                  ; screen )
+ld   a,e
+cp   $20+1
+jr   nz,.loop                     ; if low byte is not $21 just off the right of
+                                  ; the screen, $20 is off screen but as the 
+                                  ; INC DE is just above and not updated sprite
+                                  ; after it, it needs to be $21
+xor  a
+ret                               ; return back to basic with OK
 
-xor a
-ret ; return back to basic with OK
-
-xpos dw 0 ; x position
-ypos db 0 ; y position
-;these next two BITS and IMAGE are swapped as bits needs to go into B register
-image db 0+$80 ; use image 0 ( for the image we transfered ) + $80 to set the sprite to active
-bits db 0 ; not flipped or palette shifted
+xpos dw 0                         ; x position
+ypos db 0                         ; y position
+                                  ; these next two BITS and IMAGE are swapped 
+                                  ; as bits needs to go into B register image 
+                                  ; db 0+$80 ; use image 0 (for the image we 
+                                  ; transfered)+$80 to set the sprite to active
+bits db 0                         ; not flipped or palette shifted
 
 c1 = %11100000
 c2 = %11000000
@@ -454,7 +479,7 @@ db c1,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c2,c1
 db c1,c2,c2,c2,c2,c2,c2,c2,c2,c2,c2,c2,c2,c2,c2,c1
 db c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1
 
-;--------------------------------
+;-------------------------------------------------
 ; de = X
 ; l = Y
 ; b = bits
