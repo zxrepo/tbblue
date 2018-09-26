@@ -11,13 +11,14 @@ Changelog
 --------------------------
 2018-09-26 Initial version
 
-The ZX Spectrum Next DMA (zxnDMA) is a single channel dma device that implements a 
-subset of the Z80 DMA functionality.  The subset is large enough to be 
+The ZX Spectrum Next DMA (zxnDMA) is a single channel dma device that implements
+a subset of the Z80 DMA functionality.  The subset is large enough to be 
 compatible with common uses of the similar Datagear interface available for 
 standard ZX Spectrum computers and compatibles.
 
 The zxnDMA requires one read/write IO port that is the same as the
-one used by the Datagear (but unlike the Datagear it doesn't use PORT 0x0B like the MB-02).
+one used by the Datagear (but unlike the Datagear it doesn't use PORT 0x0B like 
+the MB-02).
 
 PORT 0x6b: zxnDMA
 
