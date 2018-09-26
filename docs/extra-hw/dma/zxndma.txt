@@ -299,7 +299,8 @@ Z80 DMA commands not implemented in the zxnDMA are simply ignored.
 Operating Speed
 ===============
 The zxnDMA operates at the same speed as the CPU, that is 3.5MHz, 7MHz or 14MHz.
-This is a contended clock that is modified by the ULA and the auto-slowdown by Layer2.
+This is a contended clock that is modified by the ULA and the auto-slowdown by 
+Layer2.
 
 --------------------------------------------------------------------------------
 |Auto-slowdown occurs without user intervention if speed exceeds 7Mhz and the  |
@@ -333,41 +334,41 @@ Programming examples
 1. Assembly
 ----------
 
-;----------------------------------------------
+;--------------------------------------------------
 device zxspectrum48
-;----------------------------------------------
+;--------------------------------------------------
 ; DEFINE testing
-;----------------------------------------------
+;--------------------------------------------------
 ; DMA (Register 6)
 ;
-;----------------------------------------------
+;--------------------------------------------------
 ;zxnDMA programming example
-;----------------------------------------------
+;--------------------------------------------------
 ;(c) Jim Bagley
-;----------------------------------------------
-DMA_RESET equ $c3
-DMA_RESET_PORT_A_TIMING equ $c7
-DMA_RESET_PORT_B_TIMING equ $cb
-DMA_LOAD equ $cf ; %11001111
-DMA_CONTINUE equ $d3
-DMA_DISABLE_INTERUPTS equ $af
-DMA_ENABLE_INTERUPTS equ $ab
-DMA_RESET_DISABLE_INTERUPTS equ $a3
-DMA_ENABLE_AFTER_RETI equ $b7
-DMA_READ_STATUS_BYTE equ $bf
-DMA_REINIT_STATUS_BYTE equ $8b
-DMA_START_READ_SEQUENCE equ $a7
-DMA_FORCE_READY equ $b3
-DMA_DISABLE equ $83
-DMA_ENABLE equ $87
-DMA_WRITE_REGISTER_COMMAND equ $bb
-DMA_BURST equ %11001101
-DMA_CONTINUOUS equ %10101101
-ZXN_DMA_PORT equ $6b
-SPRITE_STATUS_SLOT_SELECT equ $303B
-SPRITE_IMAGE_PORT = $5b
-SPRITE_INFO_PORT = $57
-;----------------------------------------------
+;--------------------------------------------------
+DMA_RESET                      equ $c3
+DMA_RESET_PORT_A_TIMING        equ $c7
+DMA_RESET_PORT_B_TIMING        equ $cb
+DMA_LOAD                       equ $cf ; %11001111
+DMA_CONTINUE                   equ $d3
+DMA_DISABLE_INTERUPTS          equ $af
+DMA_ENABLE_INTERUPTS           equ $ab
+DMA_RESET_DISABLE_INTERUPTS    equ $a3
+DMA_ENABLE_AFTER_RETI          equ $b7
+DMA_READ_STATUS_BYTE           equ $bf
+DMA_REINIT_STATUS_BYTE         equ $8b
+DMA_START_READ_SEQUENCE        equ $a7
+DMA_FORCE_READY                equ $b3
+DMA_DISABLE                    equ $83
+DMA_ENABLE                     equ $87
+DMA_WRITE_REGISTER_COMMAND     equ $bb
+DMA_BURST                      equ %11001101
+DMA_CONTINUOUS                 equ %10101101
+ZXN_DMA_PORT                   equ $6b
+SPRITE_STATUS_SLOT_SELECT      equ $303B
+SPRITE_IMAGE_PORT              equ $5b
+SPRITE_INFO_PORT               equ $57
+;--------------------------------------------------
 
 IFDEF testing
 org $6000
