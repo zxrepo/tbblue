@@ -17,40 +17,70 @@ Changelog
 --------------------------------------------------------------------------------
 Overview
 ========
-The ZX Spectrum Next DMA (zxnDMA) is a single channel dma device that implements a subset of the Z80 DMA functionality. The subset is large enough to be compatible with common uses of the similar Datagear interface available for standard ZX Spectrum computers and compatibles.
+The ZX Spectrum Next DMA (zxnDMA) is a single channel dma device that implements
+a subset of the Z80 DMA functionality. The subset is large enough to be 
+compatible with common uses of the similar Datagear interface available for 
+standard ZX Spectrum computers and compatibles.
 
 Accessing the zxnDMA
-The zxnDMA requires one Read/Write IO Port that is the same as the one used by the Datagear (but unlike the Datagear it doesn't also use Port 0x0B similar to the MB-02 interface).
+The zxnDMA requires one Read/Write IO Port that is the same as the one used by 
+the Datagear (but unlike the Datagear it doesn't also use Port 0x0B similar to 
+the MB-02 interface).
 
 PORT 0x6b: zxnDMA
 
 Description
 ===========
-The normal Z80 DMA (Z8410) chip is a pipelined device and because of that it has numerous off-by-one idiosyncrasies and requirements on the order that certain commands should be carried out. These issues are not duplicated in the zxnDMA. You can continue to program the zxnDMA as if it is were a Z8410 DMA device but it can also be programmed in a simpler manner.
+The normal Z80 DMA (Z8410) chip is a pipelined device and because of that it has
+numerous off-by-one idiosyncrasies and requirements on the order that certain 
+commands should be carried out. These issues are not duplicated in the zxnDMA. 
+You can continue to program the zxnDMA as if it is were a Z8410 DMA device but 
+it can also be programmed in a simpler manner.
 
-The single channel of the zxnDMA chip consists of two ports named A and B. Transfers can occur in either direction between ports A and B, each port can describe a target in memory or IO, and each can be configured to autoincrement, autodecrement or stay fixed after a byte is transferred.
+The single channel of the zxnDMA chip consists of two ports named A and B. 
+Transfers can occur in either direction between ports A and B, each port can 
+describe a target in memory or IO, and each can be configured to autoincrement, 
+autodecrement or stay fixed after a byte is transferred.
 
-A special feature of the zxnDMA can force each byte transfer to take a fixed amount of time so that the zxnDMA can be used to deliver sampled audio.
+A special feature of the zxnDMA can force each byte transfer to take a fixed 
+amount of time so that the zxnDMA can be used to deliver sampled audio.
 
 Modes of Operation
 ==================
 The zxnDMA can operate in either burst or continuous modes.
 
-Continuous mode means the DMA chip runs to completion without allowing the CPU to run.
+Continuous mode means the DMA chip runs to completion without allowing the CPU 
+to run.
 
-Burst mode nominally means the DMA lets the CPU run if either port is not ready. This condition can't happen in the zxnDMA chip except when operated in the special fixed time transfer mode. In this mode, the zxnDMA chip will let the CPU run while it waits for the fixed time to expire between bytes transferred.
+Burst mode nominally means the DMA lets the CPU run if either port is not ready.
+This condition can't happen in the zxnDMA chip except when operated in the 
+special fixed time transfer mode. In this mode, the zxnDMA chip will let the CPU
+run while it waits for the fixed time to expire between bytes transferred.
 
 Note that there is no byte transfer mode as in the Z80 DMA.
 
 Programming the zxnDMA
 ======================
-Like the Z80 DMA chip, the zxnDMA has seven write registers named WR0-WR6 that control the device.
+Like the Z80 DMA chip, the zxnDMA has seven write registers named WR0-WR6 that 
+control the device.
 
-The registers do not work as one would expect; indeed there's no "register selection" first and then a "register write" to the selected register but the operation happens with one output to the port.
+The registers do not work as one would expect; indeed there's no "register 
+selection" first and then a "register write" to the selected register but the 
+operation happens with one output to the port.
 
-The write to the zxnDMA port is compared against a bitmask while the remaining bits (not part of the bitmask) load the selected register with data. Some zxnDMA registers have "associated registers" which work as follows: If the value written to the register has associated register bits set then the next byte written to the port will be read as the associated register value. If more than one bits of the initial register write are associate register bits then the next bytes will be read as associated registered values pertaining in a right-to-left (MSB<LSB) order the associated register value bits are positioned within the main register. After these values have been read and the associated registers written to, then the zxnDMA expects a regular register write.
+The write to the zxnDMA port is compared against a bitmask while the remaining 
+bits (not part of the bitmask) load the selected register with data. Some zxnDMA
+registers have "associated registers" which work as follows: If the value 
+written to the register has associated register bits set then the next byte 
+written to the port will be read as the associated register value. If more than 
+one bits of the initial register write are associate register bits then the next
+bytes will be read as associated registered values pertaining in a right-to-left
+(MSB<LSB) order the associated register value bits are positioned within the 
+main register. After these values have been read and the associated registers 
+written to, then the zxnDMA expects a regular register write.
 
-The table below describes the registers and the bitmask required to select them on the zxnDMA.
+The table below describes the registers and the bitmask required to select them
+on the zxnDMA.
 
 -------------------------------------------------------------------------------
 |Register Group |Register Function Description| Bitmask |Notes                |
@@ -75,7 +105,8 @@ The table below describes the registers and the bitmask required to select them 
 zxnDMA Registers
 ================
 
-These are described below following the same convention used by Zilog for its DMA chip:
+These are described below following the same convention used by Zilog for its 
+DMA chip:
 
 WR0 - Write Register Group 0
 D7 D6 D5 D4 D3 D2 D1 D0 BASE REGISTER BYTE
@@ -95,7 +126,12 @@ D7 D6 D5 D4 D3 D2 D1 D0 PORT A STARTING ADDRESS (HIGH BYTE)
 D7 D6 D5 D4 D3 D2 D1 D0 BLOCK LENGTH (LOW BYTE)
 V
 D7 D6 D5 D4 D3 D2 D1 D0 BLOCK LENGTH (HIGH BYTE)
-Several registers are accessible from WR0. The first write to WR0 is to the base register byte. Bits D6:D3 are optionally set to indicate that associated registers in this group will be written next. The order the writes come in are from D3 to D6 (right to left). For example, if bits D6 and D3 are set, the next two writes will be directed to "PORT A STARTING ADDRESS LOW" followed by "BLOCK LENGTH HIGH".
+Several registers are accessible from WR0. The first write to WR0 is to the base
+register byte. Bits D6:D3 are optionally set to indicate that associated 
+registers in this group will be written next. The order the writes come in are 
+from D3 to D6 (right to left). For example, if bits D6 and D3 are set, the next
+two writes will be directed to "PORT A STARTING ADDRESS LOW" followed by 
+"BLOCK LENGTH HIGH".
 
 WR1 - Write Register Group 1
 D7 D6 D5 D4 D3 D2 D1 D0 BASE REGISTER BYTE
@@ -116,7 +152,9 @@ D7 D6 D5 D4 D3 D2 D1 D0 PORT A VARIABLE TIMING BYTE
 0 1 = Cycle Length = 3
 1 0 = Cycle Length = 2
 1 1 = Do not use
-The cycle length is the number of cycles used in a read or write operation. The first cycle asserts signals and the last cycle releases them. There is no half cycle timing for the control signals.
+The cycle length is the number of cycles used in a read or write operation. 
+The first cycle asserts signals and the last cycle releases them. There is no 
+half cycle timing for the control signals.
 
 WR2 - Write Register Group 2
 D7 D6 D5 D4 D3 D2 D1 D0 BASE REGISTER BYTE
@@ -140,11 +178,22 @@ D7 D6 D5 D4 D3 D2 D1 D0 PORT B VARIABLE TIMING BYTE
 |
 V
 D7 D6 D5 D4 D3 D2 D1 D0 ZXN PRESCALAR (FIXED TIME TRANSFER)
-The ZXN PRESCALAR is a feature of the zxnDMA implementation. If non-zero, a delay will be inserted after each byte is transferred such that the total time needed for the transfer is at least the number of cycles indicated by the prescalar. This works in both the continuous mode and the burst mode.
+The ZXN PRESCALAR is a feature of the zxnDMA implementation. If non-zero, a 
+delay will be inserted after each byte is transferred such that the total time 
+needed for the transfer is at least the number of cycles indicated by the 
+prescalar. This works in both the continuous mode and the burst mode.
 
-The zxnDMA's speed matches the current CPU speed so it can operate at 3.5MHz, 7MHz or 14MHz. Since the prescalar delay is a cycle count, the actual duration depends on the speed of the DMA. A prescalar delay set to N cycles will result in a real time transfer taking N/f CPU seconds. For example, if the DMA is operating at 3.5MHz and the max prescalar of 255 is set, the transfer time for each byte will be 255/3.5MHz = 72.9μs. If the DMA is used to send sampled audio, the sample rate would be 13.7kHz and this is the lowest sample rate possible using the prescalar.
+The zxnDMA's speed matches the current CPU speed so it can operate at 3.5MHz, 
+7MHz or 14MHz. Since the prescalar delay is a cycle count, the actual duration 
+depends on the speed of the DMA. A prescalar delay set to N cycles will result
+in a real time transfer taking N/f CPU seconds. For example, if the DMA is
+operating at 3.5MHz and the max prescalar of 255 is set, the transfer time for 
+each byte will be 255/3.5MHz = 72.9μs. If the DMA is used to send sampled audio,
+the sample rate would be 13.7kHz and this is the lowest sample rate possible 
+using the prescalar.
 
-If the DMA is operated in burst mode, the DMA will give up any waiting time to the CPU so that the CPU can run while the DMA is idle.
+If the DMA is operated in burst mode, the DMA will give up any waiting time to 
+the CPU so that the CPU can run while the DMA is idle.
 
 WR3 - Write Register Group 3
 D7 D6 D5 D4 D3 D2 D1 D0 BASE REGISTER BYTE
@@ -152,7 +201,8 @@ D7 D6 D5 D4 D3 D2 D1 D0 BASE REGISTER BYTE
 |
 1 = DMA Enable
 The Z80 DMA defines more fields but they are ignored by the zxnDMA.
-The two other registers defined by the Z80 DMA in this group on D4 and D3 are implemented by the zxnDMA but they do nothing.
+The two other registers defined by the Z80 DMA in this group on D4 and D3 are 
+implemented by the zxnDMA but they do nothing.
 
 It's preferred to enable the DMA by writing an "Enable DMA" command to WR6.
 
@@ -170,7 +220,9 @@ D7 D6 D5 D4 D3 D2 D1 D0 PORT B STARTING ADDRESS (LOW BYTE)
 |
 V
 D7 D6 D5 D4 D3 D2 D1 D0 PORT B STARTING ADDRESS (HIGH BYTE)
-The Z80 DMA defines three more registers in this group through D4 that define interrupt behaviour. Interrups and pulse generation are not implemented in the zxnDMA nor are these registers available for writing.
+The Z80 DMA defines three more registers in this group through D4 that define 
+interrupt behaviour. Interrups and pulse generation are not implemented in the 
+zxnDMA nor are these registers available for writing.
 
 WR5 - Write Register Group 5
 D7 D6 D5 D4 D3 D2 D1 D0 BASE REGISTER BYTE
@@ -181,9 +233,14 @@ D7 D6 D5 D4 D3 D2 D1 D0 BASE REGISTER BYTE
 |
 0 = Stop on end of block
 1 = Auto restart on end of block
-The /ce & /wait mode is implemented in the zxnDMA but its use is not clear. This mode has an external device using the DMA's /ce pin to insert wait states during the DMA's transfer. This behaviour is present but it's unknown what hardware on the FPGA might be connected to this.
+The /ce & /wait mode is implemented in the zxnDMA but its use is not clear. 
+This mode has an external device using the DMA's /ce pin to insert wait states 
+during the DMA's transfer. This behaviour is present but it's unknown what 
+hardware on the FPGA might be connected to this.
 
-The auto restart feature causes the DMA to automatically reload its source and destination addresses and reset its byte counter to zero to repeat the last transfer when a previous one is finished.
+The auto restart feature causes the DMA to automatically reload its source and 
+destination addresses and reset its byte counter to zero to repeat the last 
+transfer when a previous one is finished.
 
 WR6 - Command Register
 D7 D6 D5 D4 D3 D2 D1 D0 BASE REGISTER BYTE
@@ -217,31 +274,54 @@ D7 D6 D5 D4 D3 D2 D1 D0 Port B Address Low
 |
 V
 D7 D6 D5 D4 D3 D2 D1 D0 Port B Address High
-There are far fewer commands implemented than on the Z80 DMA. This means DMA programs can be shorter and simpler.
+There are far fewer commands implemented than on the Z80 DMA. This means DMA
+programs can be shorter and simpler.
 
-Prior to starting the DMA, a LOAD command must be issued to copy the Port A and Port B addresses into the DMA's internal pointers. Then an "Enable DMA" command is issued to start the DMA.
+Prior to starting the DMA, a LOAD command must be issued to copy the Port A and 
+Port B addresses into the DMA's internal pointers. Then an "Enable DMA" command 
+is issued to start the DMA.
 
-The "Continue" command resets the DMA's byte counter so that a following "Enable DMA" allows the DMA to repeat the last transfer but using the current internal address pointers. I.e. it continues from where the last copy operation left off.
+The "Continue" command resets the DMA's byte counter so that a following 
+"Enable DMA" allows the DMA to repeat the last transfer but using the current 
+internal address pointers. I.e. it continues from where the last copy operation 
+left off.
 
-Registers can be read via an IO read from the DMA port after setting the read mask. (At power up the read mask is set to 0x7f). Register values are the current internal dma counter values. So "Port Address A Low" is the lower 8-bits of Port A's next transfer address. Once the end of the read mask is reached, further reads loop around to the first one.
+Registers can be read via an IO read from the DMA port after setting the read 
+mask. (At power up the read mask is set to 0x7f). Register values are the 
+current internal dma counter values. So "Port Address A Low" is the lower 8-bits
+of Port A's next transfer address. Once the end of the read mask is reached, 
+further reads loop around to the first one.
 
 Z80 DMA commands not implemented in the zxnDMA are simply ignored.
 
 Operating Speed
 ===============
-The zxnDMA operates at the same speed as the CPU, that is 3.5MHz, 7MHz or 14MHz. This is a contended clock that is modified by the ULA and the auto-slowdown by Layer2.
+The zxnDMA operates at the same speed as the CPU, that is 3.5MHz, 7MHz or 14MHz.
+This is a contended clock that is modified by the ULA and the auto-slowdown by Layer2.
 
-Auto-slowdown occurs without user intervention if speed exceeds 7Mhz and the active Layer2 display is generated/written to (higher speed functioning resumes when the active Layer2 display is not generated). Programmers do NOT need to account for speed differences regarding DMA transfers as this happens transparently.
+Auto-slowdown occurs without user intervention if speed exceeds 7Mhz and the 
+active Layer2 display is generated/written to (higher speed functioning resumes 
+when the active Layer2 display is not generated). Programmers do NOT need to 
+account for speed differences regarding DMA transfers as this happens 
+transparently.
 
-Because of this the cycle lengths for Ports A and B can be set to their minimum values without ill effects. However this may change so the following paragraph is kept for informational purposes.
+Because of this the cycle lengths for Ports A and B can be set to their minimum
+values without ill effects. However this may change so the following paragraph 
+is kept for informational purposes.
 
-The cycle lengths specified for Ports A and B are intended to selectively slow down read or write cycles for hardware that cannot operate at the DMA's full speed. This is the case, for example, with layer 2 which can only tolerate a two cycle write at 7MHz speed. Reads from layer 2 may be able to go as fast as two cycles at 14MHz.
+The cycle lengths specified for Ports A and B are intended to selectively slow 
+down read or write cycles for hardware that cannot operate at the DMA's full 
+speed. This is the case, for example, with layer 2 which can only tolerate a two 
+cycle write at 7MHz speed. Reads from layer 2 may be able to go as fast as two 
+cycles at 14MHz.
+
 The required timings are not clear at this time.
 
 Cycle Lengths per nominal CPU speed
 ===================================
 
-4 @ 14MHz during Layer2 writes while active display is generated 2 @ Everything else
+4 @ 14MHz during Layer2 writes while active display is generated 
+2 @ Everything else
 
 Programming examples
 ===================
