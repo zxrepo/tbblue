@@ -27,7 +27,9 @@ The zxnDMA requires one Read/Write IO Port that is the same as the one used by
 the Datagear (but unlike the Datagear it doesn't also use Port 0x0B similar to 
 the MB-02 interface).
 
-PORT 0x6b: zxnDMA
+*******************
+*PORT 0x6b: zxnDMA*
+*******************
 
 Description
 ===========
@@ -299,11 +301,13 @@ Operating Speed
 The zxnDMA operates at the same speed as the CPU, that is 3.5MHz, 7MHz or 14MHz.
 This is a contended clock that is modified by the ULA and the auto-slowdown by Layer2.
 
-Auto-slowdown occurs without user intervention if speed exceeds 7Mhz and the 
-active Layer2 display is generated/written to (higher speed functioning resumes 
-when the active Layer2 display is not generated). Programmers do NOT need to 
-account for speed differences regarding DMA transfers as this happens 
-transparently.
+--------------------------------------------------------------------------------
+|Auto-slowdown occurs without user intervention if speed exceeds 7Mhz and the  |
+|active Layer2 display is generated/written to (higher speed operation resumes |
+|when the active Layer2 display is not generated). Programmers do NOT need to  |
+|account for speed differences regarding DMA transfers as this happens         |
+|transparently.                                                                |
+-------------------------------------------------------------------------------|
 
 Because of this the cycle lengths for Ports A and B can be set to their minimum
 values without ill effects. However this may change so the following paragraph 
