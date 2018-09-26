@@ -1,11 +1,11 @@
 The ZX Spectrum Next DMA (zxnDMA)
 ---------------------------------
 Original text by: Allen Albright
-	 	          Mike Dailly
+                  Mike Dailly
 Adapted by:       Phoebus R. Dokos
                   with input by Jim Bagley and Lyndon J Sharp
-Date:	 	      2018-09-26
-License: 	      CC BY-NC-SA
+Date:             2018-09-26
+License:          CC BY-NC-SA
 Version:          1.1
 
 Changelog
