@@ -7,8 +7,8 @@ mkdir "c:/bin"
 mkdir "c:/sys"
 
 2. Using a PC, unzip the contents then
-Copy the esxdos.rom file into c:/tbblue/ and the contents of the bin and sys 
-folders into their respective places.
+IMPORTANT: Copy the esxmmc.rom file into c:/tbblue/ and the contents of the bin 
+and sys folders into their respective places.
 
 Note that NextZXOS has several dot commands that are newer than the ones
 included with esxDOS so you may want to use these. Many of these work on
