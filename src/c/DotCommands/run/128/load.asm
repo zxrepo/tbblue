@@ -96,12 +96,15 @@ _load_nex:
    
    ; copy snap_stub
    
-   ld hl,snap_stub
-   ld bc,snap_stub_end - snap_stub
+   ld hl,nex_stub
+   ld bc,nex_stub_end - nex_stub
    
    ldir
 
    ; copy filename
+   
+   ld ix,nex_stub_cmd - nex_stub_end
+   add ix,de                   ; ix = address of dot command
    
    call copy_filename
    
