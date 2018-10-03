@@ -191,7 +191,7 @@ int main(int argc, char **argv)
    if ((esx_m_dosversion() == ESX_DOSVERSION_NEXTOS_48K) || esx_ide_mode_get(&screen_mode))
       screen_mode.cols = 32;
    
-   screen_mode.cols = ((screen_mode.cols - 9) / 33) * 8;   // calculation for hexdump()
+   screen_mode.cols = ((screen_mode.cols - 9) / 33) * 8;   // calculation for hexdump
 
    // parse command line
 

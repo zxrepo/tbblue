@@ -86,7 +86,6 @@ int error(char *fmt, ...)
 // clean up at exit
 
 static unsigned char old_cpu_speed;
-static unsigned char mode_zxnext;
 
 void cleanup(void)
 {
@@ -95,8 +94,7 @@ void cleanup(void)
    
    puts("    ");
 
-   if (mode_zxnext)
-      ZXN_NEXTREGA(REG_TURBO_MODE, old_cpu_speed);
+   ZXN_NEXTREGA(REG_TURBO_MODE, old_cpu_speed);
 }
 
 // program start
@@ -116,13 +114,8 @@ int main(int argc, char **argv)
 
    // initialization
    
-   mode_zxnext = (esx_m_dosversion() != ESX_DOSVERSION_ESXDOS);
-   
-   if (mode_zxnext)
-   {
-      old_cpu_speed = ZXN_READ_REG(REG_TURBO_MODE);
-      ZXN_NEXTREG(REG_TURBO_MODE, RTM_14MHZ);
-   }
+   old_cpu_speed = ZXN_READ_REG(REG_TURBO_MODE);
+   ZXN_NEXTREG(REG_TURBO_MODE, RTM_14MHZ);
    
    atexit(cleanup);
 
