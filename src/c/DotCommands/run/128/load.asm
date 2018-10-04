@@ -68,6 +68,8 @@ snap_stub:
    defb __ESX_M_P3DOS
    
    ld iy,__SYS_IY
+   ld hl,__SYS_HLP
+   exx
    
    rst 8
    defb __ERRB_Q_PARAMETER_ERROR - 1
@@ -123,7 +125,11 @@ nex_stub:
    
    rst __ESX_RST_SYS
    defb __ESX_M_EXECCMD
-   
+
+   ld iy,__SYS_IY
+   ld hl,__SYS_HLP
+   exx
+
    rst 8
    defb __ERRB_Q_PARAMETER_ERROR - 1
 

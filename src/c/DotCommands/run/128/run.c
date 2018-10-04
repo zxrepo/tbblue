@@ -1,6 +1,6 @@
 /*
  * RUN program with PATH search
- * aralbrec@z88dk.og
+ * aralbrec@z88dk.org
 */
 
 #include <stdio.h>
@@ -177,7 +177,7 @@ int main(unsigned int argc, char **argv)
 
    if (flags.option & FLAG_OPTION_PATH)
    {
-      puts("\nPath Walk\n\n");
+      puts("\nPath Walk\n");
 
       p = path_open();
 

@@ -44,8 +44,8 @@ unsigned char *path_walk(unsigned char *p)
    {
       while (esx_f_readdir(fdir, &dirent) == 1)
       {
-			user_interaction();
-			
+         user_interaction();
+         
          if ((dirent.attr & ESX_DIR_A_DIR) && (strcmp(dirent.name, ".") != 0) && (strcmp(dirent.name, "..") != 0))
          {
             strcpy(buffer + len - 1, strupr(dirent.name));
