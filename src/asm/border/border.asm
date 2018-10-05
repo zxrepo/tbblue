@@ -36,9 +36,14 @@
 ;                       ; Access other drivers. Same parameters as M_DRVAPI.
 ;
 ; The stack is always located below $4000, so if ZX banks have been allocated
-; they may be paged in at any location (MMU2..MMU7). However, when switching
-; to other allocated DivMMC banks, the stack cannot be used unless you set
-; it up/restore it yourself.
+; they may be paged in at any location (MMU2..MMU7).
+;
+; If using other allocated DivMMC banks, note that the stack location is
+; the 224 bytes $260d..$26ec inclusive. Therefore, if you wish to switch to other
+; DivMMC banks (in particular using the mechanism below) you should leave this
+; region of memory unused in each of your allocated DivMMC banks (or avoid any
+; use of the stack, or take care of switching SP whenever you switch banks).
+;
 ; If you do switch any banks, don't forget to restore the previous MMU settings
 ; afterwards.
 
@@ -61,17 +66,20 @@
 ; and your driver is as follows:
 ;
 ; 1. In the preload data for each DivMMC bank (specified in the .DRV
-;    file), include a copy of the above routine at the start (ie $2000).
+;    file), include the following routine at the start (ie $2000):
+;       $2000:  out     ($e3),a
+;               push    bc              ; save B=driver bank
+;               jp      (hl)
 ;
-; 2. Provide the following subroutine somewhere within your driver code:
+; 2. Provide the following subroutine somewhere within your 512-byte driver code:
 ;       call_externmmc:
-;               push    hl              ; stack external bank routine address
-;               ex      af,af'
-;               in      a,($e3)         ; save driver bank in A'
-;               ex      af,af'
+;               push    af
+;               in      a,($e3)
+;               ld      b,a             ; save driver bank in B
+;               pop     af
 ;               set     7,a             ; set bit 7 on DivMMC bank id to page
 ;               jp      $2000           ; jump to switch banks and "return"
-;                                       ; to routine in external DivMMC bank
+;                                       ; to routine HL in external DivMMC bank
 ;
 ; 3. To call a routine in one of your allocated DivMMC banks, use this in
 ;    your driver code:
@@ -80,8 +88,12 @@
 ;               call    call_externmmc
 ;
 ; 4. The routines in your allocated DivMMC banks should end with:
-;               ex      af,af'          ; A=driver bank id
+;               pop     af              ; A=driver bank id
 ;               jp      $2000           ; switch back to driver and return
+;
+; Don't forget that the stack takes up the region $260d..$26ec and so you
+; should not use this region for any other purpose in your DivMMC banks if
+; you are using this mechanism.
 
 
 ; ***************************************************************************
