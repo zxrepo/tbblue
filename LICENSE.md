@@ -26,8 +26,7 @@ conditions:
    individual owners.  
 * Usage of the entirety of this _Distribution_ on hardware other than what it was 
    intended for, is **expressly permitted** provided the _Distribution_ is transmitted
-   /duplicated in **its entirety** except in the cases where there's an express per-
-   mission of individual copyright holders directly to the modifier of this 
+   /duplicated in **its entirety** except in the cases where there's an express permission of individual copyright holders directly to the modifier of this 
    _Distribution_ to do so. For example you could distribute only the free parts 
    of this _Distribution_ for another system AND obtain permission to distribute 
    parts of software contained herewith that are not normally allowed to be 
