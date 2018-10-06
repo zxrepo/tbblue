@@ -7,6 +7,7 @@ PUBLIC _load_nex
 
 defc MAX_NAME_LEN = 12         ; 8.3 only
 
+EXTERN _mode48
 EXTERN _dirent_sfn
 
 defc PROGRAM_NAME = _dirent_sfn + 1;
@@ -22,6 +23,18 @@ _load_snap:
 
    ld sp,(__SYSVAR_ERRSP)
    ld iy,__SYS_IY
+   
+   ; in 48k mode make sure there is a valid stack for M_P3DOS
+   
+   ld a,(_mode48)
+   
+   or a
+   jr z, skip48
+
+   ld hl,__SYSVAR_TSTACK
+   ld (__SYSVAR_OLDSP),hl
+   
+skip48:
 
    ; make room for snap stub
    
@@ -67,7 +80,17 @@ snap_stub:
    
    rst __ESX_RST_SYS
    defb __ESX_M_P3DOS
-   
+
+   ld bc,__IO_NEXTREG_REG
+   ld a,__REG_PERIPHERAL_3
+   out (c),a
+   inc b
+ 
+snap_p3_smc:
+
+   ld a,0
+   out (c),a
+
    ld iy,__SYS_IY
    ld hl,__SYS_HLP
    exx
@@ -127,6 +150,16 @@ nex_stub:
    
    rst __ESX_RST_SYS
    defb __ESX_M_EXECCMD
+   
+   ld bc,__IO_NEXTREG_REG
+   ld a,__REG_PERIPHERAL_3
+   out (c),a
+   inc b
+ 
+nex_p3_smc:
+
+   ld a,0
+   out (c),a
 
    ld iy,__SYS_IY
    ld hl,__SYS_HLP
@@ -156,6 +189,9 @@ unlock_7ffd:
    
    inc b
    in a,(c)
+   
+   ld (snap_p3_smc + 1),a
+   ld (nex_p3_smc + 1),a
    
    or __RP3_UNLOCK_7FFD
    out (c),a
