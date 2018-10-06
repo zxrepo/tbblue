@@ -30,4 +30,5 @@ All softwares contained herewith are © by their respective authors and provided
 The **_ZX 80_** and **_ZX 81_** *EMULATORS* are © **Paul Farrow**.  
 **_Gosh Wonderful_** and **_Looking Glass_** are © **Geoff Wearmouth**.  
 _**+3e**_, **_NextZXOS_** and **_NextBASIC_** are © **Garry Lancaster**.  
-**_TBBlue_** is © **Victor Trucco**, **Fabio Belavenuto**. **_Spectrum Next_** is © **SpecNext Ltd**.  
+**_TBBlue_** is © **Victor Trucco**, **Fabio Belavenuto**.  
+**_Spectrum Next_** is © **SpecNext Ltd**.  
