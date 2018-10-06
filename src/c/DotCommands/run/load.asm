@@ -17,10 +17,11 @@ defc PROGRAM_NAME = _dirent_sfn + 1;
 
 _load_snap:
 
+   call unlock_7ffd
+   call close_dot_handle
+
    ld sp,(__SYSVAR_ERRSP)
    ld iy,__SYS_IY
-
-   call close_dot_handle
 
    ; make room for snap stub
    
@@ -82,10 +83,11 @@ snap_stub_end:
 
 _load_nex:
 
+   call unlock_7ffd
+   call close_dot_handle
+
    ld sp,(__SYSVAR_ERRSP)
    ld iy,__SYS_IY
-
-   call close_dot_handle
 
    ; make room for nex stub
 
@@ -138,6 +140,27 @@ nex_stub_cmd:
    defm "nexload "
 
 nex_stub_end:
+
+;;;;;;;;;;;;;
+; unlock 7ffd
+;;;;;;;;;;;;;
+
+; in 48k mode we will try to allow loading of 128k programs
+
+unlock_7ffd:
+
+   ld bc,__IO_NEXTREG_REG
+   ld a,__REG_PERIPHERAL_3
+   
+   out (c),a
+   
+   inc b
+   in a,(c)
+   
+   or __RP3_UNLOCK_7FFD
+   out (c),a
+   
+   ret
 
 ;;;;;;;;;;;;;;;;;;
 ; close dot handle

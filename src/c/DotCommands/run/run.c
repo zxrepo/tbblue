@@ -32,6 +32,8 @@ unsigned char buffer[512];
 struct esx_dirent dirent_sfn;
 struct esx_dirent_lfn dirent_lfn;
 
+unsigned char mode48;
+
 // OPTIONS
 
 struct flag flags = {
@@ -110,6 +112,10 @@ int main(unsigned int argc, char **argv)
    current_drive[0] = cwd[0];
 
    atexit(cleanup);
+   
+   // esxdos is ruled out by the crt
+   
+   mode48 = (esx_m_dosversion() == ESX_DOSVERSION_NEXTOS_48K);
 
    // parse options
 

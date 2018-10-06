@@ -22,6 +22,8 @@ struct type
    void (*load)(void);
 };
 
+extern unsigned char mode48;
+
 #define PATHSZ  192
 
 extern unsigned char PATH[PATHSZ];

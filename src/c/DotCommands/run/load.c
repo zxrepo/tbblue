@@ -12,6 +12,6 @@ void load_tap(void)
    if (esx_m_tapein_open(dirent_sfn.name))
       return;
 
-   puts("\nTo start - LOAD \"t:\": LOAD \"\"");
+   printf("\nTo start - %sLOAD \"\"\n", mode48 ? "" : "LOAD \"t:\": ");
    exit(0);
 }
