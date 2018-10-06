@@ -12,6 +12,7 @@ int lastBank=-1;
 int address=0;
 long long filelen;
 int fileadded=0;
+int palcnt;
 
 #define CORE_MAJOR		0
 #define CORE_MINOR		1
@@ -206,18 +207,19 @@ void addFile(char *fname)
 			{
 				len=fread(&SNA128Header,1,4,fin2);
 				printf("128KHeader len = %d\n",len);
+				int sp=(SNAHeader[23]+256*SNAHeader[24]);
 				if(len==0)
 				{
-					int sp=(SNAHeader[23]+256*SNAHeader[24]);
-					if(sp>=16384) sp-=16384;
-					SNA128Header[0]=bigFile[sp+16];
-					SNA128Header[1]=bigFile[sp+17];
+					int sp2=sp;
+					if(sp2>=16384) sp2-=16384;
+					SNA128Header[0]=bigFile[sp2+16];
+					SNA128Header[1]=bigFile[sp2+17];
 					SNA128Header[2]=0;
 					SNA128Header[3]=0;
-					header512.SP=sp;
-					header512.PC=SNA128Header[0]+256*SNA128Header[1];
-					printf("SP=%04x,PC=%04x\n",sp,SNA128Header[0]+256*SNA128Header[1]);
 				}
+				header512.SP=sp;
+				header512.PC=SNA128Header[0]+256*SNA128Header[1];
+				printf("SP=%04x,PC=%04x\n",header512.SP,header512.PC);
 			}
 		}
 		address=((address&0xc000)+0x4000)&0xc000;
@@ -322,7 +324,14 @@ int main(int c,char **s)
 					fseek(fin2,(long int)i,SEEK_SET);
 					for(i=0;i<192;i++)
 					{
-						fread(&loading[(191-i)*256],1,256,fin2);
+						if(tempHeader[25]<128)
+						{
+							fread(&loading[(191-i)*256],1,256,fin2);
+						}
+						else
+						{
+							fread(&loading[i*256],1,256,fin2);
+						}
 					}
 					fclose(fin2);
 					header512.LoadingScreen|=1+(dontSavePalette?128:0);
@@ -389,7 +398,14 @@ int main(int c,char **s)
 					fseek(fin2,(long int)i,SEEK_SET);
 					for(i=0;i<96;i++)
 					{
-						fread(&loadingLoRes[(95-i)*128],1,128,fin2);
+						if(tempHeader[25]<128)
+						{
+							fread(&loadingLoRes[(95-i)*128],1,128,fin2);
+						}
+						else
+						{
+							fread(&loadingLoRes[i*128],1,128,fin2);
+						}
 					}
 					fclose(fin2);
 					header512.LoadingScreen|=4;
