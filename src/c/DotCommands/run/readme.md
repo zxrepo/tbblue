@@ -37,7 +37,7 @@ matches other than the first.
 Programs having the following extensions are identified as executable:
 
 ~~~
-nex, o, p, sna, snx, tap, z80
+bas, dot, nex, o, p, sna, snx, tap, z80
 ~~~
 
 ## Compiling

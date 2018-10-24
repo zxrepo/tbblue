@@ -108,7 +108,7 @@ OTHER
 -version
   print version info and exit
 
-find 1.0 zx-next 128k z88dk.org
+find 1.1 zx-next 128k z88dk.org
 ~~~
 
 ## Examples
