@@ -1,3 +1,9 @@
+/*
+ * FIND files
+ * aralbrec@z88dk.org
+*/
+ 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -105,7 +111,7 @@ static void cleanup(void)
 
 int main(unsigned int argc, char **argv)
 {
-   static unsigned char num;
+   static unsigned int num;
    static unsigned char first;
    static unsigned char dirnam[ESX_PATHNAME_MAX + 1];
    static struct opt *found;

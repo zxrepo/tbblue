@@ -376,7 +376,7 @@ unsigned int option_exec_cd_helper(unsigned char *p)
 {
    unsigned int res;
    
-   if ((option_unsigned_number(p, &res)) && (res < 256))
+   if (option_unsigned_number(p, &res))
    {
       flags.cd = res;
       return OPT_ACTION_OK;

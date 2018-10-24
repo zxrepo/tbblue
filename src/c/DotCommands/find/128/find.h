@@ -24,7 +24,7 @@ struct flag
    
    // change directory if found (count if > 0)
    
-   unsigned char cd;
+   unsigned int cd;
    
    // other
    
