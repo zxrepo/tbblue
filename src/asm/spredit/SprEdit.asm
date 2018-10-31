@@ -280,6 +280,8 @@ changeext
 .gl ld a,(hl):ld (de),a:inc hl:inc de:or a:jr nz,.gl:ret
 nxp	db "nxp",0
 
+;-------------------------------
+
 savefile	push hl:push bc:call fcreate:pop bc:pop ix:jr c,failsave:push bc:call fwrite:pop de:ld a,c:cp e:jr nz,failsave:ld a,b:cp d:jr nz,failsave:call fclose:xor a:ret
 failsave	scf:ret
 loadto8000	call fopen:ld a,(handle):or a:ret z:ld ix,$8000:ld bc,$4000:call fread:jp fclose
