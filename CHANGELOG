@@ -1,3 +1,8 @@
+P.D.    2018-10-31 - Core 2.00.11 (Fixes Timex alignment bug, fully disables
+                     divMMC, beta priority L2 colour functions, Fixed DMA)
+                     FW 1.10c
+                     New SPREDIT
+                     New Arkos 9 ch player dot command
 P.D.    2018-09-24 - Added pinout information text under c:/docs/extra-hw/
 P.D.    2018-09-19 - Initial commit of changelog for v.1.00
 
