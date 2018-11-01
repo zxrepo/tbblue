@@ -19,6 +19,15 @@ Some registers are accessible only during the initialization process
 
 Registers:
 (R) 0x00 (00) => Machine ID
+    00000001 = DE1A
+    00000010 = DE2A
+    00000101 = FBLABS
+    00000110 = VTRUCCO
+    00000111 = WXEDA
+    00001000 = EMULATORS
+    00001010 = ZX Spectrum Next
+    00001011 = Multicore
+    11111010 = ZX Spectrum Next Anti-brick
 
 (R) 0x01 (01) => Core Version 
   bits 7-4 = Major version number
@@ -102,21 +111,42 @@ Registers:
   bit 0 = Reserved, must be 0
 
 (R/W) 0x09 (09) => Peripheral 4 setting:
-  bits 7-2 = Reserved, must be 0
+  bits 7-4 = Reserved, must be 0
+  bit    3 = Disables Kempston port ($DF) if set
+  bit    2 = Disables divMMC ports ($E3, $E7, $EB) if set (compatibility with 
+             external peripherals)
   bits 1-0 = scanlines (0 after a PoR or Hard-reset)
-     00 = scanlines off
-     01 = scanlines 75%
-     10 = scanlines 50%
-     11 = scanlines 25%
+        00 = scanlines off
+        01 = scanlines 75%
+        10 = scanlines 50%
+        11 = scanlines 25%
+
+(W) 0x11 (17) => Video Timing
+ bits 7-3 = Reserved, must be 0
+ bits 2-0 = Mode (VGA = 0..6, HDMI = 7_
+      000 = Base VGA timing (50/60Hz depending on bit 2 or register 0x05)
+      001 = VGA setting 1
+      010 = VGA setting 2
+      011 = VGA setting 3
+      100 = VGA setting 4
+      101 = VGA setting 5
+      110 = VGA setting 6
+      111 = HDMI
+            
+            Each VGA setting increases the frequency by approx. 1 KHz
 
 (R) 0x0E (14) => Core Version (sub minor number) 
   (see register 0x01 for the major and minor version number)
 
-(R/W) 0x10 (16) => Anti-brick system (only in ZX Next Board):
-  bit 7 = (W) If 1 start normal core
-  bits 6-2 = Reserved, must be 0
-  bit 1 = (R) Button DivMMC (1=pressed)
-  bit 0 = (R) Button Multiface (1=pressed)
+(R) 0x10 (16) => Anti-brick system (only in ZX Next Board):
+  bits 7-2 = Reserved, 0
+  bit    1 = (R) Button DivMMC (1=pressed)
+  bit    0 = (R) Button Multiface (1=pressed)
+
+(W) 0x10 (16) => Anti-brick system (only in ZX Next Board):
+  bit    7 = If 1 start selected core
+  bits 6-5 = Reserved, must be zero
+  bits 4-0 = Core ID 0-31 (config mode only, default is 2)
 
 (R/W) 0x12 (18) => Layer 2 RAM page
  bits 7-6 = Reserved, must be 0
@@ -277,8 +307,21 @@ Registers:
   1st write:
      bits 7-0 = RRRGGGBB
   2nd write. 
-     bit 7-1 = Reserved, must be 0
-     bit 0 = lsb B
+     IF writing a L2 palette
+     -----------------------------------------------------------------------
+     bit  7   = 1 for L2 priority colour, 0 for normal
+                Priority colour will always be on top even on an SLU priori-
+                ty arrangement. If you need the exact same colour on priori-
+                ty and non priority locations you will need to program the
+                same colour twice changing bit 7 to 0 for the second colour
+     bits 6-1 = Reserved, must be 0
+     bit  0   = lsb B
+     
+     IF writing another palette
+     -----------------------------------------------------------------------
+     bits 7-1 = Reserved, must be 0
+     bit  0   = lsb B
+           
               (After the two consecutives writes the palette index is 
                auto-incremented if the auto-increment is enabled by reg 0x43.
                The changed palette remais until a Hard Reset.)
