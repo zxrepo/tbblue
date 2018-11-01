@@ -5,10 +5,10 @@ Current versions
 
 |Title |Version|RC?  	|  
 |---	|--:	|---	|  
-|*TBBlue*| **1.00** |RC1|  
+|*TBBlue*| **1.01** |RC2|  
 |*NextZXOS*|**2.00**|RC2|  
-|*Core*|**2.00.00**	|RC2|  
-|*Firmware*|**1.10b**|  |  
+|*Core*|**2.00.11**	|B1|  
+|*Firmware*|**1.10c**|  |  
   
   
 Contributor Requests
