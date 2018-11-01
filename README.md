@@ -3,9 +3,9 @@ Official TBBlue Distribution repository for the ZX Spectrum Next computer
 Current versions  
 ================  
 
-|Title |Version|RC?  	|  
+|Title |Version|RT?  	|  
 |---	|--:	|---	|  
-|*TBBlue*| **1.01** |RC2|  
+|*TBBlue*| **1.01** |RTM|  
 |*NextZXOS*|**2.00**|RC2|  
 |*Core*|**2.00.11**	|B1|  
 |*Firmware*|**1.10c**|  |  
