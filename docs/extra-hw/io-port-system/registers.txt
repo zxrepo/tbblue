@@ -389,11 +389,13 @@ Registers:
   (Index is set to 0 after a reset)
 
 (W) 0x62 (98) => Copper control HI bit
-   bits 7-6 = Start control
-       00 = Copper fully stoped
-       01 = Copper start, execute the list, then stop at last adress
-       10 = Copper start, execute the list, then loop the list from start
-       11 = Copper start, execute the list and restart the list at each frame
-   bits 2-0 = Copper list index address MSB
+  bits 7-6 = Start control
+        00 = Copper fully stopped
+        01 = Copper start, execute the list from index 0, and loop to the start
+        10 = Copper start, execute the list from last point, and loop to the 
+             start
+        11 = Copper start, execute the list from index 0, and restart the list 
+             at each frame("start of each frame" actually means line 0)
+  bits 2-0 = Copper list index address MSB
 
 (W) 0xFF (255) => Debug LEDs (DE-1, DE-2 am Multicore only)
