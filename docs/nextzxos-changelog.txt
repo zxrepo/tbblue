@@ -1,3 +1,20 @@
+v2.00A (2018-12-14)
+===================
+* Added new option to DISK_STRMSTART: bit 7 of A may be set to indicate the
+  call should return immediately, and the user will wait for the first data token.
+* Autoexec welcome program now flashes a "Disabling" information message whilst
+  disabling is in progress.
+* Fixed driver bankswitching example code in border.asm.
+* Fixed INPUT returning invalid data if destination variable lies in top 16K
+  of memory.
+* Fixed crash in .BROWSE command if empty string provided to -p or -e options.
+* Fix for MF overlays (such as About) and file browser not working on some cards,
+  which appear not to like CMD12 being sent when no multiple sector read is in
+  progress.
+* Fix to ensure contention is re-enabled (and Timex/turbosound disabled) when
+  loading legacy software via the Tape Loader option.
+
+
 v2.00 (2018-09-09)
 ==================
 * TurboSound is now left enabled by the TAP loader and snapshot loading. This
