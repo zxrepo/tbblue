@@ -1,3 +1,33 @@
+P.D.    2019-01-04 - Core 2.00.24 
+                     Sprites:   
+                     Completely New Sprite Engine (128 total sprites,
+                     64 sprites per line, 4bit colour sprites, sprite scaling
+                     - four sizes: x1,x2,x4,x8 - Anchored sprites -allowing
+                     relative movement of sprites together)
+                     Video:
+                     Two new Layer colour mix modes -SLU 110(U+L) clamped and
+                     SLU 111 colour = (U+L)-5 - allowing for colour darkening and
+                     brightening for backgrounds
+                     Audio:
+                     Each AY can now be made monophonic
+                     Fixed AY modules so they're completely silent when volume
+                     is 0
+                     Z80N:
+                     ED 28: BSLA DE,B (shift DE left by B places - uses bits 
+                                       4..0 of B only)  
+                     ED 29: BSRA DE,B (arithmetic shift right DE by B places 
+                                       - uses bits 4..0 of B only)  
+                     ED 2A: BSRL DE,B (logical shift right DE by B places 
+                                       - uses bits 4..0 of B only)  
+                     ED 2B: BSRF DE,B (shift right DE by B places, filling from 
+                                       left with 1s - uses bits 4..0 of B only)  
+                     ED 2C: BRLC DE,B (rotate DE left by B places  
+                                       - uses bits 3..0 of B only)  
+                     (to rotate right, use B=16-places)
+                     ED 98 JP (C) -- PC[13:0] = IN (C) << 6  
+                    
+                            
+                     
 P.D.    2018-10-31 - Core 2.00.11 (Fixes Timex alignment bug, fully disables
                      divMMC, beta priority L2 colour functions, Fixed DMA)
                      FW 1.10c
