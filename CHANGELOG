@@ -1,7 +1,7 @@
 P.D.    2019-01-04 - Core 2.00.24 
                      Sprites:   
                      Completely New Sprite Engine (128 total sprites,
-                     64 sprites per line, 4bit colour sprites, sprite scaling
+                     100 sprites per line, 4bit colour sprites, sprite scaling
                      - four sizes: x1,x2,x4,x8 - Anchored sprites -allowing
                      relative movement of sprites together)
                      Video:
