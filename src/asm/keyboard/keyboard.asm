@@ -28,9 +28,10 @@
 ; functionality as the standard KEYBOARD routine at $02bf in the ROM of
 ; the original 48K Spectrum.
 ;
-; The following driver replicates exactly the code from the original
-; ROM (although slightly re-ordered). It may be used as a base for
-; a replacement.
+; The following driver replicates the code from the original
+; ROM (although slightly re-ordered). It additionally reads the Kempston
+; joystick port so a joystick may be used for navigation purposes within
+; NextZXOS. It may be used as a base for a replacement driver.
 ;
 ; Possible uses for replacement keyboard drivers might be:
 ;       * For use with alternative international keyboard layouts
@@ -78,7 +79,29 @@ keyboard_3:
         jr      nz,keyboard_2
 reloc_2:
         call    k_test
-        ret     nc
+
+; NOTE: At this point, the driver in the original ZX ROM simply returned
+;       if no key is pressed (carry clear). In the NextZXOS driver, we
+;       additionally check for the Kempston joystick.
+
+        jr      c,lk_gotkey             ; on if valid keycode
+        in      a,($1f)                 ; else read kempston port
+        cp      $ff
+        ret     z                       ; exit if $ff (no Kempston port)
+        and     $3f
+        ret     z                       ; exit if none of bits 0..5 set
+reloc_13:
+        ld      hl,kempston_keys-1
+kemp_decode_loop:
+        inc     hl                      ; next table address
+        srl     a                       ; next port bit to carry
+        jr      nc,kemp_decode_loop     ; until found a set bit
+        ret     nz                      ; exit if more than one set bit
+        ld      a,(hl)                  ; A=code
+
+; The standard ZX ROM keyboard routines now continue.
+
+lk_gotkey:
         ld      hl,KSTATE
         cp      (hl)
         jr      z,k_repeat
@@ -111,6 +134,19 @@ keyboard_5:
         ld      (LAST_K),a
         set     5,(iy+$01)
         ret
+
+
+; ***************************************************************************
+; * Kempston key translation table                                          *
+; ***************************************************************************
+
+kempston_keys:
+        defb    9                       ; cursor right
+        defb    8                       ; cursor left
+        defb    10                      ; cursor down
+        defb    11                      ; cursor up
+        defb    13                      ; fire (ENTER)
+        defb    32                      ; button 2 (SPACE)
 
 
 ; ***************************************************************************
@@ -383,5 +419,6 @@ reloc_start:
         defw    reloc_10+2
         defw    reloc_11+2
         defw    reloc_12+2
+        defw    reloc_13+2
 reloc_end:
 

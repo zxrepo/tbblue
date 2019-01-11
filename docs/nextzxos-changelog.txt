@@ -1,3 +1,20 @@
+v2.00B (2019-01-11)
+===================
+* Added support for navigation by Kempston joystick (providing cursor keys,
+  ENTER with fire and SPACE with button 2). This works throughout NextZXOS,
+  so can be used to control menus, browser, NextBASIC editor, 48 BASIC editing
+  and BASIC games etc.
+* Updated example keyboard driver with the Kempston support.
+* Fixed a bug where MERGE command stopped working after a new keyboard driver
+  was installed.
+* SPRITE CLEAR (and NEW/reset) now clear attributes of 128 sprites (number of
+  sprites supported by the hardware was increased from 64 in core v2.00.24).
+* Fixed bug in parser, where command lines containing fully-pathed dot commands
+  could result in "Nonsense in BASIC".
+* Fixed "No such command" error when attempting to run dot commands (with .DOT
+  extension) from the Browser.
+
+
 v2.00A (2018-12-14)
 ===================
 * Added new option to DISK_STRMSTART: bit 7 of A may be set to indicate the
