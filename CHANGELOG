@@ -2,7 +2,8 @@ P.D     2019-01-27 - Core 2.00.26
                      Display: New Tilemap mode (640 x 256 and 320 x 256)
                      Documentation: New NextReg and I/O ports documentation
                                     Tilemap documentation
-                     Software: New .boot command by David Saphier (config 
+                     Software: NextZXOS v.2.00B
+                               New .boot command by David Saphier (config 
                                                                     switcher)
                                New ScrollNutter version
                                Two new Tilemap demos (TM and StencilV.03)
