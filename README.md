@@ -6,8 +6,8 @@ Current versions
 |Title |Version|RT?  	|  
 |---	|--:	|---	|  
 |*TBBlue*| **1.03** |RTM|  
-|*NextZXOS*|**2.00**|RC2|  
-|*Core*|**2.00.24**	|B4|  
+|*NextZXOS*|**2.00B**|  |  
+|*Core*|**2.00.26**	|B1|  
 |*Firmware*|**1.10c**|  |  
   
   
