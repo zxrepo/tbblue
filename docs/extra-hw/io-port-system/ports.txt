@@ -5,52 +5,54 @@ Distributed under the Attribution-NonCommercial-ShareAlike CC BY-NC-SA license.
 
 TBBlue / ZX Spectrum Next Peripheral Ports
 
-+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+---------+-----------------------------+
-| | ||A|A|A|A|A|A|A|A|A|A|A|A|A|A|A|A|         |                             |
-| | ||1|1|1|1|1|1|0|0|0|0|0|0|0|0|0|0|         |                             |
-|R|W||5|4|3|2|1|0|9|8|7|6|5|4|3|2|1|0|Port(hex)|Description                  |
-+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+---------+-----------------------------+
-|*|*||X|X|X|X|X|X|X|X|X|X|X|X|X|X|X|0| 0xfe    |ULA                          |
-|*|*||X|X|X|X|X|X|X|X|1|1|1|1|1|1|1|1| 0xff    |Timex video                  |  
-| |*||0|1|X|X|X|X|X|X|X|X|X|X|X|X|0|1| 0x7ffd  |ZX Spectrum 128 memory       |  
-| |*||1|1|0|1|Χ|Χ|Χ|Χ|Χ|Χ|Χ|Χ|X|X|0|1| 0xdffd  |ZX Spectrum 128 memory       |  
-| |*||0|0|0|1|Χ|Χ|Χ|Χ|Χ|Χ|Χ|Χ|X|X|0|1| 0x1ffd  |ZX Spectrum +3 memory        |  
-|*| ||0|0|0|0|Χ|Χ|Χ|Χ|Χ|Χ|Χ|Χ|X|X|0|1|         |ZX Spectrum +3 floating bus  |  
-|*|*||0|0|1|0|0|1|0|0|0|0|1|1|1|0|1|1| 0x243b  |NextREG Register Select      |  
-|*|*||0|0|1|0|0|1|0|1|0|0|1|1|1|0|1|1| 0x253b  |NextREG data/value           |  
-| |*||0|0|0|1|0|0|0|0|0|0|1|1|1|0|1|1| 0x103b  |i2c SCL                      |  
-|*|*||0|0|0|1|0|0|0|1|0|0|1|1|1|0|1|1| 0x113b  |i2c SDA                      |  
-|*|*||0|0|0|1|0|0|1|0|0|0|1|1|1|0|1|1| 0x123b  |Layer 2                      |  
-|*|*||0|0|0|1|0|0|1|1|0|0|1|1|1|0|1|1| 0x133b  |UART tx                      |  
-|*|*||0|0|0|1|0|1|0|0|0|0|1|1|1|0|1|1| 0x143b  |UART rx                      |  
-|*|*||X|X|X|X|Χ|Χ|Χ|Χ|0|1|1|0|1|0|1|1| 0x6b    |zxnDMA                       |  
-|*|*||1|1|X|X|Χ|Χ|Χ|Χ|Χ|Χ|Χ|Χ|X|1|0|1| 0xfffd  |AY reg                       |  
-| |*||1|0|X|X|Χ|Χ|Χ|Χ|Χ|Χ|Χ|Χ|X|1|0|1| 0xbffd  |AY dat                       |  
-| |*||X|X|X|X|Χ|Χ|Χ|Χ|0|0|0|0|1|1|1|1| 0x0f    |DAC A                        |  
-| |*||X|X|X|X|Χ|Χ|Χ|Χ|1|1|1|1|0|0|0|1| 0xf1    |DAC A                        |  
-| |*||X|X|X|X|Χ|Χ|Χ|Χ|0|0|1|1|1|1|1|1| 0x3f    |DAC A                        |  
-| |*||X|X|X|X|Χ|Χ|Χ|Χ|1|1|0|1|1|1|1|1| 0xdf    |DAC A,C specdrum             |  
-| |*||X|X|X|X|Χ|Χ|Χ|Χ|0|0|0|1|1|1|1|1| 0x1f    |DAC B                        |  
-| |*||X|X|X|X|Χ|Χ|Χ|Χ|1|1|1|1|0|0|1|1| 0xf3    |DAC B                        |  
-| |*||X|X|X|X|Χ|Χ|Χ|Χ|0|1|0|0|1|1|1|1| 0x4f    |DAC C                        |  
-| |*||X|X|X|X|Χ|Χ|Χ|Χ|1|1|1|1|1|0|0|1| 0xf9    |DAC C                        |  
-| |*||X|X|X|X|Χ|Χ|Χ|Χ|0|1|0|1|1|1|1|1| 0x5f    |DAC D                        |  
-| |*||X|X|X|X|Χ|Χ|Χ|Χ|1|1|1|1|1|0|1|1| 0xfb    |DAC D                        |  
-| |*||X|X|X|X|Χ|Χ|Χ|Χ|1|1|1|0|0|1|1|1| 0xe7    |SPI /CS                      |  
-|*|*||X|X|X|X|Χ|Χ|Χ|Χ|1|1|1|0|1|0|1|1| 0xeb    |SPI /DATA                    |  
-|*|*||X|X|X|X|Χ|Χ|Χ|Χ|1|1|1|0|0|0|1|1| 0xe3    |divMMC Control               |  
-|*| ||X|X|X|X|1|0|1|1|1|1|0|1|1|1|1|1| 0xfbdf  |Kempston mouse x             |
-|*| ||X|X|X|X|1|1|1|1|1|1|0|1|1|1|1|1| 0xffdf  |Kempston mouse y             |
-|*| ||X|X|X|X|1|0|1|0|1|1|0|1|1|1|1|1| 0xfadf  |Kempston mouse wheel, buttons|  
-|*| ||X|X|X|X|Χ|Χ|Χ|Χ|0|0|0|1|1|1|1|1| 0x1f    |Kempston joy 1               |  
-|*| ||X|X|X|X|Χ|Χ|Χ|Χ|0|0|1|1|0|1|1|1| 0x37    |Kempston joy 2               |  
-|*|*||X|X|X|X|Χ|Χ|Χ|Χ|0|0|0|1|1|1|1|1| 0x1f    |Multiface 1 disable          |  
-|*| ||X|X|X|X|Χ|Χ|Χ|Χ|1|0|0|1|1|1|1|1| 0x9f    |Multiface 1 enable           |  
-|*|*||X|X|X|X|Χ|Χ|Χ|Χ|0|0|1|1|1|1|1|1| 0x3f    |Multiface 128 disable        |  
-|*| ||X|X|X|X|Χ|Χ|Χ|Χ|1|0|1|1|1|1|1|1| 0xbf    |Multiface 128 enable         |  
-|*|*||X|X|X|X|Χ|Χ|Χ|Χ|1|0|1|1|1|1|1|1| 0xbf    |Multiface +3 disable         |  
-|*| ||X|X|X|X|Χ|Χ|Χ|Χ|0|0|1|1|1|1|1|1| 0x3f    |Multiface +3 enable          |  
-|*|*||0|0|1|1|0|0|0|0|0|0|1|1|1|0|1|1| 0x303b  |Sprite slot, flags           |  
-| |*||X|X|X|X|Χ|Χ|Χ|Χ|0|1|0|1|0|0|1|1| 0x57    |Sprite attributes            |  
-| |*||X|X|X|X|Χ|Χ|Χ|Χ|0|1|0|1|1|0|1|1| 0x5b    |Sprite pattern               |  
-+-+-++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+---------+-----------------------------+
++-+-++-------------------+---------+--------------------------------+-------------------
+| | ||AAAA AAAA AAAA AAAA|         |                                |
+| | ||1111 1100 0000 0000|         |                                |
+|R|W||5432 1098 7654 3210|Port(hex)|Description                     |Disable
++-+-++-------------------+---------+--------------------------------+-------------------
+|*|*||XXXX XXXX XXXX XXX0| 0xfe    |ULA                             |
+|*|*||XXXX XXXX 1111 1111| 0xff    |Timex video, floating bus       |Nextreg 0x08 bit 2
+| |*||0XXX XXXX XXXX XX01| 0x7ffd  |ZX Spectrum 128 memory          |Port 0x7ffd bit 5
+| |*||01XX XXXX XXXX XX01| 0x7ffd  |ZX Spectrum 128 memory +3 only  |Port 0x7ffd bit 5
+| |*||1101 XXXX XXXX XX01| 0xdffd  |ZX Spectrum 128 memory (prece-  |Port 0x7ffd bit 5
+| | ||                   |         |                 dence over AY) |
+| |*||0001 XXXX XXXX XX01| 0x1ffd  |ZX Spectrum +3 memory           |Port 0x7ffd bit 5
+|*| ||0000 XXXX XXXX XX01|         |ZX Spectrum +3 floating bus     |Port 0x7ffd bit 5
+|*|*||0010 0100 0011 1011| 0x243b  |NextREG Register Select         |
+|*|*||0010 0101 0011 1011| 0x253b  |NextREG data/value              |
+| |*||0001 0000 0011 1011| 0x103b  |i2c SCL (rtc)                   |
+|*|*||0001 0001 0011 1011| 0x113b  |i2c SDA (rtc)                   |  
+|*|*||0001 0010 0011 1011| 0x123b  |Layer 2                         |  
+|*|*||0001 0011 0011 1011| 0x133b  |UART tx (esp)                   |
+|*|*||0001 0100 0011 1011| 0x143b  |UART rx (esp)                   |
+|*|*||XXXX XXXX 0110 1011| 0x6b    |zxnDMA                          |
+|*|*||11XX XXXX XXXX X101| 0xfffd  |AY reg                          |Nextreg 0x06 bit 0
+| |*||10XX XXXX XXXX X101| 0xbffd  |AY dat                          |Nextreg 0x06 bit 0
+| |*||XXXX XXXX 0000 1111| 0x0f    |DAC A                           |Nextreg 0x08 bit 3
+| |*||XXXX XXXX 1111 0001| 0xf1    |DAC A (precedence over XXFD)    |Nextreg 0x08 bit 3
+| |*||XXXX XXXX 0011 1111| 0x3f    |DAC A                           |Nextreg 0x08 bit 3
+| |*||XXXX XXXX 1101 1111| 0xdf    |DAC A,C specdrum                |Nextreg 0x08 bit 3
+| |*||XXXX XXXX 0001 1111| 0x1f    |DAC B                           |Nextreg 0x08 bit 3
+| |*||XXXX XXXX 1111 0011| 0xf3    |DAC B                           |Nextreg 0x08 bit 3
+| |*||XXXX XXXX 0100 1111| 0x4f    |DAC C                           |Nextreg 0x08 bit 3
+| |*||XXXX XXXX 1111 1001| 0xf9    |DAC C (precedence over XXFD)    |Nextreg 0x08 bit 3
+| |*||XXXX XXXX 0101 1111| 0x5f    |DAC D                           |Nextreg 0x08 bit 3
+| |*||XXXX XXXX 1111 1011| 0xfb    |DAC D                           |Nextreg 0x08 bit 3
+| |*||XXXX XXXX 1110 0111| 0xe7    |SPI /CS (sd card, flash, rpi)   |Nextreg 0x09 bit 2
+|*|*||XXXX XXXX 1110 1011| 0xeb    |SPI /DATA                       |Nextreg 0x09 bit 2
+|*|*||XXXX XXXX 1110 0011| 0xe3    |divMMC Control                  |Nextreg 0x09 bit 2
+|*| ||XXXX 1011 1101 1111| 0xfbdf  |Kempston mouse x                |Nextreg 0x09 bit 3
+|*| ||XXXX 1111 1101 1111| 0xffdf  |Kempston mouse y                |Nextreg 0x09 bit 3
+|*| ||XXXX 1010 1101 1111| 0xfadf  |Kempston mouse wheel, buttons   |Nextreg 0x09 bit 3
+|*| ||XXXX XXXX 0001 1111| 0x1f    |Kempston joy 1                  |Nextreg 0x05
+|*| ||XXXX XXXX 0011 0111| 0x37    |Kempston joy 2                  |Nextreg 0x05
+|*|*||XXXX XXXX 0001 1111| 0x1f    |Multiface 1 disable             |
+|*| ||XXXX XXXX 1001 1111| 0x9f    |Multiface 1 enable              |
+|*|*||XXXX XXXX 0011 1111| 0x3f    |Multiface 128 disable           |
+|*| ||XXXX XXXX 1011 1111| 0xbf    |Multiface 128 enable            |
+|*|*||XXXX XXXX 1011 1111| 0xbf    |Multiface +3 disable            |
+|*| ||XXXX XXXX 0011 1111| 0x3f    |Multiface +3 enable             |
+|*|*||0011 0000 0011 1011| 0x303b  |Sprite slot, flags              |
+| |*||XXXX XXXX 0101 0111| 0x57    |Sprite attributes               |
+| |*||XXXX XXXX 0101 1011| 0x5b    |Sprite pattern                  |
++-+-++-------------------+---------+--------------------------------+
