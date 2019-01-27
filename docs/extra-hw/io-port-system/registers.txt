@@ -4,30 +4,28 @@ Albright, Garry Lancaster and Phoebus Dokos
 Distributed under the Attribution-NonCommercial-ShareAlike CC BY-NC-SA license.
 -------------------------------------------------------------------------------
 
-The TBBlue uses two I/O ports on the register/data system, to send and read 
-information about hardware and settings.
+The ZX Spectrum Next stores configuration state for its various subsystems in a
+set of registers. These registers are accessible via two I/O Ports or via the 
+special NEXTREG Z80N instruction.
 
-Port 0x243B (9275) is write-only and is used to set the register number, listed
-below.
+Port 0x243B (9275) is used to set the register number, listed below.
+Port 0x253B (9531) is used to access the register value.
 
-Port 0x253B (9531) is used to access the register value, the register being 
-either only a few bits or all bits only read, write or read/write, depending on 
-the register number set.
-
-Some registers are accessible only during the initialization process 
-(IPL and modules).
+Some registers are accessible only during the initialization process.
 
 Registers:
+
 (R) 0x00 (00) => Machine ID
     00000001 = DE1A
     00000010 = DE2A
     00000101 = FBLABS
     00000110 = VTRUCCO
     00000111 = WXEDA
-    00001000 = EMULATORS
-    00001010 = ZX Spectrum Next
+    00001000 = EMULATORS *
+    00001010 = ZX Spectrum Next *
     00001011 = Multicore
-    11111010 = ZX Spectrum Next Anti-brick
+    11111010 = ZX Spectrum Next Anti-brick *
+    * = Relevant for ZX Next machines & software
 
 (R) 0x01 (01) => Core Version 
   bits 7-4 = Major version number
@@ -42,17 +40,19 @@ Registers:
   bit 0 = (R/W) Reading 1 indicates a Soft-reset. 
                 If written 1 causes a Soft Reset.
 
-(R/W) 0x03 (03) => Set machine type, only in IPL or config mode:
-   A write in this register disables the IPL 
-   (0x0000-0x3FFF are mapped to the RAM instead of the internal ROM)
-   bit 7 = lock timing
+(R/W) 0x03 (03) => Set machine type
+   A write to this register disables the IPL in config mode
+   (0x0000-0x3FFF is mapped to RAM instead of the internal ROM)
+   bit 7 = (W) lock timing
+         = (R) register 0x44 second byte indicator
    bits 6-4 = Timing:
+      (always writable if bit 7 is set)
       000 or 001 = ZX 48K
       010 = ZX 128K/+2 (Grey)
       011 = ZX +2A-B/+3e/Next Native
       100 = Pentagon 128K
    bit 3 = Reserved, must be 0
-   bits 2-0 = Machine type:
+   bits 2-0 = Machine type (writable in config mode only):
       000 = Config mode
       001 = ZX 48K
       010 = ZX 128K/+2 (Grey)
@@ -60,8 +60,8 @@ Registers:
       100 = Pentagon 128K
 
 (W) 0x04 (04) => Set page RAM, only in config mode (no IPL):
-   bits 7-6 = Reserved, must be 0
-   bits 5-0 = RAM page mapped in 0x0000-0x3FFF 
+   bits 7-5 = Reserved, must be 0
+   bits 4-0 = RAM bank mapped to 0x0000-0x3FFF 
    (64 x 16k pages = 1024K, 0 after a PoR or Hard-reset)
 
 (R/W) 0x05 (05) => Peripheral 1 setting:
@@ -71,7 +71,7 @@ Registers:
   bit 2 = 50/60 Hz mode (0 = 50Hz, 1 = 60Hz)(0 after a PoR or Hard-reset)
   bit 1 = joystick 2 mode (MSB)
   bit 0 = Enable Scandoubler (1 = enabled)(1 after a PoR or Hard-reset)
-      Joysticks modes:
+      Joystick modes:
       000 = Sinclair 2 (67890)
       001 = Kempston 1 (port 0x1F)
       010 = Cursor (56780)
@@ -91,7 +91,7 @@ Registers:
   bit 2 = PS/2 mode (0 = keyboard, 1 = mouse)
                     (exchanges the keyboard/mouse pins on the PS/2 connector)
                     (0 after a PoR or Hard-reset)
-  bits 1-0 = Audio chip mode (00 = AY, 10 = YM, 10 = Disabled)
+  bits 1-0 = Audio chip mode (00 = YM, 01 = AY, 1X = Disabled)
 
 (R/W) 0x07 (07) => Turbo mode:
   bit 1-0 = Turbo (00 = 3.5MHz, 01 = 7MHz, 10 = 14MHz)
@@ -99,8 +99,6 @@ Registers:
 
 (R/W) 0x08 (08) => Peripheral 3 setting:
   bit 7 = 128K paging enable (inverse of port 0x7ffd, bit 5) 
-          Unlike the paging lock in port 0x7ffd, 
-          this may be enabled or disabled at any time.
           Use "1" to disable the locked paging.
   bit 6 = "1" to disable RAM contention. (0 after a reset) 
   bit 5 = Stereo mode (0 = ABC, 1 = ACB)(0 after a PoR or Hard-reset)
@@ -111,61 +109,63 @@ Registers:
   bit 0 = Reserved, must be 0
 
 (R/W) 0x09 (09) => Peripheral 4 setting:
-  bits 7-4 = Reserved, must be 0
+  bit    7 = Mono setting for AY 2 (1 = mono, 0 default)
+  bit    6 = Mono setting for AY 1 (1 = mono, 0 default)
+  bit    5 = Mono setting for AY 0 (1 = mono, 0 default)
+  bit    4 = Sprite id lockstep (1 = Nextreg 0x34 and IO Port 0x303B are in lockstep, 0 default)
   bit    3 = Disables Kempston port ($DF) if set
-  bit    2 = Disables divMMC ports ($E3, $E7, $EB) if set (compatibility with 
-             external peripherals)
+  bit    2 = Disables divMMC ports ($E3, $E7, $EB) if set
   bits 1-0 = scanlines (0 after a PoR or Hard-reset)
         00 = scanlines off
         01 = scanlines 75%
         10 = scanlines 50%
         11 = scanlines 25%
 
-(W) 0x11 (17) => Video Timing
- bits 7-3 = Reserved, must be 0
- bits 2-0 = Mode (VGA = 0..6, HDMI = 7_
-      000 = Base VGA timing (50/60Hz depending on bit 2 or register 0x05)
-      001 = VGA setting 1
-      010 = VGA setting 2
-      011 = VGA setting 3
-      100 = VGA setting 4
-      101 = VGA setting 5
-      110 = VGA setting 6
-      111 = HDMI
-            
-            Each VGA setting increases the frequency by approx. 1 KHz
-
 (R) 0x0E (14) => Core Version (sub minor number) 
   (see register 0x01 for the major and minor version number)
 
-(R) 0x10 (16) => Anti-brick system (only in ZX Next Board):
-  bits 7-2 = Reserved, 0
-  bit    1 = (R) Button DivMMC (1=pressed)
-  bit    0 = (R) Button Multiface (1=pressed)
+(R) 0x10 (16) => Anti-brick system
+ bits 7-2 = Reserved, must be 0
+ bit    1 = Button DivMMC (1 = pressed)
+ bit    0 = Button Multiface (1 = pressed)
 
-(W) 0x10 (16) => Anti-brick system (only in ZX Next Board):
-  bit    7 = If 1 start selected core
-  bits 6-5 = Reserved, must be zero
-  bits 4-0 = Core ID 0-31 (config mode only, default is 2)
+(W) 0x10 (16) => Core Boot
+ bit    7 = Start selected core (1 = start)
+ bits 6-5 = Reserved, must be 0
+ bits 4-0 = Core ID 0-31 (writable in config mode only, default is 2)
 
-(R/W) 0x12 (18) => Layer 2 RAM page
+(R/W) 0x11 (17) => Video Timing (writable in config mode only)
+ bits 7-3 = Reserved, must be 0
+ bits 2-0 = Mode (VGA = 0..6, HDMI = 7)
+      000 = Base VGA timing, clk28 = 28000000
+      001 = VGA setting 1, clk28 = 28571429
+      010 = VGA setting 2, clk28 = 29464286
+      011 = VGA setting 3, clk28 = 30000000
+      100 = VGA setting 4, clk28 = 31000000
+      101 = VGA setting 5, clk28 = 32000000
+      110 = VGA setting 6, clk28 = 33000000
+      111 = HDMI, clk28 = 27000000
+      50/60Hz selection depends on bit 2 of register 0x05
+
+(R/W) 0x12 (18) => Layer 2 RAM bank
  bits 7-6 = Reserved, must be 0
- bits 5-0 = SRAM page (point to page 8 after a Reset)
+ bits 5-0 = RAM bank (point to bank 8 after a Reset, NextZXOS modifies to 9)
 
-(R/W) 0x13 (19) => Layer 2 RAM shadow page
+(R/W) 0x13 (19) => Layer 2 RAM shadow bank
  bits 7-6 = Reserved, must be 0
- bits 5-0 = SRAM page (point to page 11 after a Reset)
+ bits 5-0 = RAM bank (point to bank 11 after a Reset, NextZXOS modifies to 12)
 
 (R/W) 0x14 (20) => Global transparency color
   bits 7-0 = Transparency color value (0xE3 after a reset)
-             (Note: this value is 8-bit only, so the transparency is compared 
-              only by the MSB bits of the final colour)
+             (Note: this value is 8-bit, so the transparency is compared 
+              against only by the MSB bits of the final 9-bit colour)
              (Note2: this only affects Layer 2, ULA and LoRes. Sprites use 
-              register 0x4B for transparency)
+              register 0x4B for transparency and tilemap uses nextreg 0x??)
 
 (R/W) 0x15 (21) => Sprite and Layers system
-  bit 7 - LoRes mode, 128 x 96 x 256 colours (1 = enabled)
-  bits 6-5 = Reserved, must be 0
+  bit 7 = LoRes mode, 128 x 96 x 256 colours (1 = enabled)
+  bit 6 = Sprite priority (1 = sprite 0 on top, 0 = sprite 63 on top)
+  bit 5 = Enable sprite clipping in over border mode (1 = enabled)
   bits 4-2 = set layers priorities:
      Reset default is 000, sprites over the Layer 2, over the ULA graphics
      000 - S L U
@@ -174,6 +174,8 @@ Registers:
      011 - L U S
      100 - U S L
      101 - U L S
+     110 - S(U+L) ULA and Layer 2 combined, colours clamped to 7
+     111 - S(U+L-5) ULA and Layer 2 combined, colours clamped to [0,7]
   bit 1 = Over border (1 = yes)(Back to 0 after a reset)
   bit 0 = Sprites visible (1 = visible)(Back to 0 after a reset)
 
@@ -183,35 +185,58 @@ Registers:
 (R/W) 0x17 (23) => Layer2 Offset Y
   bits 7-0 = Y Offset (0-191)(0 after a reset)
 
-(W) 0x18 (24) => Clip Window Layer 2
+(R/W) 0x18 (24) => Clip Window Layer 2
+  bits 7-0 = Coords of the clip window
+  1st write - X1 position
+  2nd write - X2 position
+  3rd write - Y1 position
+  4rd write - Y2 position
+  Reads do not advance the clip position
+  The values are 0,255,0,191 after a Reset
+
+(R/W) 0x19 (25) => Clip Window Sprites
   bits 7-0 = Cood. of the clip window
   1st write - X1 position
   2nd write - X2 position
   3rd write - Y1 position
   4rd write - Y2 position
   The values are 0,255,0,191 after a Reset
+  Reads do not advance the clip position
+  When the clip window is enabled for sprites in "over border" mode,
+  the X coords are internally doubled and the clip window origin is
+  moved to the sprite origin inside the border.
 
-(W) 0x19 (25) => Clip Window Sprites
-  bits 7-0 = Cood. of the clip window
-  1st write - X1 position
-  2nd write - X2 position
-  3rd write - Y1 position
-  4rd write - Y2 position
-  The values are 0,255,0,191 after a Reset
-  Clip window on Sprites only work when the "over border bit" is disabled
-
-(W) 0x1A (26) => Clip Window ULA/LoRes
+(R/W) 0x1A (26) => Clip Window ULA/LoRes
   bits 7-0 = Coord. of the clip window
   1st write = X1 position
   2nd write = X2 position
   3rd write = Y1 position
   4rd write = Y2 position
+  The values are 0,255,0,191 after a Reset
+  Reads do not advance the clip position
+
+(R/W) 0x1B (27) => Clip Window Tilemap
+  bits 7-0 = Coord. of the clip window
+  1st write = X1 position
+  2nd write = X2 position
+  3rd write = Y1 position
+  4rd write = Y2 position
+  The values are 0,159,0,255 after a Reset
+  Reads do not advance the clip position
+  The X coords are internally doubled.
 
 (W) 0x1C (28) => Clip Window control
   bits 7-3 = Reserved, must be 0
   bit 2 - reset the ULA/LoRes clip index.
   bit 1 - reset the sprite clip index.
   bit 0 - reset the Layer 2 clip index.
+
+(R) 0x1C (28) => Clip Window control
+  (may change)
+  bits 7-6 = Reserved
+  bits 5-4 = Layer 2 clip index
+  bits 3-2 = Sprite clip index
+  bits 1-0 = ULA clip index
 
 (R) 0x1E (30) => Active video line (MSB)
   bits 7-1 = Reserved, always 0
@@ -233,7 +258,7 @@ Registers:
 
 (W) 0x28 (40) => High address of Keymap
   bits 7-1 = Reserved, must be 0
-  bit 0 = MSB adress
+  bit 0 = MSB address
 
 (W) 0x29 (41) => Low address of Keymap
   bits 7-0 = LSB adress
@@ -246,68 +271,124 @@ Registers:
                  (writing this register the address is auto-incremented)
   bits 7-0 = LSB data
 
-(W) 0x2D (45) => SoundDrive (SpecDrum) port 0xDF mirror
- bits 7-0 = Data to be written at Soundrive
-            (this port cand be used to send data to the SoundDrive using the
-             Copper co-processor)
+(W) 0x2D (45) => SpecDrum port 0xDF / DAC A+C mirror
+ bits 7-0 = Data to be written to mono DAC
+            (this port can be used to generate mono audio using the copper)
 
-(R/W) 0x32 (50) => LoRes Offset X
+(R/W) 0x2F (47) => Tilemap Offset X MSB
+  bits 7-2 = Reserved, must be 0
+  bits 1-0 = MSB X Offset
+  Meaningful Range is 0-319 in 40 char mode, 0-639 in 80 char mode
+
+(R/W) 0x30 (48) => Tilemap Offset X LSB
+  bits 7-0 = LSB X Offset
+  Meaningful range is 0-319 in 40 char mode, 0-639 in 80 char mode
+
+(R/W) 0x31 (49) => Tilemap Offset Y
+  bits 7-0 = Y Offset (0-191)
+
+(R/W) 0x32 (50) => ULA / LoRes Offset X
   bits 7-0 = X Offset (0-255)(Reset to 0 after a reset)
-  Being only 128 pixels, this allows the display to scroll in "half-pixels", 
-  at the same resolution and smoothness as Layer 2.
+  ULA can only scroll in multiples of 8 pixels so the lowest 3 bits have no effect at this time.
+  LoRes scrolls in "half-pixels" at the same resolution and smoothness as Layer 2.
 
-(R/W) 0x33 (51) => LoRes Offset Y
+(R/W) 0x33 (51) => ULA / LoRes Offset Y
   bits 7-0 = Y Offset (0-191)(Reset to 0 after a reset)
-  Being only 96 pixels, this allows the display to scroll in "half-pixels",
-  at the same resolution and smoothness as Layer 2.
+  LoRes scrolls in "half-pixels" at the same resolution and smoothness as Layer 2.
+
+(R/W) 0x34 (52) => Sprite Number
+  If the sprite number is in lockstep with io port 0x303B (nextreg 0x09 bit 4 is set)
+    bits 7   = Pattern address offset (Add 128 to pattern address)
+    bits 6-0 = Sprite number 0-127, Pattern number 0-63
+    Selects which sprite has its attributes connected to the following registers.
+    Effectively performs an out to port 0x303B with the same value
+  Otherwise
+    bit 7    = Ignored
+    bits 6-0 = Sprite number 0-127
+    Selects which sprite has its attributes connected to the following registers.
+  Bit 7 always reads back as zero.
+
+(W) 0x35 (53)  => Sprite Attribute 0
+(W) 0x75 (117) => Sprite Attribute 0 with automatic post increment of Sprite Number
+  bits 7-0 = LSB of X coordinate
+
+(W) 0x36 (54)  => Sprite Attribute 1
+(W) 0x76 (118) => Sprite Attribute 1 with automatic post increment of Sprite Number
+  bits 7-0 = LSB of Y coordinate
+
+(W) 0x37 (55)  => Sprite Attribute 2
+(W) 0x77 (119) => Sprite Attribute 2 with automatic post increment of Sprite Number
+  bits 7-4 = Palette offset added to top 4 bits of sprite colour index
+  bit 3 = X mirror
+  bit 2 = Y mirror
+  bit 1 = Rotate
+  bit 0 = MSB of X coordinate
+
+(W) 0x38 (56)  => Sprite Attribute 3
+(W) 0x78 (120) => Sprite Attribute 3 with automatic post increment of Sprite Number
+  bit 7 = Visible flag (1 = displayed)
+  bit 6 = Extended attribute (1 = Sprite Attribute 4 is active)
+  bits 5-0 = Pattern used by sprite (0-63)
+
+(W) 0x39 (57)  => Sprite Attribute 4
+(W) 0x79 (121) => Sprite Attribute 4 with automatic post increment of Sprite Number
+  4-bit Sprites
+    bit 7 = H (1 = sprite uses 4-bit patterns)
+    bit 6 = N6 (0 = use the first 128 bytes of the pattern else use the last 128 bytes)
+  bit 5 = reserved, must be 0
+  Scaling
+    bits 4-3 = X scaling (00 = 1x, 01 = 2x, 10 = 4x, 11 = 8x)
+    bits 2-1 = Y scaling (00 = 1x, 01 = 2x, 10 = 4x, 11 = 8x)
+  bit 0 = MSB of Y coordinate
+  A relative mode is enabled if H,N6 = 01.  Documentation can be found at specnext.com
+  If this attribute is not active, the sprite behaves as if this byte is zero.
 
 (R/W) 0x40 (64) => Palette Index
-  bits 7-0 = Select the palette index to change the default colour. 
-  0 to 127 indexes are to ink colours and 128 to 255 indexes are to papers.
-  (Except full ink colour mode, that all values 0 to 255 are inks)
-  Border colours are the same as paper 0 to 7, positions 128 to 135,
-  even at full ink mode. 
-  (inks and papers concept only applies to Enhanced ULA palette. 
-  Layer 2 and Sprite palettes works as "full ink" mode)
- 
+  bits 7-0 = Select the palette index to change the associated colour.
+  For the ULA only, INKs are mapped to indices 0-7, Bright INKS to indices 8-15,
+   PAPERs to indices 16-23 and Bright PAPERs to indices 24-31.
+  In ULANext mode, INKs come from a subset of indices 0-127 and PAPERs come from
+   a subset of indices 128-255.  The number of active indices depends on the number
+   of attribute bits assigned to INK and PAPER out of the attribute byte.
+  The ULA always takes border colour from paper.
+
 (R/W) 0x41 (65) => Palette Value (8 bit colour)
   bits 7-0 = Colour for the palette index selected by the register 0x40. 
-             (Format is RRRGGGBB -  Note the lower blue bit colour will be an OR
-              between bit 1 and bit 0. After the write, the palette index is 
-              auto-incremented to the next index, if the auto-increment is 
-              enabled at reg 0x43. The changed palette remains until a Hard 
-              Reset.)
+              (Format is RRRGGGBB -  the lower blue bit of the 9-bit colour will
+               be a logical OR of blue bits 1 and 0 of this 8-bit value.)
+             After the write, the palette index is auto-incremented to the next index
+             if the auto-increment is enabled at reg 0x43.  Reads do not auto-increment.
 
-(R/W) 0x42 (66) => Palette Format
-  bits 7-0 = Number of the last ink colour entry on palette. 
-            (Reset to 15 after a Reset)
-            (This number can be 1, 3, 7, 15, 31, 63, 127 or 255. The 255 value 
-             enables the full ink colour mode and all the the palette entries 
-             are inks but the paper will be the colour at position 128. 
-             Note: only applies to Enhanced ULA palette. Layer 2 and Sprite 
-             palettes work always as "full ink")
+(R/W) 0x42 (66) => ULANext Attribute Byte Format
+  bits 7-0 = Mask indicating which bits of an attribute byte are used to
+             represent INK.  The rest will represent PAPER.  (15 on reset)
+             The mask can only indicate a solid sequence of bits on the right
+             side of the attribute byte (1, 3, 7, 15, 31, 63, 127 or 255).
+             The 255 value enables the full ink colour mode and all the the palette entries 
+             will be inks with all paper colours mapping to position 128.
 
 (R/W) 0x43 (67) => Palette Control
   bit 7 = '1' to disable palette write auto-increment.
   bits 6-4 = Select palette for reading or writing:
      000 = ULA first palette
-     100 = ULA secondary palette
+     100 = ULA second palette
      001 = Layer 2 first palette
-     101 = Layer 2 secondary palette
+     101 = Layer 2 second palette
      010 = Sprites first palette 
-     110 = Sprites secondary palette
-  bit 3 = Select Sprites palette (0 = first palette, 1 = secondary palette)
-  bit 2 = Select Layer 2 palette (0 = first palette, 1 = secondary palette)
-  bit 1 = Select ULA palette (0 = first palette, 1 = secondary palette)
-  bit 0 = Disable the standard Spectrum flash feature to enable the extra 
-          colours. (0 after a reset)
+     110 = Sprites second palette
+     011 = Tilemap first palette
+     111 = Tilemap second palette
+  bit 3 = Select Sprites palette (0 = first palette, 1 = second palette)
+  bit 2 = Select Layer 2 palette (0 = first palette, 1 = second palette)
+  bit 1 = Select ULA palette (0 = first palette, 1 = second palette)
+  bit 0 = Enabe ULANext mode if 1. (0 after a reset)
 
 (R/W) 0x44 (68) => Palette Value (9 bit colour)
   Two consecutive writes are needed to write the 9 bit colour
   1st write:
      bits 7-0 = RRRGGGBB
   2nd write. 
-     IF writing a L2 palette
+     If writing a L2 palette
      -----------------------------------------------------------------------
      bit  7   = 1 for L2 priority colour, 0 for normal
                 Priority colour will always be on top even on an SLU priori-
@@ -317,34 +398,39 @@ Registers:
      bits 6-1 = Reserved, must be 0
      bit  0   = lsb B
      
-     IF writing another palette
+     If writing another palette
      -----------------------------------------------------------------------
      bits 7-1 = Reserved, must be 0
      bit  0   = lsb B
            
-              (After the two consecutives writes the palette index is 
-               auto-incremented if the auto-increment is enabled by reg 0x43.
-               The changed palette remais until a Hard Reset.)
+     After the two consecutives writes the palette index is 
+     auto-incremented if the auto-increment is enabled by reg 0x43.
+     
+     Reads only return the 2nd byte and do not auto-increment.
 
 (R/W) 0x4A (74) => Transparency colour fallback
-  bits 7-0 = Set the 8 bit colour.
-  (0 = black on reset on reset)
+  bits 7-0 = Set the 8 bit colour used if all layers are transparent.
+  (black on reset = 0)
 
-(R/W) 0x4B (75) => Transparency index for Sprites
-  bits 7-0 = Set the index value.
-  (0XE3 after a reset)
+(R/W) 0x4B (75) => Transparency index for sprites
+  bits 7-0 = Set the index value (0xE3 after reset)
+  For 4-bit sprites only the bottom 4-bits are relevant.
+
+(R/W) 0x4C (76) => Transparency index for the tilemap
+  bits 7-4 = Reserved, must be 0
+  bits 3-0 = Set the index value (0xF after reset)
 
 (R/W) 0x50 (80) => MMU slot 0
   bits 7-0 = Set a Spectrum RAM page at position 0x0000 to 0x1fff
   (255 after a reset)
-  Pages can be from 0 to 223 on a full expanded Next. 
-  A 255 value remove the RAM page and map the current ROM
+  Pages can be from 0 to 223 on a fully expanded Next. 
+  A 255 value causes the ROM to become visible.
 
 (R/W) 0x51 (81) => MMU slot 1
   bits 7-0 = Set a Spectrum RAM page at position 0x2000 to 0x3fff
   (255 after a reset)
   Pages can be from 0 to 223 on a full expanded Next. 
-  A 255 value remove the RAM page and map the current ROM
+  A 255 value causes the ROM to become visible.
 
 (R/W) 0x52 (82) => MMU slot 2
   bits 7-0 = Set a Spectrum RAM page at position 0x4000 to 0x5fff
@@ -376,16 +462,18 @@ Registers:
   (1 after a reset)
   Pages can be from 0 to 223 on a full expanded Next.
 
-  Writing on ports 0x1FFD, 0x7FFD and 0xDFFD overwrites the MMUs values. 
-  +3 special mode DISABLE the MMUs, if is used.
+  Writing to ports 0x1FFD, 0x7FFD and 0xDFFD writes 255 to MMU0 and MMU1
+  and writes appropriate values to MMU6 and MMU7 to map in the selected 16k bank.
+  
+  +3 special modes override the MMUs if used.
 
 (W) 0x60 (96) => Copper data
-  bits 7-0 = Byte to write at "Copper list"
-  Note that each copper instruction is composed by two bytes (16 bits).
+  bits 7-0 = Byte to write to copper instruction memory.
+  Note that each copper instruction is two bytes long.
+  After a write, the index is auto-incremented to the next memory position.
 
 (W) 0x61 (97) => Copper control LO bit
-  bits 7-0 = Copper list index address LSB.
-  After the write, the index is auto-incremented to the next memory position.
+  bits 7-0 = Copper instruction memory address LSB.
   (Index is set to 0 after a reset)
 
 (W) 0x62 (98) => Copper control HI bit
@@ -395,7 +483,63 @@ Registers:
         10 = Copper start, execute the list from last point, and loop to the 
              start
         11 = Copper start, execute the list from index 0, and restart the list 
-             at each frame("start of each frame" actually means line 0)
-  bits 2-0 = Copper list index address MSB
+             when the raster reaches position (0,0)
+  bits 2-0 = Copper instruction memory address MSB
+
+(R/W) 0x68 (104) => ULA Control
+  bit 7    = 1 to disable ULA output
+  bit 6    = 0 to select the ULA colour for blending in SLU modes 6 & 7
+           = 1 to select the ULA/tilemap mix for blending in SLU modes 6 & 7
+  bits 5-1 = Reserved must be 0
+  bit 0    = 1 to enable stencil mode when both the ULA and tilemap are enabled
+            (if either are transparent the result is transparent otherwise the
+             result is a logical AND of both colours)
+
+(R/W) 0x6B (107) => Tilemap Control
+  bit 7    = 1 to enable the tilemap
+  bit 6    = 0 for 40x32, 1 for 80x32
+  bit 5    = 1 to eliminate the attribute entry in the tilemap
+  bit 4    = palette select
+  bits 3-0 = Reserved set to 0
+
+(R/W) 0x6C (108) => Default Tilemap Attribute
+  bits 7-4 = Palette Offset
+  bit 3    = X mirror
+  bit 2    = Y mirror
+  bit 1    = Rotate
+  bit 0    = ULA over tilemap
+             (bit 8 of tile id if the ULA is disabled)
+  This attribute is used for all tiles if bit 5 of nextreg 0x6B is set
+
+(R/W) 0x6E (110) => Tilemap Base Address
+  bits 7-6 = Read back as zero, write values ignored
+  bits 5-0 = MSB of address of the tilemap in Bank 5
+  The value written is an offset into Bank 5 allowing the tilemap to be placed
+  at any multiple of 256 bytes.
+  Writing a physical MSB address in 0x40-0x7f or 0xc0-0xff range is permitted.
+  The value read back should be treated as having a fully significant 8-bit value.
+
+(R/W) 0x6F (111) => Tile Definitions Base Address
+  bits 7-6 = Read back as zero, write values ignored
+  bits 5-0 = MSB of address of tile definitions in Bank 5
+  The value written is an offset into Bank 5 allowing tile definitions to be placed
+  at any multiple of 256 bytes.
+  Writing a physical MSB address in 0x40-0x7f or 0xc0-0xff range is permitted.
+  The value read back should be treated as having a fully significant 8-bit value.
+
+(W) 0x75 (117) => Sprite Attribute 0 with automatic post increment of Sprite Number
+  See nextreg 0x35
+
+(W) 0x76 (118) => Sprite Attribute 1 with automatic post increment of Sprite Number
+  See nextreg 0x36
+
+(W) 0x77 (119) => Sprite Attribute 2 with automatic post increment of Sprite Number
+  See nextreg 0x37
+
+(W) 0x78 (120) => Sprite Attribute 3 with automatic post increment of Sprite Number
+  See nextreg 0x38
+
+(W) 0x79 (121) => Sprite Attribute 4 with automatic post increment of Sprite Number
+  See nextreg 0x39
 
 (W) 0xFF (255) => Debug LEDs (DE-1, DE-2 am Multicore only)
