@@ -1,3 +1,14 @@
+P.D     2019-01-27 - Core 2.00.26
+                     Display: New Tilemap mode (640 x 256 and 320 x 256)
+                     Documentation: New NextReg and I/O ports documentation
+                                    Tilemap documentation
+                     Software: New .boot command by David Saphier (config 
+                                                                    switcher)
+                               New ScrollNutter version
+                               Two new Tilemap demos (TM and StencilV.03)
+                               Updated Spectron 2048 
+                               Updated Kev Brady's utilities Overscan and
+                                       Kempston
 P.D.    2019-01-04 - Core 2.00.24 
                      Sprites:   
                      Completely New Sprite Engine (128 total sprites,
