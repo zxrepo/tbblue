@@ -59,7 +59,7 @@ void copy_font_to_tile(unsigned char startcode, unsigned char endcode)
    static unsigned char *dst;
    static unsigned char byte;
    
-   for (unsigned char i = startcode; i != endcode; ++i)
+   for (unsigned char i = startcode; i <= endcode; ++i)
    {
       src = &font_8x8_bbc_system[(i - ' ') * 8];
       dst = (unsigned char *)&tiles[i];
@@ -146,7 +146,7 @@ void ula_splat(void)
    
    p = (unsigned char *)((unsigned int)((unsigned long)rand() * 768 / RAND_MAX) + 22528);
    
-   // colour it but only if it's not transparent now (so ula text is not hidden)
+   // colour it but only if it's transparent so that ula text is not hidden
    
    if (*p == (INK_MAGENTA | PAPER_MAGENTA))
       *p = INK_GREEN | PAPER_GREEN;
