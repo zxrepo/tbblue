@@ -5,6 +5,7 @@
 #include <string.h>
 #include <arch/zxn.h>
 #include <input.h>
+#include <intrinsic.h>
 
 ///////////////////////////////
 // TILEMAP
@@ -257,6 +258,10 @@ void reset_display(void)
    ZXN_NEXTREG(0x6e, 0x6c);    // tilemap base address is 0x6c00
    ZXN_NEXTREG(0x6f, 0x5c);    // tile definitions base address is 0x5c00 (code 32 starts at 0x6000)
    ZXN_NEXTREG(0x6b, 0xc0);    // enable tilemap in 80x32 mode
+   
+   // notice the tilemap's transparency index hasn't been set
+   // this program depends on it being the reset value of 0xf
+   // (or rather not 0 or 1) for emulator tests
 }
 
 void main(void)
@@ -289,7 +294,9 @@ void main(void)
 
    // fill up tilemap with random ascii
    // not random anymore to see how the 80x32 and 40x32 screens are laid out relative to each other
-   
+
+intrinsic_label(TILEMAP_BEGIN);
+
    for (unsigned char x = 0; x != 80; ++x)
    {
       for (unsigned char y = 0; y != 32; ++y)
@@ -297,17 +304,19 @@ void main(void)
          //tilemap[y][x].tile = (unsigned char)((((unsigned long)rand() * 96) / RAND_MAX)) + ' ';
          if ((x == 0) || (x == 40))
          {
-            tilemap[y][x].tile = '0' - ' ' + (x == 40);
+            tilemap[y][x].tile = '0' + (x == 40);
             tilemap[y][x].flags = ((rand() & 0x0f) << 4) + 3;   // random palette offset, rotate, ula over tile
          }
          else
          {
-            tilemap[y][x].tile = (x%26) + 'A' - ' ';
+            tilemap[y][x].tile = (x%26) + 'A';
             tilemap[y][x].flags = ((rand() & 0x0f) << 4) + 1;   // random palette offset, ula over tile
          }
       }
    }
-   
+
+intrinsic_label(TILEMAP_END);
+
    // initialize display
    
    reset_display();
