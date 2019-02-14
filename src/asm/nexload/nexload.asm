@@ -1,6 +1,28 @@
 ;-------------------------------
 ; .nexload 
 ; © Jim Bagley 2018
+; 
+; Changelist:
+; v6  14/02/2019 RVG   Bugfix: NEXLOAD now resets all four sets of clip indices 
+;  					   correctly.
+; v5  03/01/2019 RVG   .nexload now reads the V1.2 HEADER_ENTRYBANK byte, and 
+;					   pages in this 16K bank at $C000 before jumping to the PC. 
+;					   This only happens if HEADER_DONTRESETNEXTREGS is 0. The 
+;					   user must be sure to create a suitable entry point code 
+;					   in this bank somewhere between $C000..FFFF, and set PC 
+;					   accordingly, either in the input SNA or with the !PCSP 
+;					   token.
+;					   Note: .nexload CSpect test mode (SNA-based) still needs 
+;					   fixing up to work with the custom BASIC error changes.
+; v4  03/01/2019 RVG   Bugfix: .nexload now checks the subminor core version 
+;                      correctly.
+; v3  03/01/2019 RVG  .nexload gives an core update error when it encounters 
+;                     .nex files requiring core version newer than the current 
+;					   core.
+; v2  03/01/2019 RVG  .nexload gives an nexload update error when it encounters 
+;                     .nex files newer than it can handle.
+; v1  14/09/2018 JB   Jim's final version for V1.1 format.
+;
 ;-------------------------------
 	device zxspectrum48
 ;-------------------------------
@@ -11,6 +33,8 @@
 ;							offset	;size
 HEADER_NEXT					= 0		;4
 HEADER_VERSION				= 4		;4
+HEADER_VERSION_MAJOR		= HEADER_VERSION+1
+HEADER_VERSION_MINOR		= HEADER_VERSION+3
 HEADER_RAMREQ				= 8		;1
 HEADER_NUMBANKS 			= 9		;1
 HEADER_LOADSCR				= 10	;1
@@ -27,7 +51,8 @@ HEADER_DONTRESETNEXTREGS	= 134	;1
 HEADER_CORE_MAJOR			= 135	;1
 HEADER_CORE_MINOR			= 136	;1
 HEADER_CORE_SUBMINOR		= 137	;1
-HEADER_HIRESCOL				= 138	;1	// if non zero is to be 
+HEADER_HIRESCOL				= 138	;1 // if non zero is to be 
+HEADER_ENTRYBANK			= 139	;1 // V1.2, 16K bank to page into $C000 at exit
 
 LAYER_2_PAGE				= 9
 LAYER_2_PAGE_0				= 9
@@ -35,6 +60,7 @@ LAYER_2_PAGE_1				= 10
 LAYER_2_PAGE_2				= 11
 
 M_GETSETDRV  				equ $89
+M_GETERR 					equ $93
 F_OPEN       				equ $9a
 F_CLOSE      				equ $9b
 F_READ       				equ $9d
@@ -89,6 +115,9 @@ TBBLUE_REGISTER_SELECT			equ $243B
 	MACRO SWAPNIB: dw $23ED: ENDM
 	MACRO NEXTREG_A register:dw $92ED:db register:ENDM			; Set Next hardware register using A
 	MACRO NEXTREG_nn register, value:dw $91ED:db register:db value:ENDM	; Set Next hardware register using an immediate value
+	MACRO BORDER colour:ld a,colour:out ($FE),a:ld a,colour*8:ld (23624),a:ENDM
+	MACRO FREEZE:BORDER 1:BORDER 2:jr$-18:ENDM
+	MACRO PRINT_CHAN chan:ld a,chan:rst $18:dw 5981:ENDM
 
 ;-------------------------------
 
@@ -105,16 +134,19 @@ start
 
 ;testfile db	"l2.nex",0
 ;testfile db	"ula.nex",0
-testfile db	"lo.nex",0
+;testfile db	"lo.nex",0
 ;testfile db	"shr.nex",0
 ;testfile db	"shc.nex",0
 
 ;testfile db	"bis.nex",0
 ;testfile db	"warhawk.nex",0
+testfile db 	"NXtel.nex",0
 	ELSE
 
 	org	$2000
 start
+	ld (oldStack),sp	
+
 	ld	a,h:or l:jr nz,.gl
 	ld	hl,emptyline:call print_rst16:jr finish
 .gl	ld	de,filename:ld b,127
@@ -125,8 +157,8 @@ start
 	; the filename passed may have trailing spaces... the index needs to update to omit them
 
 	ld	ix,filename
-	call 	stripLeading
-	call	loadbig
+	call stripLeading	
+	call loadbig
 finish
 	xor	a:ret
 
@@ -141,18 +173,17 @@ stripLeading					; remove leading spaces ix = pointer
 .ok	ld a,h:ld ixh,a:ld a,l:ld ixl,a		; set ix to current
 	ret
 ;-------------------------------
-getCurrentCore
-        ld a,NEXT_VERSION_REGISTER
-        ld bc,TBBLUE_REGISTER_SELECT
-        out (c),a:inc b:in a,(c)		; major and minor
-        ld c,a
-        and %00001111:ld (CoreMinor),a
-        ld a,c:SWAPNIB:and %00001111:ld (CoreMajor),a
-
-        ld a,NEXT_VERSION_REGISTER
-        ld bc,CORE_VERSION_REGISTER
-        out (c),a:inc b:in a,(c):ld (CoreSub),a		; sub minor
+getCurrentCore	
+    ld a,NEXT_VERSION_REGISTER
+    ld bc,TBBLUE_REGISTER_SELECT
+    out (c),a:inc b:in a,(c)		; major and minor
+    ld d,a
+    and %1111:ld (CoreMinor),a
+    ld a,d:SWAPNIB:and %1111:ld (CoreMajor),a
+    ld a,CORE_VERSION_REGISTER:dec b
+    out (c),a:inc b:in a,(c):ld (CoreSub),a		; sub minor
 	ret
+	
 ;-------------------------------
 
 getrealbank
@@ -161,11 +192,19 @@ getrealbank
 .table	db	5,2,0,1,3,4,6,7
 ;-------------------------------
 loadbig
-	ld (oldStack),sp
-	push ix:call setdrv:pop ix:push ix:call fopen:pop ix:ret c
-
+	di
+	IFDEF testing
+		IFDEF testing8000
+			ld	sp,$7fff
+		ELSE
+			ld	sp,$4800
+		ENDIF
+	ELSE
+	ld	sp,$3fff
+	ENDIF	
+	push ix:call fopen:pop ix	
 	call getCurrentCore
-
+	
 	; set transparency on ULA
 	NEXTREG_nn 66, 15
 	NEXTREG_nn PALETTE_CONTROL_REGISTER, 0
@@ -178,18 +217,9 @@ loadbig
 	NEXTREG_nn SPRITE_CONTROL_REGISTER,GRAPHIC_PRIORITIES_SLU + GRAPHIC_SPRITES_VISIBLE
 
 	Set14mhz
+	
 
-	di
-	IFDEF testing
-		IFDEF testing8000
-			ld	sp,$7fff
-		ELSE
-			ld	sp,$4800
-		ENDIF
-	ELSE
-	ld	sp,$3fff
-	ENDIF
-
+	
 ;	ld	a,LAYER_2_PAGE_0*2:NEXTREG_A MMU_REGISTER_6:inc a:NEXTREG_A MMU_REGISTER_7:ld	hl,$c000:ld de,$c001:ld bc,$3fff:ld (hl),l:ldir
 ;	ld	a,LAYER_2_PAGE_1*2:NEXTREG_A MMU_REGISTER_6:inc a:NEXTREG_A MMU_REGISTER_7:ld	hl,$c000:ld de,$c001:ld bc,$3fff:ld (hl),l:ldir
 ;	ld	a,LAYER_2_PAGE_2*2:NEXTREG_A MMU_REGISTER_6:inc a:NEXTREG_A MMU_REGISTER_7:ld	hl,$c000:ld de,$c001:ld bc,$3fff:ld (hl),l:ldir
@@ -203,6 +233,10 @@ loadbig
 ;	pop ix
 ;	push ix:call setdrv:pop ix:call fopen
 	ld	ix,$c000:ld bc,$200:call fread
+	
+	ld a,($c000+HEADER_VERSION_MAJOR):sub '0':and %1111:SWAPNIB:ld b,a:ld a,($c000+HEADER_VERSION_MINOR):and %1111:or b:ld b,a
+	ld a,(LoaderVersion):cp b:jp c,loaderUpdate
+		
 	ld	hl,$c000+HEADER_BANKS:ld de,LocalBanks:ld bc,48+64:ldir
 	ld	hl,($c000+HEADER_PC):ld (PCReg),hl
 	ld	hl,($c000+HEADER_SP):ld (SPReg),hl
@@ -215,7 +249,8 @@ loadbig
 .o2	ld a,($c000+HEADER_CORE_SUBMINOR)               :cp e:jr z,.ok:jp nc,coreUpdate
 .ok
 
-	ld	a,($c000+HEADER_DONTRESETNEXTREGS):or a:jp nz,.dontresetregs
+	ld a, ($c000+HEADER_ENTRYBANK):ld (.entryBankSMC),a
+	ld a,($c000+HEADER_DONTRESETNEXTREGS):or a:jp nz,.dontresetregs
 ;Reset All registers
 ;stop copper
 	NEXTREG_nn COPPER_CONTROL_HI_BYTE_REGISTER, 0	; stop
@@ -226,13 +261,13 @@ loadbig
 ;	NEXTREG_nn 6,200
 ;	11001000
 	ld a,PERIPHERAL_2_REGISTER:ld bc,TBBLUE_REGISTER_SELECT:out (c),a:inc b:in a,(c)
-    	set 7,a				; turbo on
-    	res 6,a				; dac i2s (don't think this does anything)
+    set 7,a				; turbo on
+    res 6,a				; dac i2s (don't think this does anything)
 	res 5,a    			; lightpen off
-    	res 4,a				; DivMMC automatic paging off
-    	set 3,a				; mulitface - add to build options so can be selected
-;    	res 2,a				; 2 = ps2 mode - leave to option control
-;    	set 1,a:set 0,a			; set AY (rather than YM) - * Causes Silence *
+   	res 4,a				; DivMMC automatic paging off
+    set 3,a				; mulitface - add to build options so can be selected
+;   res 2,a				; 2 = ps2 mode - leave to option control
+;   set 1,a:set 0,a		; set AY (rather than YM) - * Causes Silence *
 
 	; 			bits 1-0 = Audio chip mode (0- = disabled, 10 = YM, 11 = AY)
 	;			11 = disable audio, or appears to be the case
@@ -262,7 +297,23 @@ loadbig
 	NEXTREG_nn 20,$e3													; transparent index
 	NEXTREG_nn 21,1														; priorities + sprite over border + sprite enable
 	NEXTREG_nn 22,0:NEXTREG_nn 23,0										; layer2 xy scroll
-	NEXTREG_nn 27,7														; clipwindow index reset all 3
+	NEXTREG_nn 28,0														; clipwindow index reset all 4
+	NEXTREG_nn 24,0														; reset layer 2 clip
+	NEXTREG_nn 24,255
+	NEXTREG_nn 24,0
+	NEXTREG_nn 24,191
+	NEXTREG_nn 25,0														; reset sprites clip
+	NEXTREG_nn 25,255
+	NEXTREG_nn 25,0
+	NEXTREG_nn 25,191
+	NEXTREG_nn 26,0														; reset ULA clip
+	NEXTREG_nn 26,255
+	NEXTREG_nn 26,0
+	NEXTREG_nn 26,191
+	NEXTREG_nn 27,0														; reset tilemap clip
+	NEXTREG_nn 27,159
+	NEXTREG_nn 27,0
+	NEXTREG_nn 27,255
 	NEXTREG_nn 24,0:NEXTREG_nn 24,255:NEXTREG_nn 24,0:NEXTREG_nn 24,191	; clip window layer2
 	NEXTREG_nn 25,0:NEXTREG_nn 25,255:NEXTREG_nn 25,0:NEXTREG_nn 25,191	; clip window sprites
 	NEXTREG_nn 26,0:NEXTREG_nn 26,255:NEXTREG_nn 26,0:NEXTREG_nn 26,191	; clip window ula
@@ -389,9 +440,9 @@ loadbig
 	ld	a,(BorderCol):out (254),a
 .skpbmp
 	xor a:NEXTREG_A MMU_REGISTER_6:inc a:NEXTREG_A MMU_REGISTER_7
-	
-	IFDEF testing
-	BREAK
+
+	IFDEF testing	
+		BREAK
 	ENDIF
 	
 	ld a,(LocalBanks+5):or a:jr z,.skb5
@@ -418,13 +469,17 @@ loadbig
 	ld a,(IsLoadingScr):or a:call nz,delay
 
 	pop de:push de:call progress
-
+	
 	pop af:inc a:cp 112:jr nz,.lp;48+64:jr nz,.lp
 
 	call fclose
-	xor a:NEXTREG_A MMU_REGISTER_6
-	inc a:NEXTREG_A MMU_REGISTER_7
 
+	db $3E ;ld a,n
+.entryBankSMC ; Read entry bank
+	db 0
+	add a,a:NEXTREG_A MMU_REGISTER_6 ; Set upper 16K to entry bank
+	inc a:NEXTREG_A MMU_REGISTER_7	 ; (V1.2 feature)
+	
 ;.stop	inc a:and 7:out (254),a:jr .stop
 
 	ld a,(StartDel)
@@ -445,10 +500,13 @@ loadbig
 	ld	bc,4667:xor a:out (c),a
 
 .returnToBasic
-	call fclose
-	ld a,($5b5c):and 7:add a,a:NEXTREG_A MMU_REGISTER_6:inc a:NEXTREG_A MMU_REGISTER_7
+    call .returnToBasicTidy
 	ld sp,(oldStack)
 	xor a
+	ret
+.returnToBasicTidy	
+	call fclose
+	ld a,($5b5c):and 7:add a,a:NEXTREG_A MMU_REGISTER_6:inc a:NEXTREG_A MMU_REGISTER_7
 	ret
 
 ;--------------------
@@ -462,19 +520,16 @@ progress
 	ld h,$fe:ld a,d:add a,a:add a,24-6:ld l,a:ld (hl),e:inc h:ld (hl),e:inc l:ld (hl),e:dec h:ld (hl),e
 	ret
 ;--------------------
-fileError
-	ld a,1:out (254),a
-	ret
-;-------------
-setdrv
-	xor a:rst $08:db M_GETSETDRV
-	ld (drive),a:ret
+fileError ; esxDOS error code arrives in a
+	ld b,1 ;return error message to 32-byte buffer at DE
+	ld de,esxError:rst $08:db M_GETERR
+	ld hl,esxError
+	ld sp,(oldStack)
+	jp returnError2
 ;-------------
 fopen
-	ld b,FA_READ:db $21
-fcreate
-	ld b,FA_OVERWRITE:db 62
-drive	db 0
+	ld b,FA_READ
+	ld a,'*'
 	push ix:pop hl:rst $08:db F_OPEN
 	ld (handle),a:jp c, fileError
 	ret
@@ -491,16 +546,39 @@ fclose
 
 ;-------------
 coreUpdate
-	ld hl,coretext:call print_rst16
-	ld hl,($c000+HEADER_CORE_MAJOR):ld h,0:call dec8:ld a,",":rst 16
-	ld hl,($c000+HEADER_CORE_MINOR):ld h,0:call dec8:ld a,",":rst 16
-	ld hl,($c000+HEADER_CORE_SUBMINOR):ld h,0:call dec8:ld a,13:rst 16
-	ld hl,yourcoretext:call print_rst16
-	ld hl,(CoreMajor):ld h,0:call dec8:ld a,",":rst 16
-	ld hl,(CoreMinor):ld h,0:call dec8:ld a,",":rst 16
-	ld hl,(CoreSub):ld h,0:call dec8:ld a,13:rst 16
-	xor a:ret
-	
+	ld sp,(oldStack)
+	call clsWhite
+	ld hl,coretext:call print_rst16	
+	ld hl,(CoreMajor):ld h,0:call dec8:ld a,".":rst 16
+	ld hl,(CoreMinor):ld h,0:call dec8:ld a,".":rst 16
+	ld hl,(CoreSub):ld h,0:call dec8	
+	ld hl,yourcoretext:call print_rst16	
+	ld hl,($c000+HEADER_CORE_MAJOR):ld h,0:call dec8:ld a,".":rst 16
+	ld hl,($c000+HEADER_CORE_MINOR):ld h,0:call dec8:ld a,".":rst 16
+	ld hl,($c000+HEADER_CORE_SUBMINOR):ld h,0:call dec8		
+	ld hl,coretext2:call print_rst16
+	ld a,(CoreSub)
+	ld hl,coreerrortext
+	jp returnError
+
+;-------------
+loaderUpdate
+	ld sp,(oldStack)
+	call clsWhite
+	ld a,($c000+HEADER_VERSION_MAJOR)
+	ld (loadervertextMajor),a
+	ld a,($c000+HEADER_VERSION_MINOR)
+	ld (loadervertextMinor),a
+    ld hl,loadervertext:call print_rst16
+	ld hl,fileversionerrortext
+returnError
+	ld sp,(oldStack)
+returnError2
+	xor a
+	scf
+	ei
+	ret
+
 dec8
 	ld de,100
 	call dec0
@@ -515,11 +593,29 @@ dec0
 	add hl,de
 	rst 16
 	ret
+clsWhite
+	ld	hl,$4000:ld de,$4001:ld bc,$17ff:ld (hl),0:ldir
+	ld	hl,$5800:ld de,$5801:ld bc,$2ff:ld (hl),$38:ldir
+	ld a,22:rst 16:xor a:rst 16:xor a:rst 16
+	ld a,7:out ($fe),a
+	ret	
 
 coretext
-	db	"Sorry, this file needs Core",13,0
+	db	"Your core is ",0
 yourcoretext
-	db	"Your Core is ",13,0
+	db	", but ",13,"this file needs ",0	
+coretext2
+    db ".",13,"Please update your core.",13,0
+coreerrortext
+    db  "Update cor",'e'|128
+fileversionerrortext
+    db  "Update .nexloa",'d'|128	
+loadervertext
+    db  "This is a V"
+loadervertextMajor
+	db	"x."
+loadervertextMinor
+	db	"x file. Please     update to the latest .nexload   version.",0
 
 ;-------------
 DefaultPalette
@@ -542,12 +638,14 @@ StartDel	db	0
 NumFiles	dw	0
 LocalBanks	db	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 		db	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+LoaderVersion db $12 ; V1.2 in bcd
 
 print_rst16	ld a,(hl):inc hl:or a:ret z:rst 16:jr print_rst16
 
 filename	db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 emptyline	db		".nexload <filename> to load nex file.",13,0
+esxError	ds 		34,128
 
 header		equ		$
 
