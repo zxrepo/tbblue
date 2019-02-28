@@ -1,6 +1,6 @@
 ;
 ; TBBlue / ZX Spectrum Next project
-; Copyright (c) 2010-2018 
+; Copyright (c) 2010-2019 
 ;
 ; RTC ACK - Victor Trucco and Tim Gilberts
 ;
@@ -43,11 +43,14 @@
 ; Time stamps added by Tim Gilberts on behalf of Garry (Dios de) Lancaster 9/12/2017
 ; by code optimization - some notes left in for assumptions.
 ; V2.1 corrected bit bugs in Month resulting from adding time.
-; v2.2 added Signature check for RTC to return Carry if errorm
+; v2.2 added Signature check for RTC to return Carry if error
 ;      removed old DivMMC redundant code for Next
 ; v1.0 ACK checked for on receipt of data instead of using signature 
+; v1.1 Added support for extension to exact seconds and 100ths - H is seconds
+;      and L is 100's if either not available then set to 255.
+; v1.2 Saved IRQ state to avoid some bugs that appeared.
 ;
-; Max size for this compiled ASM is 256 bytes!!! And it is that...
+; Max size for this compiled ASM is 512 bytes!!! (256 bytes to fit in ESXDOS!)
 ;
 ; OUTPUT
 ; reg BC is Date 
@@ -57,8 +60,14 @@
 ; reg DE is Time
 ;	hours (5 bits) + minutes (6 bits) + seconds/2 (5 bits)
 ;
-; Carry set if no valid signature in 0x3e and 0x3f i.e. letters 'ZX'
-; this is used to detect no RTC or unset date / time.
+; reg H is actual seconds
+; reg L is 100ths if supported or 255 if not.
+;
+; Not in this code (but maybe good idea to add back as extra check):
+; *Carry set if no valid signature in 0x3e and 0x3f i.e. letters 'ZX'
+; *this is used to detect no RTC or unset date / time.
+; for us
+; Carry set if no valid ACK received on BUS from RTC chip.
 ;
 ; ds1307 serial I2C RTC 
 ;  	11010001 = 0xD0 = read
@@ -85,37 +94,38 @@
 
   
 START:
-	
-	; save A and HL
-	; BC and DE will contain our date and time
-;	push hl			;ONLY needed on ESXDOS
-;	LD (END+1),A		;Ommitted to make space for ACK test
 
+	LD HL,RETNOEI		;Will return enabling interrupts if they were on
+	CALL System_CheckEIState
+	JP PO,TALK		;IRQ not enabled already
+	DI
+	DEC HL			;Need to re-enable on way out
+
+TALK:
+	PUSH HL			;Return now on stack to either EI or real RET
+	
 	;---------------------------------------------------
 	; Talk to DS1307 OR DS3231 and request the first reg
-	DI
+
 	call START_SEQUENCE
 	
 	ld l,0xD0
 	call SEND_DATA
-;Need to check Carry here and return with error if so? Maybe too far for JR RET C does not restore
 	JR C, end_stop
 	
 	ld l,0x00		;Read only the first 7 registers 
 	call SEND_DATA
-	JR C, end_stop	;Should check really but saves two bytes.
-;Could check here as well or we could allow SEND_DATA to end
-	
+	JR C, end_stop	
+		
 	call START_SEQUENCE
 	
 	ld l,0xD1
 	call SEND_DATA
-	JR C,end_stop		;Should check really but saves two bytes.
+	JR C,end_stop	
 	;---------------------------------------------------
 	
 	;point to the first storage space (signature) in table
 	LD HL,SEC
-	PUSH HL			;One less byte to PUSH and POP
 	
 	;there are 7 regs to read that we need
 	LD e, 7
@@ -138,10 +148,11 @@ loop_read:
 end_read:
 	ld a,1
 	call SEND_ACK_NACK	
-;	XOR A			;CCF (not needed as it is complement not clear so always set! as above routine does the Clear...)
+;	XOR A			;CCF (not needed complement not clear so always 
+				;set! as above routine does the Clear...)
 
 end_stop:
-;	LD E,A			;Preserve A in case it does not survive. 
+
 	PUSH AF
 
 ;STOP_SEQUENCE
@@ -150,24 +161,25 @@ end_stop:
 	CALL SDA1
 
 	POP AF
-	POP HL
 
-	EI
-;	RET C
+	RET C			; Exit if we had no acks, EI if needed.
 
-;As we have more space on NextOS - check that the values read are in range - the SIG is a good system
-;but does not work for other similar chips like the DS3231
-
+;As we have more space on NextOS - check that the values read are in range - 
+;the SIG is a good system but, does not work for other similar chips like the
+;DS3231
 	
 	;-------------------------------------------------
 	;prepare the bytes
 PREP_TIME:	
 	;prepare SECONDS
-;	LD HL,SEC
+	LD HL,SEC
 	
 	CALL LOAD_PREPARE_AND_MULT
 	CP 60
 	JR NC,RANGE_ERROR
+
+;	LD (SEC),A		;Destroy the BCD with actual value for later
+	LD (HL),A
 	
 	srl a 	;seconds / 2
 	
@@ -258,16 +270,46 @@ PREP_TIME:
 
 ;return without error as the Carry flag is clearead by the sla a above.
 END:	
-	ret
+	LD HL,(HUN)	;Get the extension value and the full precision seconds
+	RET		;Will return either enabling interrupts or not
 
 
 RANGE_ERROR:
 ;	LD D,A		; In case A never makes it back we know what range issue was...
 	SCF
 	RET
-	
 
-;This routine gets the BCD bytes and coverts to a number
+; I had previously devised the bytes below SP changing on an IRQ as a
+; detection system for timing effects so when I looked into how to save irq 
+; disable state accurately on a Z80 I was pleased to find:
+; https://www.msx.org/forum/msx-talk/development/do-not-use-ld-ai-read-interrupt-enabled-state?page=
+
+RETEI:	
+	EI
+RETNOEI:
+	RET
+
+; Workaround for LD A,I / LD A,R lying to us if an interrupt occurs during the
+; instruction. We detect this by examining if (sp - 1) was overwritten.
+; f: pe <- interrupts enabled
+; Modifies: af
+
+System_CheckEIState:
+    xor a
+    push af  ; set (sp - 1) to 0
+    pop af
+    ld a,i
+    ret pe  ; interrupts enabled? return with pe
+    dec sp
+    dec sp  ; check whether the Z80 lied about ints being disabled
+    pop af  ; (sp - 1) is overwritten w/ MSB of ret address if an ISR occurred
+    sub 1
+    sbc a,a
+    and 1  ; (sp - 1) is not 0? return with pe, otherwise po
+    ret
+
+
+;This routine gets the BCD bytes and converts to a number
 	
 LOAD_PREPARE_AND_MULT:
 
@@ -392,7 +434,6 @@ SEND_ACK_NACK:
 START_SEQUENCE:	
 
 	;high in both i2c, before begin
-;	ld a,1						;Could save two bytes here change CALL SCL to CALL SCL1 to remove ld a,1
 	ld c, PORT
 	CALL SCL1 
 	CALL SDA
@@ -430,11 +471,12 @@ SCL:
 SCLO:	OUT (c), a
 	NOP
 	ret
-	
+
 
 
 ;Data storage - don't need CON saves a byte - make sure it is within a 256 boundary...
-SEC:		defb 0		
+HUN:		defb 255		;Keep track of 100ths if available
+SEC:		defb 0			;Read as BCD bytes, ends up as actual
 MIN:		defb 0	
 HOU:		defb 0	
 DAY:		defb 0			;Wasted byte no easy way to recover it	 

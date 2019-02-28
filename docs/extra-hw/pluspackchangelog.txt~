@@ -15,8 +15,6 @@ both RTCSIG and RTCACK have been updated to support the new features. RTCACK is
 now the default RTC.SYS in NextZXOS - if you experience any issues try swapping
 back to RTCSIG.SYS renamed to RTC.SYS in NextZXOS first.
 
-Also split the Readme into RTC and I2C for clarity in Docs.
-
 18 August 2018
 --------------
 

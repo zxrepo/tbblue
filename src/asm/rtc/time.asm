@@ -46,6 +46,8 @@
 ; v3.1 added config register to RTC debug and sorted RTC.SYS debug to BC/DE loss of bit.
 ; v3.2 added signature management for RTC.SYS - signature set whenever time is written unless -i on debug
 ; v3.3 added ability to write registers but plan to seperate debug code to seperate DS1307 program?
+; v3.4 support HL return from RTC API with seconds in H and 100ths in L or 255
+;      if not supported.
 
 ;	DEVICE   ZXSPECTRUM48
 
@@ -953,9 +955,11 @@ NUMBER_TO_ASC:
 	
 ;---------------------------------------------------
 
-;-- Print out DE and BC registers. 
-print_regs:		push BC
+;-- Print out DE, BC and now HL registers. 
+print_regs:		PUSH HL
+			push BC
 			push DE
+
 		
 			ld HL, str_DE
 			call print
@@ -967,7 +971,12 @@ print_regs:		push BC
 			call print
 			pop hl
 			call prt_hex_16
-			
+			call print_newline
+
+			ld HL, str_HL
+			call print
+			pop hl
+			call prt_hex_16
 			call print_newline
 			
 			ret
@@ -1092,6 +1101,8 @@ str_DE:		DEFM "DE  : "
 		DEFB 0
 str_BC:		DEFM "BC  : "
 		DEFB 0
+str_HL:		DEFM "HL  : "
+		DEFB 0
 str_REG:	DEFM "RTC : "
 		DEFB 0
 
@@ -1125,7 +1136,7 @@ NoRTCmessage:	DEFM "No valid RTC signature found.",13
 NoACKmessage:	DEFM "No ACK on address/reg select.",13
 		DEFM "Probably no RTC clock at 0x68.",13,13,0
 
-MsgUsage: defm "TIME V3.3 usage: ",13
+MsgUsage: defm "TIME V3.4 usage: ",13
 	  defm "time <ENTER>"
 	  defb 13
 	  defm "show current time"

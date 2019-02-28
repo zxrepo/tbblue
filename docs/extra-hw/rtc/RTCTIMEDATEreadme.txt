@@ -2,17 +2,20 @@ These are Updated versions of the TIME, DATE and RTC.SYS files from:
 
 https://gitlab.com/victor.trucco/RTC
 
-This release includes .TIME Version 3.3
+This 3.4 release includes .TIME Version 3.4 - we will keep them in step now
 
 They have been debugged and adapted for the ZX Next by Tim Gilberts
-This is the second Pulic BETA release but, they have been tested...
+This is the third Public BETA release but, they have been tested...
 The ASM is now modified to assemble with z80asm from Z88DK.
 
 They operate as DOT commands so just place DATE, TIME and I2CSCAN in
-the /BIN directory. See later for how to create a suitable RTC.SYS.
+the /DOT directory (and in the /BIN if you want to use ESXDOS)
+
+See later for how to use a suitable RTC.SYS.
 
 If you use these without a Real Time Clock (RTC) soldered to the board
-they will just give an error that no signature is found or No ACK received
+they will just give an error that no signature is found (RTCSIG.SYS) or
+No ACK received (RTCACK.SYS)
 
 You can however use the option TIME -d to get the contents of the chip
 which will be junk if the RTC is not fitted but, may help to diagnose
@@ -23,18 +26,19 @@ query the date and time respectively.  They expect the RTC to be in
 24 hour mode and make use of the last two RAM storage locations, so do
 not use these.  Any write of a DATE or TIME will set the signature.
 
-If you place a file called RTC.SYS in the 'nextos' folder then from 1.92
+If you place a file called RTC.SYS in the 'NextZXOS' folder then from 1.92
 onwards all files you create or update from then on will contain a date
 and time if the clock contents are valid. It does not have to be the
 correct time and date just valid in the range of 2000-2099.
 
-This will also make the date and time appear in the NextOS menus
-automatically.  If you do not wish to use them then you can rename or
-remove RTC.SYS from the folder or use TIME -di to wipe the signature - if
-using RTCSIG.SYS.
+This will also make the date and time appear in the NextZXOS menus
+automatically.  If you do not wish to use them or time stamping without removing
+the chip then you can rename or remove RTC.SYS from the relevant folder or use
+TIME -di to wipe the signature - if using RTCSIG.SYS.  You have to remove or
+rename the RTC.SYS file if you are using RTCACK.SYS.
 
-If you want the same facilities in ESXDOS then use the file called RTC.SYS
-in the /SYS directory (this version is compatible with both OS).
+If you want the same facilities in ESXDOS then place a file called RTC.SYS
+in the /SYS directory (the RTCESX.SYS version is compatible with both OS).
 Note this will only work with ESXDOS 0.8.6Beta2 and above.  ESXDOS does
 not change the date and time on update I belive only on create.
 
@@ -47,13 +51,13 @@ e.g.
 
 .DATE			- will just print the current date
 
-.TIME "00:30:00:"	- will set the time to 30 minutes after midnight
+.TIME "00:30:00:	- will set the time to 30 minutes after midnight
 
 .TIME -h		- will print its help
 
-.ls			- will display the dates of files on NextOS/ESXDOS
+.ls			- will display the dates of files on NextZXOS/ESXDOS
 
-cat exp			- Will give the time stamp as well on NextOS
+cat exp			- Will give the time stamp as well on NextZXOS
 
 Notes on the physical devices
 -----------------------------
@@ -77,20 +81,18 @@ Then you can use string commands to cut out whatever bits you want!
 
 You can effectively "touch" a file in BASIC with  OPEN #4,"u>filename":CLOSE #4
 
+Equally there is now a .$ command in NextZXOS that allows you to pass a variable
+to a dot command so you could pass parameters to the time dot commands.
 
 ESXDOS Support
 --------------
 
-These commands do work with ESXDOS Beta 2 onwards 
+These commands do work with ESXDOS Beta 2 onwards (including the final release)
 
-http://esxdos.org/beta/esxdos086-BETA4.zip
+http://www.esxdos.org
 
-See development log here (current version is BETA6 I believe):
-
-http://board.esxdos.org/viewtopic.php?id=5
-
-Note that only the RTC.SYS file in SYS can be used as there is a size limit
-of 256 Bytes.  This means you can only use the DS1307 chip.
+Note that only the RTC.SYS file can in SYS can be used as there is a size limit
+of 256 Bytes. It is based on RTCSIG so you can only use the DS1307 chip.
 
 Other RTC clocks
 ----------------
@@ -118,20 +120,25 @@ time -r1300
 will read the status of the 19 regsiters 00-06h Time, 07-0dh Alarm, 
 0E-10h Control and 11h/12h MSB/LSB of Temperature
 
-In order for NextOS to recognise the time from this module for its
+In order for NextZXOS to recognise the time from this module for its
 clock and timestamping of files you need RTCACK.SYS and a version
-of NextOS that supports 512Byte SYS modules i.e. >=1.94c.
+of NextZXOS that supports 512Byte SYS modules i.e. >=1.94c.
 
-The RTC.SYS in the NextOS folder uses only the ACK on the bus for
-detection and some sanity checks on the numbers returned.
-This version works with the DS1307 as well.
+The default RTC.SYS in the NextZXOS folder is a renamed copy of RTCACK.SYS
+which uses only the ACK on the bus for detection and some sanity checks
+on the numbers returned.  This version works with the DS1307 as well.
 
-WARNING: This version of RTC.SYS DOES NOT WORK ON ESXDOS only NextOS
-which of course implies that the DS3231 is only supported on NextOS
-leaving the old RTC.SYS installed on ESXDOS should not affect the
-DS3231 module - you will just not get timestamps.  You might be able
-to use Victor's original code as it should work with both chips I think
-but, I have not tested it and you will only get DATE stamps and not time.
+The RTCACK.SYS and RTCSIG.SYS for NextZXOS also now both support returning
+actual seconds in H (in addition to the two second resolution of the MSDOS API)
+and 100ths if available in L (set to 255 if the resolution not available).
+
+WARNING: These versions of RTC.SYS DO NOT WORK ON ESXDOS only NextZXOS
+which of course implies that the DS3231 is only supported on NextZXOS
+leaving the old RTC.SYS (a renamed copy of RTCESX.SYS) installed on
+ESXDOS should not affect the DS3231 module - you will just not get
+timestamps.  You can use Victor's original code as it should work with
+both chips I think as it does no checks but, you will only get DATE stamps
+and not time.
 
 Utilities
 ---------
@@ -144,9 +151,17 @@ at 0x57.  If you see others when you have nothing on J15 then make sure you
 have the latest TBU, any Capacitor mod etc - if so and you still have others
 detected then please contribute to the RTC posts on Facebook or the Forum.
 
-You can also use the .TIME command to see the output from the NextOS RTC API
+You can also use the .TIME command to see the output from the NextZXOS RTC API
 using the -n option - this should be substantially the same as the figures
-for BC and DE calculated by the .TIME -d command.  They may vary as at least
-a second or so could have elapsed even if you do cls:.time -d:.time -n.  This
-feature will obviously have an indeterminate effect on ESXDOS.
+for BC and DE calculated by the .TIME -d command - which prints a full debug of
+the RTC chip and calculates the relevent DE,BC values that result ignoring any
+signature or Ack errors.
+
+They may vary as at least a second or so could have elapsed even if you do
+
+cls:.time -d:.time -n
+
+This feature will obviously have an indeterminate effect on ESXDOS. HL is also
+shown so you can see the results of the seconds and 100ths return.  Note that HL
+will be junk on -d as .TIME does not support that feature.
 

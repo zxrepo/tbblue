@@ -2,7 +2,7 @@
 ; TBBlue / ZX Spectrum Next project
 ; Copyright (c) 2010-2018 
 ;
-; RTC SIG - Victor Trucco and Tim Gilberts
+; RTC ESX (SIG) - Victor Trucco and Tim Gilberts
 ;
 ; All rights reserved
 ;
@@ -36,7 +36,7 @@
 ;
 ;-------------------------------------------------------------------------------
 ;
-; RTC(SIG).SYS for NextZXOS
+; RTC.SYS for ESXDOS (and NextZXOS but, there are more advanced ones for that)
 ;
 ; Thanks to VELESOFT for the help.
 ;
@@ -44,10 +44,8 @@
 ; by code optimization - some notes left in for assumptions.
 ; V2.1 corrected bit bugs in Month resulting from adding time.
 ; v2.2 added Signature check for RTC to return Carry if error, removed old DivMMC redundant code for Next
-; v2.3 added support for actual seconds in H under NextZXOS with L as 100ths
-; if supported or 255 otherwise
 ;
-; This version >256 bytes for extra features in NextZXOS
+; Max size for this compiled ASM is 256 bytes!!! And it is that...
 ;
 ; OUTPUT
 ; reg BC is Date 
@@ -56,8 +54,6 @@
 ;
 ; reg DE is Time
 ;	hours (5 bits) + minutes (6 bits) + seconds/2 (5 bits)
-;
-; reg H is Actual seconds, L is 100ths or 255 if not supported.
 ;
 ; Carry set if no valid signature in 0x3e and 0x3f i.e. letters 'ZX'
 ; this is used to detect no RTC or unset date / time.
@@ -89,7 +85,7 @@ START:
 	
 	; save A and HL
 	; BC and DE will contain our date and time
-;	push hl
+	push hl
 	LD (END+1),A
 
 	;---------------------------------------------------
@@ -154,8 +150,6 @@ end_read:
 	LD HL,SEC
 	
 	CALL LOAD_PREPARE_AND_MULT
-
-	LD (HL),A	; Save real seconds.
 	
 	srl a 	;seconds / 2
 	
@@ -251,11 +245,7 @@ end_read:
 ;Self modify the saved A on exit
 END:	
 	LD A,0
-	
-	LD HL,(SIG+1)		; H will be seconds
-	LD L,255		; No 100ths
-	
-;	POP HL
+	POP HL
 	ret
 
 
@@ -394,8 +384,6 @@ SCL:
 	ld b,PORT_CLOCK
 SCLO:	OUT (c), a
 	ret
-	
-	defs	12	;move onto next page
 	
 ;Data storage space note that SIG is from 0x3E and 0x3F but
 ;counter will wrap to 0x00 to get date registers, we read time as well as no harm
