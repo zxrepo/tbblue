@@ -61,6 +61,63 @@ unsigned int option_error(unsigned char *p)
 
 // options
 
+unsigned int option_exec_48k_helper(unsigned char t, unsigned char ct)
+{
+   ZXN_WRITE_REG(REG_MACHINE_TYPE, (ZXN_READ_REG(REG_MACHINE_TYPE) & 0x0f) | t);
+   ZXN_WRITE_REG(REG_PERIPHERAL_3, (ZXN_READ_REG(REG_PERIPHERAL_3) & 0xbb) | ct);
+   
+   return OPT_ACTION_OK;
+}
+
+unsigned int option_exec_48k(void)
+{
+   // t=48, c=on, tmx=off
+   return option_exec_48k_helper(0x80, 0x00);
+}
+
+unsigned int option_exec_128k(void)
+{
+   // t=128, c=on, tmx=off
+   return option_exec_48k_helper(0xa0, 0x00);
+}
+
+unsigned int option_exec_plus3(void)
+{
+   // t=zxn, c=on, tmx=off
+   return option_exec_48k_helper(0xb0, 0x00);
+}
+
+unsigned int option_exec_pentagon(void)
+{
+   // t=pent, c=off, tmx=off
+   return option_exec_48k_helper(0xc0, 0x40);
+}
+
+unsigned int option_exec_zxn(void)
+{
+   // t=zxn, c=off, tmx=on
+   return option_exec_48k_helper(0xb0, 0x44);
+}
+
+unsigned int option_exec_lock_helper(unsigned char val)
+{
+   if ((ZXN_READ_REG(REG_MACHINE_TYPE) & 0x6) == 0)
+      return option_error("48k [un]lock");
+
+   ZXN_WRITE_REG(REG_PERIPHERAL_3, (ZXN_READ_REG(REG_PERIPHERAL_3) & 0x7f) | val);
+   return OPT_ACTION_OK;
+}
+
+unsigned int option_exec_lock(void)
+{
+   return option_exec_lock_helper(0);
+}
+
+unsigned int option_exec_unlock(void)
+{
+   return option_exec_lock_helper(0x80);
+}
+
 unsigned int option_exec_nextreg_helper(unsigned char *p)
 {
    static unsigned int reg, val, mask;
@@ -286,15 +343,16 @@ struct scanline_type
 struct scanline_type scanline_types[] = {
    { "0", 0 },
    { "off", 0 },
+   { "1", 0x03 },
    { "25", 0x03 },
    { "min", 0x03 },
    { "on", 0x02 },
-   { "1", 0x02 },
+   { "2", 0x02 },
    { "50", 0x02 },
    { "med", 0x02 },
    { "mid", 0x02 },
    { "medium", 0x02 },
-   { "2", 0x01 },
+   { "3", 0x01 },
    { "75", 0x01 },
    { "max", 0x01 },
    { "maximum", 0x01 }

@@ -17,6 +17,28 @@ struct flag flags = {
 };
 
 static struct opt options[] = {
+   { "48", OPT_TYPE_EXACT, (optfunc_t)option_exec_48k },
+   { "48k", OPT_TYPE_EXACT, (optfunc_t)option_exec_48k },
+   { "128", OPT_TYPE_EXACT, (optfunc_t)option_exec_128k },
+   { "128k", OPT_TYPE_EXACT, (optfunc_t)option_exec_128k },
+   { "2", OPT_TYPE_EXACT, (optfunc_t)option_exec_128k },
+   { "+2", OPT_TYPE_EXACT, (optfunc_t)option_exec_128k },
+   { "2a", OPT_TYPE_EXACT, (optfunc_t)option_exec_plus3 },
+   { "+2a", OPT_TYPE_EXACT, (optfunc_t)option_exec_plus3 },
+   { "2b", OPT_TYPE_EXACT, (optfunc_t)option_exec_plus3 },
+   { "+2b", OPT_TYPE_EXACT, (optfunc_t)option_exec_plus3 },
+   { "3", OPT_TYPE_EXACT, (optfunc_t)option_exec_plus3 },
+   { "+3", OPT_TYPE_EXACT, (optfunc_t)option_exec_plus3 },
+   { "3e", OPT_TYPE_EXACT, (optfunc_t)option_exec_plus3 },
+   { "+3e", OPT_TYPE_EXACT, (optfunc_t)option_exec_plus3 },
+   { "p", OPT_TYPE_EXACT, (optfunc_t)option_exec_pentagon },
+   { "pent", OPT_TYPE_EXACT, (optfunc_t)option_exec_pentagon },
+   { "pentagon", OPT_TYPE_EXACT, (optfunc_t)option_exec_pentagon },
+   { "zxn", OPT_TYPE_EXACT, (optfunc_t)option_exec_zxn },
+   
+   { "lock", OPT_TYPE_EXACT, (optfunc_t)option_exec_lock },
+   { "unlock", OPT_TYPE_EXACT, (optfunc_t)option_exec_unlock },
+
    { "nr", OPT_TYPE_EXACT, (optfunc_t)option_exec_nextreg },
    { "nr=", OPT_TYPE_LEADING, (optfunc_t)option_exec_nextreg_eq },
    { "nextreg", OPT_TYPE_EXACT, (optfunc_t)option_exec_nextreg },
@@ -147,7 +169,10 @@ int main(unsigned int argc, char **argv)
    // initialization
    
    original_cpu_speed = ZXN_READ_REG(REG_TURBO_MODE);
+
+#ifndef ESXDOS
    ZXN_NEXTREG(REG_TURBO_MODE, RTM_14MHZ);
+#endif
 
    atexit(cleanup);
    
@@ -257,10 +282,18 @@ int main(unsigned int argc, char **argv)
       
       printf("\n"
              "CONFIG - configure zxn hardware\n\n"
-             "config\n\n"
+             "config\n"
              "Describe current configuration\n\n"
-             "config [OPTION=VALUE]...\n\n"
+             "config [OPTION=VALUE]...\n"
              "Change current configuration\n\n"
+             "PRESETS\n"
+             "Select machine appropriate\n"
+             "timing, contention, float bus\n\n"
+             "48, 48k\n"
+             "128, 128k, 2\n"
+             "3, 2A, 2B, 3E\n"
+             "p, pent, pentagon\n"
+             "zxn\n\n"
              "NEXTREG\n\n"
              "nr=, nextreg=reg,val[,mask]\n"
              "  Write val to reg.  Optional\n"
@@ -290,6 +323,10 @@ int main(unsigned int argc, char **argv)
              "  RAM Contention enable.\n"
              "  Some software expects RAM\n"
              "  contention for proper display\n\n"
+             "lock\n"
+             "  Lock 0x7ffd paging\n\n"
+             "unlock\n"
+             "  Unlock 0x7ffd paging\n\n"
              "DISPLAY\n\n"
              "50, 60\n"
              "  Select 50Hz or 60Hz display\n\n"
@@ -320,7 +357,7 @@ int main(unsigned int argc, char **argv)
              "  [c|cur|cursor|5678]\n"
              "  [md1]\n"
              "  [md2]\n\n"
-             "config v1.0 z88dk.org\n"
+             "config v1.1 z88dk.org\n"
             );
    }
    

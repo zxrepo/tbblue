@@ -30,7 +30,13 @@ extern int sort_cmp_option(struct opt *a, struct opt *b);
 extern int sort_opt_search(unsigned char *name, struct opt *a);
 
 // Options
-
+extern unsigned int option_exec_48k(void);
+extern unsigned int option_exec_128k(void);
+extern unsigned int option_exec_plus3(void);
+extern unsigned int option_exec_pentagon(void);
+extern unsigned int option_exec_zxn(void);
+extern unsigned int option_exec_lock(void);
+extern unsigned int option_exec_unlock(void);
 extern unsigned int option_exec_nextreg(unsigned char *i, unsigned int argc, char **argv);
 extern unsigned int option_exec_nextreg_eq(unsigned char *i, unsigned int argc, char **argv);
 extern unsigned int option_exec_timing(unsigned char *i, unsigned int argc, char **argv);
