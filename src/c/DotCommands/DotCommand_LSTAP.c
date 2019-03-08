@@ -9,6 +9,7 @@
 bool optionHelp = false;
 bool optionOutput = false;
 bool optionInput = false;
+bool optionOffsets = false;
 uint8_t fileArg = 0;
 
 ///////////////////////////////////////////////////////////
@@ -33,6 +34,11 @@ bool ProcessOptions(int argc, char **argv)
 		{
 			argv[i] = NULL;
 			optionInput = true;
+		}
+		else if (stricmp(arg, "-f") == 0 || stricmp(arg, "--fileoffsets") == 0)
+		{
+			argv[i] = NULL;
+			optionOffsets = true;
 		}
 		else
 		{
@@ -66,7 +72,7 @@ bool ProcessOptions(int argc, char **argv)
 ///////////////////////////////////////////////////////////
 //
 ///////////////////////////////////////////////////////////
-void ShowBlockDetails(unsigned char * buffer, uint16_t blocklen)
+void ShowBlockDetails(unsigned char * buffer, uint32_t blockoffset, uint16_t blocklen)
 {
 	if (buffer[0] == 0)
 	{
@@ -76,6 +82,14 @@ void ShowBlockDetails(unsigned char * buffer, uint16_t blocklen)
 		varname[0] = buffer[15] & 0x7f | 0x40;
 		varname[1] = '\0';
 		tapename[10] = '\0';
+
+		for (uint8_t i = 0; i < 9; i++)
+		{
+			if ((tapename[i] < 0x20) || (tapename[i] > 0x7f))
+			{
+				tapename[i] = '?';
+			}
+		}
 
 		switch(buffer[1])
 		{
@@ -113,6 +127,11 @@ void ShowBlockDetails(unsigned char * buffer, uint16_t blocklen)
 	else
 	{
 		printf("flag=%03d, len=%05u", buffer[0], blocklen - 2);
+
+		if (optionOffsets)
+		{
+			printf("\n      offset in file=%08lu", blockoffset +3);
+		}
 	}
 
 	printf("\n");
@@ -130,6 +149,7 @@ int main(int argc, char **argv)
 		unsigned char * filename = pathname;
 		uint16_t blk = 0;
 		uint16_t blockptr = 0xffff;
+		uint32_t blockoffset = 0;
 		uint8_t drive;
 		uint8_t handle;
 
@@ -202,14 +222,16 @@ int main(int argc, char **argv)
 				printf(" ");
 			}
 
-			ShowBlockDetails(buffer, blocklen);
+			ShowBlockDetails(buffer, blockoffset, blocklen);
+
+			blockoffset += blocklen + 2;
 		}
 
 		esx_f_close(handle);
 	}
 	else
 	{
-		printf("LSTAP v1.0 by Garry Lancaster\n");
+		printf("LSTAP v1.1 by Garry Lancaster\n");
 		printf("List contents of any .TAP file\n\n");
 		printf("SYNOPSIS:\n .LSTAP [OPTION]... [FILE]\n\n");
 		printf("OPTIONS:\n");
@@ -219,6 +241,8 @@ int main(int argc, char **argv)
 		printf("     Use current input file\n");
 		printf(" -o, --output\n");
 		printf("     Use current output file\n");
+		printf(" -f, --fileoffsets\n");
+		printf("     Show data offsets in TAP\n");
 	}
 
 	return 0;
