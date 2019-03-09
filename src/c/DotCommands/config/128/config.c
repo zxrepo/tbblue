@@ -35,6 +35,7 @@ static struct opt options[] = {
    { "pent", OPT_TYPE_EXACT, (optfunc_t)option_exec_pentagon },
    { "pentagon", OPT_TYPE_EXACT, (optfunc_t)option_exec_pentagon },
    { "zxn", OPT_TYPE_EXACT, (optfunc_t)option_exec_zxn },
+   { "next", OPT_TYPE_EXACT, (optfunc_t)option_exec_zxn },
    
    { "lock", OPT_TYPE_EXACT, (optfunc_t)option_exec_lock },
    { "unlock", OPT_TYPE_EXACT, (optfunc_t)option_exec_unlock },

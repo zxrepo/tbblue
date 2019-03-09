@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <arch/zxn.h>
+#include <intrinsic.h>
 
 #include "options.h"
 
@@ -252,14 +253,17 @@ unsigned int option_exec_joy_helper(unsigned char *p, unsigned char joy)
    {
       for (unsigned char i = 0; i != sizeof(joy_types) / sizeof(*joy_types); ++i)
       {
+         // The compiler has not been modified to understand the size of
+         // the new z80n instructions.  This loop has a nextreg instruction
+         // that pushes the loop size out of range of a JR, causing an
+         // assemble issue.  So NOPs have been manually inserted to increase
+         // the size of the loop to avoid the JR substitution.
+
+         intrinsic_nop();
+         intrinsic_nop();
+         
          if (stricmp(joy_types[i].name, p) == 0)
          {
-            if (joy_types[i].value >= 0x05)
-            {
-               printf("MD sticks must be set in config\n");
-               return OPT_ACTION_OK;
-            }
-            
             if (joy == 0)
             {
                mask = 0x37;
