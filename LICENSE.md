@@ -17,7 +17,7 @@ conditions:
   copying, modification, merging and distribution and these are independent and
    **supersede** the force of the Next license. For example, ROM images contained 
    herewith cannot be distributed nor modified legally without the permission of
-   Amstrad / Sky plc.  
+   Amstrad / Sky plc except in cases **already** permitted by them (i.e. emulators).  
 * Modifications of parts of this _Distribution_ are permitted pursuant to their 
    individual licenses. Individual parts licenses of the distribution **supersede**
    the force of the Next License.
