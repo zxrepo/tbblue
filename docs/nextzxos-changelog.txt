@@ -1,3 +1,30 @@
+v2.00E (2019-04-17)
+===================
+* For clarity, renamed joystick options to L(eft)/R(ight) in multiface settings.
+* Removed bogus lightpen option from multiface settings.
+* Removed workaround for fixed Timex hi-res offset bug from MF About screen.
+* Added credit to Paul Land for his original joynav driver, the equivalent
+  functionality for which was eventually incorporated into the standard
+  keyboard driver.
+
+
+v2.00D (2019-03-21)
+===================
+* Added keyboard map screen (courtesy of Phoebus Dokos) to Multiface.
+
+
+v2.00C (2019-02-17)
+===================
+* Updated multiface to save, restore and display the recently-introduced
+  nextregs (mainly tilemap-related).
+* Fixed multiface to reset new nextregs as needed to prevent tilemap or ula
+  offset settings from interfering with the display.
+* Reset new nextregs 0x2f,0x30,0x31,0x68,0x6b to default on LAYER CLEAR/NEW/reset.
+* Reset new nextreg 0x4c to default on PALETTE CLEAR/NEW/reset.
+* Updated screensaver to adjust the tilemap clip window together with the others.
+* Added new test for minimum required core version (currently 2.00.27).
+
+
 v2.00B (2019-01-11)
 ===================
 * Added support for navigation by Kempston joystick (providing cursor keys,
