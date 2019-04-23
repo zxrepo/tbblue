@@ -35,7 +35,7 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL			Fil, Fil2;	/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = " 1.10b"; 
+unsigned char * FW_version = " 1.10d"; 
 
 // minimal required for this FW 
 unsigned long minimal = 0x010A2F; // 01 0A 2F = 1.10.47
@@ -519,11 +519,12 @@ void load_and_start()
 		f_close(&Fil);
 		vdp_prints("OK!\n");
 		REG_VAL = RAMPAGE_RAMDIVMMC;
-		__asm__("ld a, #0\n");			// Zeroing RAM DivMMC
-		__asm__("ld hl, #0\n");
+		__asm__("ld hl, #0\n");		// Zeroing RAM DivMMC
 		__asm__("ld de, #1\n");
 		__asm__("ld bc, #16383\n");
+		__asm__("ld (hl), l\n");
 		__asm__("ldir\n");
+
 	}
 
 	if (mf == 1) {
@@ -605,6 +606,12 @@ void load_and_start()
 	}
 	f_close(&Fil);
 	vdp_prints("OK!\n");
+
+	// Inhibit DivMMC hardware if necessary
+	REG_NUM = REG_PERIPH4;
+	opc = scanlines & 3;			// bits 1-0
+	if (divmmc == 0) opc |= 0x04;		// bit 2
+	REG_VAL = opc;
 	
 	REG_NUM = REG_MACHTYPE;
 //	REG_VAL = (mode+1) << 3 | (mode+1);	// Set machine (and timing)
@@ -632,6 +639,9 @@ void main()
 {
 	long i=0;
 	unsigned int error_count = 100;
+
+	REG_NUM = REG_TURBO;
+	REG_VAL = 2;
 
 //	vdp_init();
 /*	vdp_setcolor(COLOR_BLACK, COLOR_BLUE, COLOR_WHITE);
@@ -733,6 +743,9 @@ START:
 	vdp_gotoxy(5, 13);
 	vdp_prints("Press SPACEBAR for menu\n");
 
+	REG_NUM = REG_TURBO;
+	REG_VAL = 0;
+
 	for(cont=0;cont<30000;cont++) 
 	{
 		if ((HROW7 & 0x01) == 0) 
@@ -741,6 +754,9 @@ START:
 			REG_VAL = RESET_HARD;
 		}
 	}
+
+	REG_NUM = REG_TURBO;
+	REG_VAL = 2;
 
 	//clean the spacebar message
 	vdp_gotoxy(5, 13);
@@ -1017,9 +1033,8 @@ START:
 	REG_VAL = opc;
 	
 	REG_NUM = REG_PERIPH4;
-	opc = scanlines & 3; // bits 1-0
+	opc = scanlines & 3;			// bits 1-0
 	REG_VAL = opc;
-	
 
 	// Read and send Keymap
 	strcpy(temp, NEXT_DIRECTORY);

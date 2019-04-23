@@ -163,18 +163,19 @@ static void display_about(void)
 	vdp_setcolor(COLOR_BLUE, COLOR_BLACK, COLOR_LYELLOW);
 	vdp_gotoxy(2, 9); vdp_prints("The Folks Who Made It Happen");
 	vdp_setcolor(COLOR_BLUE, COLOR_BLACK, COLOR_GRAY);
-	vdp_gotoxy(2, 10); vdp_prints("Mike Cadwallader");
-	vdp_gotoxy(2, 11); vdp_prints("Phoebus Dokos");
-	vdp_gotoxy(2, 12); vdp_prints("Garry Lancaster");
+	vdp_gotoxy(2, 10); vdp_prints("Allen Albright");
+	vdp_gotoxy(2, 11); vdp_prints("Mike Cadwallader");
+	vdp_gotoxy(2, 12); vdp_prints("Phoebus Dokos");
+	vdp_gotoxy(2, 13); vdp_prints("Garry Lancaster");
 
 	vdp_setcolor(COLOR_BLUE, COLOR_BLACK, COLOR_LYELLOW);
-	vdp_gotoxy(2, 14); vdp_prints("The Super Backers");
+	vdp_gotoxy(2, 15); vdp_prints("The Super Backers");
 	vdp_setcolor(COLOR_BLUE, COLOR_BLACK, COLOR_GRAY);
-	vdp_gotoxy(2, 15); vdp_prints("Paul Edward Howes");
-	vdp_gotoxy(2, 16); vdp_prints("Jake Warren");
-	vdp_gotoxy(2, 17); vdp_prints("Steve Brown (aka Gilby)");
-	vdp_gotoxy(2, 18); vdp_prints("Dan Birch");
-	vdp_gotoxy(2, 19); vdp_prints("Bob Bazley");
+	vdp_gotoxy(2, 16); vdp_prints("Paul Edward Howes");
+	vdp_gotoxy(2, 17); vdp_prints("Jake Warren");
+	vdp_gotoxy(2, 18); vdp_prints("Steve Brown (aka Gilby)");
+	vdp_gotoxy(2, 19); vdp_prints("Dan Birch");
+	vdp_gotoxy(2, 20); vdp_prints("Bob Bazley");
 	
 	for (i=0; i<1000; i++){}; // wait some time before read the keys
 	waitforanykey();
@@ -296,8 +297,8 @@ const configitem peripherals6[] =
 	{0, "Scandoubl", scandoubler },
 	{7, "Scanlines", scanlines },
 	{0, "Turbo Ena", ena_turbo },
-	{2, "Joystick1", joystick1 },
-	{2, "Joystick2", joystick2 }
+	{2, "Left joy ", joystick1 },
+	{2, "Right joy", joystick2 }
 
 };
 const unsigned char itemcount6 = sizeof(peripherals6) / sizeof(configitem);
@@ -835,6 +836,9 @@ void main()
 	mach_id = REG_VAL;
 	REG_NUM = REG_VERSION;
 	mach_version = REG_VAL;
+
+	REG_NUM = REG_TURBO;
+	REG_VAL = 2;
 
 	vdp_init();
 	vdp_setcolor(COLOR_BLACK, COLOR_BLUE, COLOR_WHITE);
