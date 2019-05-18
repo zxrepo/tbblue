@@ -1,3 +1,18 @@
+v2.00F (2019-05-18)
+===================
+* Rewrote text windowing code to use the Z80N barrel shift instructions,
+  giving an ~26% performance improvement to typical (5-bit) text output.
+* Updated LAYER CLEAR to additionally reset the tilemap clip window.
+* Fixed the screensaver to work correctly with tilemapped displays.
+* Fixes for IDE_BROWSER call which was resetting the K channel and overwrote
+  the RETADDR system variable.
+* Added options to load/save tilemap palettes in the Multiface.
+* Fixed the .DEFRAG dot command to allow files up to 4GB to be defragmented
+  (previously limited to 32MB).
+* Updated the default browser.cfg to use the new tilemapped version of ZXZVM.
+* Added support for viewing .MD files (using .MORE) from the Browser.
+
+
 v2.00E (2019-04-17)
 ===================
 * For clarity, renamed joystick options to L(eft)/R(ight) in multiface settings.
