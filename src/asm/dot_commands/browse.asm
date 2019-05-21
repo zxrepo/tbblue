@@ -842,6 +842,8 @@ option_prompt_or_edit:
         cp      l
         ld      hl,msg_badprompt
         jp      nc,err_custom
+        and     a
+        jr      z,option_prompt_empty
         ld      hl,temparg
 option_prompt_copy:
         ld      a,(hl)                  ; get next source char
@@ -853,6 +855,7 @@ option_prompt_store:
         inc     de
         dec     c
         jr      nz,option_prompt_copy
+option_prompt_empty:
         ld      a,$ff
         ld      (de),a                  ; append terminator
         ret
