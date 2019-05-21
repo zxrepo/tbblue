@@ -20,12 +20,6 @@ macro print_char
         rst     $10
 endm
 
-; If this define is set, the DEFRAG command will save 5K of data from $c000
-; to its internal RAM and move the stack internally as well. It then uses
-; memory at $c000 as the read/write buffer.
-; This method is no longer used; it's just as easy to use BASIC's workspace.
-INTERNAL_STACK  equ     0
-
 
 ; ***************************************************************************
 ; * esxDOS API and other definitions required                               *
@@ -67,13 +61,12 @@ nxr_turbo               equ     $07
 turbo_max               equ     2
 
 ; Definitions
-filemap_size            equ     2               ; must be at least 2 to detect
-                                                ; if file is fragmented or not
+filemap_size            equ     257             ; allows for 4GB if each
+                                                ; span is 32768 sectors
+                                                ; (256*32768*0.5K)
 
-if INTERNAL_STACK
-; A buffer will be placed in main RAM for speed
-xfer_buffer             equ     $c000
-endif ; INTERNAL_STACK
+buffer_size             equ     4096            ; size of RAM copy buffer
+                                                ; (also used for filemap)
 
 
 ; ***************************************************************************
@@ -106,20 +99,9 @@ show_usage:
 
 defrag_init:
         di                              ; disable interrupts for the duration
-if INTERNAL_STACK
-        ld      hl,xfer_buffer          ; a 4K buffer will be used at $c000
-        ld      de,saved5K              ; followed by a stack
-        ld      bc,5120
-        ldir                            ; save the original data
-        ld      hl,0
-        add     hl,sp
-        ld      (savedsp),hl            ; save original SP
-        ld      sp,xfer_buffer+5120     ; and place at end of saved 5K
-else ; INTERNAL_STACK
-        ld      bc,4096
+        ld      bc,buffer_size
         call48k BC_SPACES_r3            ; ensure enough space for 4K buffer
         ld      (bufferaddr),de         ; and save its address
-endif ; INTERNAL_STACK
         ld      bc,next_reg_select
         ld      a,nxr_turbo
         out     (c),a
@@ -181,9 +163,6 @@ err_custom:
 ; ***************************************************************************
 
 exit_error:
-if INTERNAL_STACK
-        ld      sp,int_stack            ; use temporary internal stack
-endif ; INTERNAL_STACK
         push    af                      ; save error status
         push    hl
         ld      a,(filehandle)
@@ -192,17 +171,8 @@ endif ; INTERNAL_STACK
         callesx m_setcaps               ; restore original caps
         ld      a,(saved_speed)
         nxtrega nxr_turbo               ; restore original speed
-if INTERNAL_STACK
-        ld      hl,saved5K
-        ld      de,xfer_buffer
-        ld      bc,5120
-        ldir                            ; restore original data at $c000
-endif ; INTERNAL_STACK
         pop     hl                      ; restore error status
         pop     af
-if INTERNAL_STACK
-        ld      sp,(savedsp)            ; restore original SP
-endif ; INTERNAL_STACK
         ei                              ; re-enable interrupts
         ret
 
@@ -279,7 +249,7 @@ size_adjusted:
         call    print_byte_size
         pop     de
         pop     hl
-        ld      bc,4096                 ; 4K to copy
+        ld      bc,buffer_size          ; 4K to copy
         ld      a,h
         and     $f0
         or      d
@@ -290,11 +260,7 @@ size_adjusted:
 got_copy_size:
         push    bc
         ld      a,(filehandle)
-if INTERNAL_STACK
-        ld      hl,xfer_buffer
-else ; INTERNAL_STACK
         ld      hl,(bufferaddr)
-endif ; INTERNAL_STACK
         callesx f_read                  ; read data from the original file
         jr      c,defrag_failed_read    ; exit if error
         pop     hl
@@ -305,11 +271,7 @@ endif ; INTERNAL_STACK
         ld      a,esx_eio
         jr      nz,defrag_failed_rdsize ; error if not
         ld      a,(tmpfilehandle)
-if INTERNAL_STACK
-        ld      hl,xfer_buffer
-else ; INTERNAL_STACK
         ld      hl,(bufferaddr)
-endif ; INTERNAL_STACK
         callesx f_write                 ; write data to the new file
         jr      c,defrag_failed_write
         pop     hl
@@ -483,18 +445,99 @@ check_fragmentation:
         callesx f_seek                  ; seek to start of file
         pop     af
         push    af
-        ld      hl,filemap_buffer
+        ld      hl,(bufferaddr)
         ld      bc,1
         callesx f_read                  ; read 1 byte to ensure starting cluster
         pop     af
-        ld      hl,filemap_buffer
+        ld      hl,(bufferaddr)
         ld      de,filemap_size
         callesx disk_filemap
         ret     c
-        ld      de,filemap_buffer+6
-        sbc     hl,de                   ; Fz=1 if unfragmented
-        ret     nc                      ; exit if 1+ entries in buffer
-        xor     a                       ; if 0 entries in buffer, Fc=0 & Fz=1
+        push    hl                      ; save address after last buffer entry
+        ld      hl,(bufferaddr)
+        ld      c,(hl)
+        inc     hl
+        ld      b,(hl)
+        inc     hl
+        ld      e,(hl)
+        inc     hl
+        ld      d,(hl)
+        inc     hl
+        push    de                      ; TOS,BC=4-byte card address
+check_frag_loop:
+        ld      e,(hl)
+        inc     hl
+        ld      d,(hl)                  ; DE=sector count
+        inc     hl
+        ex      de,hl                   ; DE=buffer address, HL=sector count
+        bit     1,a
+        jr      nz,check_frag_add_blocks
+check_frag_add_bytes:
+        ; If byte-addressed, add 512*sector count to the card address
+        push    hl
+        ld      h,l
+        ld      l,0
+        ex      (sp),hl
+        pop     ix
+        ld      l,h
+        ld      h,0                     ; HLIX=256*sector count
+        add     ix,ix
+        adc     hl,hl                   ; HLIX=512*sector count
+        add     ix,bc
+        pop     bc
+        adc     hl,bc                   ; HLIX=following card address
+        jr      check_frag_test_next
+check_frag_add_blocks:
+        ; If block-addressed, add sector count to the card address
+        add     hl,bc
+        push    hl
+        pop     ix
+        pop     bc
+        ld      hl,0
+        adc     hl,bc                   ; HLIX=following card address
+check_frag_test_next:
+        ; HLIX=next card address
+        ; DE=buffer address after current entry
+        ; TOS=buffer address after last entry
+        ex      (sp),hl                 ; HL=buffer address after last entry
+        and     a
+        sbc     hl,de
+        pop     bc
+        ret     z                       ; exit with Fc=0, Fz=1 if done
+        push    bc
+        add     hl,de                   ; reform address
+        ex      (sp),hl                 ; and re-stack
+        ex      de,hl                   ; HL=buffer address after current
+        ld      c,(hl)
+        inc     hl
+        ld      b,(hl)
+        inc     hl
+        push    ix
+        ex      (sp),hl
+        and     a
+        sbc     hl,bc                   ; is low word of card addr the same?
+        jr      nz,check_frag_failed    ; if not, file is fragmented
+        pop     hl
+        push    bc
+        ld      c,(hl)
+        inc     hl
+        ld      b,(hl)
+        inc     hl
+        ex      de,hl
+        and     a
+        sbc     hl,bc                   ; is high word of card addr the same?
+        jr      nz,check_frag_failed    ; if not, file is fragmented
+        pop     hl
+        push    bc
+        ld      b,h
+        ld      c,l                     ; TOS,BC=4-byte card address
+        ex      de,hl                   ; HL=buffer address of sector count
+        jr      check_frag_loop
+check_frag_failed:
+        pop     bc                      ; discard values
+        pop     bc
+        xor     a
+        inc     a                       ; Fc=0, Fz=0, fragmented
         ret
 
 
@@ -629,7 +672,7 @@ get_sizedarg_badsize:
 ; ***************************************************************************
 
 msg_help:
-        defm    "DEFRAG v1.5 by Garry Lancaster",$0d
+        defm    "DEFRAG v1.7 by Garry Lancaster",$0d
         defm    "Defragments a file",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    " .DEFRAG FILE",$0d,0
@@ -722,9 +765,6 @@ tmpfilehandle:
 filename:
         defs    256
 
-filemap_buffer:
-        defs    filemap_size*6          ; needs 6 bytes per entry
-
 fstat_buffer:
         defb    0                       ; drive
         defb    0                       ; drive details
@@ -736,19 +776,8 @@ file_size:
 temp_num:
         defw    0                       ; number of current temporary file
 
-if INTERNAL_STACK
-savedsp:
-        defw    0                       ; stack pointer before entry
-
-        defs    256                     ; temporary internal stack
-int_stack:
-
-saved5K:
-        ; THIS MUST BE THE LAST LABEL IN THE FILE
-if (($+5120)>$4000)
-.ERROR 5K buffer does not fit within dot command
-endif
-else ; INTERNAL_STACK
 bufferaddr:
         defw    0                       ; address of 4K buffer in main RAM
-endif ; INTERNAL_STACK
+if ((filemap_size*6) > buffer_size)
+.ERROR Filemap exceeds allocated buffer space
+endif
