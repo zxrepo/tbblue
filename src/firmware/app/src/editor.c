@@ -149,6 +149,10 @@ static void display_about(void)
 {
 	int i;
 
+	// Update display at 14MHz
+	REG_NUM = REG_TURBO;
+	REG_VAL = 2;
+
 	vdp_setcolor(COLOR_BLUE, COLOR_BLACK, COLOR_LYELLOW);
 	vdp_cls();
 
@@ -176,6 +180,10 @@ static void display_about(void)
 	vdp_gotoxy(2, 18); vdp_prints("Steve Brown (aka Gilby)");
 	vdp_gotoxy(2, 19); vdp_prints("Dan Birch");
 	vdp_gotoxy(2, 20); vdp_prints("Bob Bazley");
+
+	// Revert to standard 3.5MHz
+	REG_NUM = REG_TURBO;
+	REG_VAL = 0;
 	
 	for (i=0; i<1000; i++){}; // wait some time before read the keys
 	waitforanykey();
@@ -390,6 +398,10 @@ static void printVal(unsigned char help)
 /*******************************************************************************/
 static void show_peripherals()
 {
+	// Update display at 14MHz
+	REG_NUM = REG_TURBO;
+	REG_VAL = 2;
+
 	// Check joysticks
 /*	if ((joystick1[0] == 1 && joystick2[0] == 1) ||
 		(joystick1[0] == 2 && joystick2[0] == 2) ||
@@ -421,6 +433,10 @@ static void show_peripherals()
 		type = peripherals[i].type;
 		printVal(0); // without help text
 	}
+
+	// Revert to standard 3.5MHz
+	REG_NUM = REG_TURBO;
+	REG_VAL = 0;
 }
 
 
@@ -715,6 +731,11 @@ init:
 	vdp_gotoxy(0, 23);
 	vdp_prints("        'C' for credits screen  ");
 	while(1) {
+
+		// Update display at 14MHz
+		REG_NUM = REG_TURBO;
+		REG_VAL = 2;
+
 		vdp_setfg(COLOR_LGREEN);
 		y = 3;
 		for (i = top; i <= bottom; i++) {
@@ -723,6 +744,11 @@ init:
 			vdp_prints(menus[i].title);
 			vdp_setflash(0);
 		}
+
+		// Revert to standard 3.5MHz
+		REG_NUM = REG_TURBO;
+		REG_VAL = 0;
+
 		readkeyb();
 		vdp_setfg(COLOR_LGREEN);
 		if (button_c) {
@@ -837,9 +863,6 @@ void main()
 	REG_NUM = REG_VERSION;
 	mach_version = REG_VAL;
 
-	REG_NUM = REG_TURBO;
-	REG_VAL = 2;
-
 	vdp_init();
 	vdp_setcolor(COLOR_BLACK, COLOR_BLUE, COLOR_WHITE);
 	vdp_prints(TITLE);
@@ -847,6 +870,10 @@ void main()
 
 	REG_NUM = REG_MACHTYPE;
 	REG_VAL = 0;						// disable bootrom
+
+	// Read config.ini at 14MHz
+	REG_NUM = REG_TURBO;
+	REG_VAL = 2;
 
 	f_mount(&FatFs, "", 0);		/* Give a work area to the default drive */
 
@@ -1070,11 +1097,20 @@ void main()
 		itemsCount = itemcount1;
 	}
 
+	// Process keys and menus at standard 3.5MHz
+	REG_NUM = REG_TURBO;
+	REG_VAL = 0;
+
 	show_menu(menu_cont);
 	
 	if (config_changed) 
 	{
+		// Write config.ini at 14MHz
+		REG_NUM = REG_TURBO;
+		REG_VAL = 2;
 		save_config();
+		REG_NUM = REG_TURBO;
+		REG_VAL = 2;
 	}
 	
 	REG_NUM = REG_RESET;

@@ -28,7 +28,7 @@ SDIR = src
 IDIR = inc
 ODIR = obj
 
-CFLAGS = -mz80 --opt-code-size -I$(IDIR) -I..
+CFLAGS = -mz80 --opt-code-size  -I$(IDIR) -I..
 LDFLAGS = -mz80 --code-loc 0x6010 --data-loc 0 --no-std-crt0
 
 _OBJS0 = crt0.rel boot.rel vdp.rel diskio.rel ffro.rel

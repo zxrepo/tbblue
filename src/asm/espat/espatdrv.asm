@@ -1,6 +1,6 @@
 ;
 ; TBBlue / ZX Spectrum Next project
-; Copyright (c) 2010-2018 
+; Copyright (c) 2010-2018
 ;
 ; ESPAT.DRV - Tim Gilberts based on Sample Driver from Garry Lancaster
 ;
@@ -112,7 +112,7 @@ RX_SETBAUD	EQU	5179	;143Bh Read is byte received, when written set
 
 ;   nextreg reg,val   ED 91 reg,val   16Ts  Set a NEXT register (like doing out
 ;   ($243b),reg then out($253b),val )
-;   nextreg reg,a     ED 92 reg       12Ts  Set a NEXT register using A (like 
+;   nextreg reg,a     ED 92 reg       12Ts  Set a NEXT register using A (like
 ;   doing out($243b),reg then out($253b),A )
 
 ; ***************************************************************************
@@ -120,7 +120,7 @@ RX_SETBAUD	EQU	5179	;143Bh Read is byte received, when written set
 ; ***************************************************************************
 
 CMD_WRITE_BUFFER	EQU	$E600   ;$E600
-	
+
         org     $0000
 
 ; -- Table of used jump routines in 8K TSR
@@ -154,7 +154,7 @@ api_entry:
 ;    Timeout if no more data for a short period...
 ;RETURN
 
-im1_entry:	
+im1_entry:
 	LD BC,TX_CHKREADY		;service routine faster when no data
 	IN A,(C)
 	BIT 0,A				;Check status but don't damage A
@@ -166,39 +166,39 @@ im_reloc_0:
 	AND %00000100			;If UART was full.
 	OR (HL)
 	LD (HL),A
-			
-;Check if we are disabled (BIT 7 of flags set) - this is done so we do not 
+
+;Check if we are disabled (BIT 7 of flags set) - this is done so we do not
 ;write data to Page 0 without Authorisation.
-;and because users can't set a page other than 0 before we are loaded yet 
+;and because users can't set a page other than 0 before we are loaded yet
 ;otherwise due to .install not supporting it.
 ;OR (HL) will set Sign Flag so M means set
 	RET M
-				
+
 	PUSH IX				;Setup IX for convenience now
 
 im_reloc_1:
 	CALL PAGES_IN
-		
+
 	CALL IRQExtend
 
 ;Note the TSR will come back here to exit any way it wants
 ;so flags cannot be affected etc.
 
 tsr_api_return:
-	
+
 	POP IX
 
 PAGES_OUT:
 	DEFB $ED,$91,$55,$05		;NEXTREG r,n ED 91 reg,val
 ;(By default pages back in Five, old one saved here)
 saved_mmu5 equ $-1
-	DEFB $ED,$91,$57,$01	
+	DEFB $ED,$91,$57,$01
 saved_mmu7 equ $-1
 
 	RET
 
 
-	
+
 ; ***************************************************************************
 ; * API for NETWORK                                                         *
 ; ***************************************************************************
@@ -206,7 +206,7 @@ saved_mmu7 equ $-1
 ; (NOTE: HL will contain the value that was either provided in HL (when called
 ;        from dot commands) or IX (when called from a standard program).
 ;
-; When called from the DRIVER command, DE is the first input and HL is the 
+; When called from the DRIVER command, DE is the first input and HL is the
 ; second.
 ;
 ; When returning values, the DRIVER command will place the contents of BC into
@@ -215,7 +215,7 @@ saved_mmu7 equ $-1
 net_api:
 	ld	a,b
 	dec	a			; Temp f9 becomes f8 but we find 1
-	jr	z,set_pages     
+	jr	z,set_pages
 
 	add	a,9			; Move into range f9 (f8) becomes 1
 
@@ -248,7 +248,7 @@ api_reloc_1:
 PAGES_IN:
 im_reloc_2:
 	LD IX,stream0
-	
+
 	PUSH AF
 ;PAGE IN Correct TSR and Buffer page....
 	LD BC,9275		;$243B Need to Save MMU registers
@@ -256,46 +256,46 @@ im_reloc_2:
 	IN A,(C)		;Save current registry state
 im_reloc_3:
 	LD (saved_reg),A
-	
+
 	LD A,$55
 	OUT (C),A
 	INC B			;instead of LD BC,9531 / $253B
-	IN A,(C)	
+	IN A,(C)
 im_reloc_4:
 	LD (saved_mmu5),A
 	LD A,5
 new_mmu5 equ $-1
 	OUT (C),A		;New 8K bank for Code **TODO make DIVMMC
-							
+
 	DEC B			;$243B
 	LD A,$57
 	OUT (C),A
 	INC B			;$253B
 	IN A,(C)
 im_reloc_5:
-	LD (saved_mmu7),A			
+	LD (saved_mmu7),A
 im_reloc_6:
 	LD A,(stream0_mmu7)
 	OUT (C),A
 
 	DEC B			;$243B
 	LD A,2
-saved_reg equ $-1	
-	OUT (C),A		;just in case IRQ was in between registry work 
-				
+saved_reg equ $-1
+	OUT (C),A		;just in case IRQ was in between registry work
+
 	POP AF
-	RET	
+	RET
 
 
 ;------
 ;B=1 set available memory pages to use - values of MSB must be 0 for main mem
-;ignored otherwise.  Converts a 16K BASIC BANK to 8K pages 
+;ignored otherwise.  Converts a 16K BASIC BANK to 8K pages
 
-set_pages:	
+set_pages:
 	ld	a,e
 	or	d
 	jr	z,use_main51
-	
+
 	rlca
 api_reloc_2:
 	ld	(new_mmu5),A
@@ -312,7 +312,7 @@ api_reloc_4
 	res	7,(hl)			; Start IRQ running
 	ret
 
-; Unsupported values of B. 
+; Unsupported values of B.
 
 api_error:
         xor     a                       ; A=0, unsupported call id or Invalid IO
@@ -332,13 +332,13 @@ ipdstring:
 	defm	",DPI+"			;(IX-1) etc must be IPD header
 
 stream0:
-flags:					
+flags:
 	defb	%11000000		;Also as IX-0 when in IRQ!
-;Bit 0 = Colour modifier (RX_AVAIL) 
+;Bit 0 = Colour modifier (RX_AVAIL)
 ;Bit 1 = 8K SW command buffer overwrite error state (temp) (TX_READY)
 ;Bit 2 = UART 512Byte HW FULL error state (temp)
 ;Bit 3 = internal suppression flag
-;Bit 4 = Buffer full flag 
+;Bit 4 = Buffer full flag
 ;Bit 5 = IPD packet seen.
 ;Bit 6 = IPD packet mode receive disable when 1
 ;Bit 7 = we are disabled when 1
@@ -347,23 +347,23 @@ flags:
 stream0_mmu7:
 	defb	1			;This forms an 8K buffer at top of main
 	defb 	255,255,255		;memory.
-	
+
 output_add:
 	defw	CMD_WRITE_BUFFER	;Nothing in buffer as yet
-    
+
 input_add:
 	defw	CMD_WRITE_BUFFER
 
 
 zzz_end:
-	
+
 ; ***************************************************************************
 ; * Relocation table                                                        *
 ; ***************************************************************************
 ; This follows directly after the full 512 bytes of the driver.
 
 if ($ > 512)
-.ERROR Driver code exceeds 512 bytes 
+.ERROR Driver code exceeds 512 bytes
 else
         defs    512-$
 endif
@@ -376,9 +376,9 @@ reloc_start:
         defw	im_reloc_2+3	;IX load
         defw	im_reloc_3+2
         defw	im_reloc_4+2
-        defw	im_reloc_5+2 
+        defw	im_reloc_5+2
         defw	im_reloc_6+2
-                              
+
         defw    api_reloc_1+2
         defw    api_reloc_2+2
         defw    api_reloc_3+2

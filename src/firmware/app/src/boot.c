@@ -35,7 +35,7 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL			Fil, Fil2;	/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = " 1.10d"; 
+unsigned char * FW_version = " 1.10e"; 
 
 // minimal required for this FW 
 unsigned long minimal = 0x010A2F; // 01 0A 2F = 1.10.47
@@ -640,9 +640,6 @@ void main()
 	long i=0;
 	unsigned int error_count = 100;
 
-	REG_NUM = REG_TURBO;
-	REG_VAL = 2;
-
 //	vdp_init();
 /*	vdp_setcolor(COLOR_BLACK, COLOR_BLUE, COLOR_WHITE);
 	vdp_prints(TITLE);
@@ -672,6 +669,11 @@ void main()
 	vdp_gotoxy(0,2);
 	prints_help();
 */
+
+	// Load TBBLUE.FW at 14MHz
+	REG_NUM = REG_TURBO;
+	REG_VAL = 2;
+
 	for( cont = 0; cont < 1000; cont++ );	
 
 START:
@@ -738,13 +740,14 @@ START:
 	sprintf(t, "%d.%02d.%02d", mach_version_major, mach_version_minor, mach_version_sub);
 	vdp_prints(t);
 
+	// Await keypress at standard speed, 3.5MHz
+	REG_NUM = REG_TURBO;
+	REG_VAL = 0;
+
 	for(cont=0;cont<5000;cont++);			// Wait a little
 
 	vdp_gotoxy(5, 13);
 	vdp_prints("Press SPACEBAR for menu\n");
-
-	REG_NUM = REG_TURBO;
-	REG_VAL = 0;
 
 	for(cont=0;cont<30000;cont++) 
 	{
@@ -755,6 +758,7 @@ START:
 		}
 	}
 
+	// Read config.ini at 14MHz
 	REG_NUM = REG_TURBO;
 	REG_VAL = 2;
 
