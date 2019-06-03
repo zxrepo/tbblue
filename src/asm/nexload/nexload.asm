@@ -5,6 +5,8 @@
 ; Assembles with sjasmplus - https://github.com/z00m128/sjasmplus
 ; 
 ; Changelist:
+; v10 02/06/2019 RVG   Now skips core version check if nextreg 0 reports as an
+;                      emulator.
 ; v9  19/02/2019 RVG   If the word at HEADER_FILEHANDLEADDR < $4000, the open 
 ;					   file handle is returned in register C rather than an 
 ;					   address.
@@ -113,6 +115,7 @@ GRAPHIC_OVER_BORDER				= %00000010
 GRAPHIC_SPRITES_VISIBLE			= %00000001
 LORES_ENABLE					= %10000000
 
+NEXT_MACHINE_REGISTER			equ $00
 NEXT_VERSION_REGISTER			equ $01
 CORE_VERSION_REGISTER			equ $0E
 PERIPHERAL_1_REGISTER			equ $05		;Sets joystick mode, video frequency, Scanlines and Scandoubler.
@@ -255,6 +258,11 @@ loadbig
 	ld	hl,($c000+HEADER_LOADBAR):ld (LoadBar),hl
 	ld	hl,($c000+HEADER_LOADDEL):ld (LoadDel),hl
 	ld	hl,($c000+HEADER_FILEHANDLEADDR):ld (HandleAddr),hl
+	
+    ld a,NEXT_MACHINE_REGISTER
+    ld bc,TBBLUE_REGISTER_SELECT
+    out (c),a:inc b:in a,(c) ; 10 for Next or 8 for emulator
+	cp 8:jp z,.ok            ; Skip core version check if emulator
 
 	ld hl,(CoreMajor):ld de,(CoreSub)
 	ld a,($c000+HEADER_CORE_MAJOR)					:cp l:jr z,.o1:jp nc,coreUpdate:jr .ok
