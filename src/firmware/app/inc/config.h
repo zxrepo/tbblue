@@ -25,6 +25,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define CLAMP(a,b) 	((MAX(0,(MIN(a,b)))))
 
 #define	MAX_DIVMMC	1
+#define	MAX_DIVPORTS	1
+#define	MAX_KMOUSE	1
 #define MAX_MF		1
 #define	MAX_FREQ5060	1
 #define MAX_TIMEX	1

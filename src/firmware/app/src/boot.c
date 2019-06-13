@@ -35,7 +35,7 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL			Fil, Fil2;	/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = " 1.10e"; 
+unsigned char * FW_version = " 1.10f"; 
 
 // minimal required for this FW 
 unsigned long minimal = 0x010A2F; // 01 0A 2F = 1.10.47
@@ -46,6 +46,8 @@ unsigned char freq5060 = 0;
 unsigned char timex   = 0;
 unsigned char psgmode = 0;
 unsigned char divmmc = 1;
+unsigned char divports = 1;
+unsigned char kmouse = 1;
 unsigned char mf = 1;
 unsigned char joystick1 = 0;
 unsigned char joystick2 = 0;
@@ -607,10 +609,11 @@ void load_and_start()
 	f_close(&Fil);
 	vdp_prints("OK!\n");
 
-	// Inhibit DivMMC hardware if necessary
 	REG_NUM = REG_PERIPH4;
 	opc = scanlines & 3;			// bits 1-0
-	if (divmmc == 0) opc |= 0x04;		// bit 2
+	//Inhibit DivMMC or Kempston Mouse hardware if required.
+	if (divports == 0) opc |= 0x04;		// bit 2
+	if (kmouse == 0) opc |= 0x08;		// bit 3
 	REG_VAL = opc;
 	
 	REG_NUM = REG_MACHTYPE;
@@ -832,6 +835,14 @@ START:
 		{
 			divmmc = CLAMP(atoi ( line + 7), MAX_DIVMMC);
 		} 
+		else if ( strncmp ( line, "divports=", 9) == 0) 
+		{
+			divports = CLAMP(atoi ( line + 9), MAX_DIVPORTS);
+		} 
+		else if ( strncmp ( line, "kmouse=", 7) == 0) 
+		{
+			kmouse = CLAMP(atoi ( line + 7), MAX_KMOUSE);
+		} 
 		else if ( strncmp ( line, "mf=", 3) == 0) 
 		{
 			mf = CLAMP(atoi ( line + 3), MAX_MF);
@@ -927,6 +938,7 @@ START:
 				// Force load and enable of DivMMC ROM
 				// if specified on selected menu line
 				divmmc = 1;
+				divports = 1;
 
 				memset(temp, 0, 255);
 				memcpy(temp, comma3, (comma4-comma3));

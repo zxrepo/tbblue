@@ -88,6 +88,8 @@ FIL			Fil;		/* File object needed for each open file */
 FRESULT		res;
 
 unsigned char divmmc[2]      = {1, 1};
+unsigned char divports[2]    = {1, 1};
+unsigned char kmouse[2]      = {1, 1};
 unsigned char mf[2]          = {1, 1};
 unsigned char psgmode[2]     = {0, 0};
 unsigned char timex[2]       = {0, 0};
@@ -282,32 +284,18 @@ const configitem peripherals5[] = {
 const unsigned char itemcount5 = sizeof(peripherals5) / sizeof(configitem);
 
 // ZX Spectrum Next
-// DivMMC		Multiface
-// 60 Hz		Timex
-// Sound		Scandbl
-// Int. Beep	Scanline
-// TurboSnd		Joy1
-// Covox		Joy2
-// Ena Turbo
 const configitem peripherals6[] = 
 {
 	//   123456789
-
-	{0, "DivMMC",    divmmc },
-	{0, "Multiface", mf },
-	{0, "60 Hz",     freq5060 },
-	{0, "Timex",     timex },
-	{1, "Sound",     psgmode },
-	{0, "Int. Beep", intsnd },
-	{0, "TurboSnd",  turbosound },
-	{0, "Covox",     covox },
-	{6, "Stereo M.", stereomode },	
-	{0, "Scandoubl", scandoubler },
-	{7, "Scanlines", scanlines },
-	{0, "Turbo Ena", ena_turbo },
-	{2, "Left joy ", joystick1 },
-	{2, "Right joy", joystick2 }
-
+	{2, "Left joy ", joystick1 },	{1, "Sound",     psgmode },
+	{2, "Right joy", joystick2 },	{6, "Stereo M.", stereomode },	
+	{3, "PS2",	 ps2 },		{0, "TurboSnd",  turbosound },
+	{0, "K.Mouse",   kmouse },	{0, "Covox",     covox },
+	{0, "60 Hz",     freq5060 },	{0, "Int. Beep", intsnd },
+	{7, "Scanlines", scanlines },	{0, "Turbo Ena", ena_turbo },
+	{0, "Scandoub.", scandoubler },	{0, "Timex",     timex },
+	{0, "DivmmcROM", divmmc },	{0, "Multiface", mf },
+	{0, "DivmmcH/W", divports },	
 };
 const unsigned char itemcount6 = sizeof(peripherals6) / sizeof(configitem);
 
@@ -637,6 +625,8 @@ static void mode_edit() {
 	nl = (itemsCount - 1) >> 1;
 
 	divmmc[1]      = divmmc[0];
+	divports[1]    = divports[0];
+	kmouse[1]      = kmouse[0];
 	mf[1]          = mf[0];
 	psgmode[1]     = psgmode[0];
 	timex[1]       = timex[0];
@@ -679,6 +669,8 @@ static void mode_edit() {
 	}
 
 	divmmc[0]      = divmmc[1];
+	divports[0]    = divports[1];
+	kmouse[0]      = kmouse[1];
 	mf[0]          = mf[1];
 	psgmode[0]     = psgmode[1];
 	timex[0]       = timex[1];
@@ -796,6 +788,8 @@ static void save_config()
 	ERR_CHECK_PF(f_printf(&Fil, "turbosound=%d\n",  turbosound[0]));
 	ERR_CHECK_PF(f_printf(&Fil, "covox=%d\n",       covox[0]));
 	ERR_CHECK_PF(f_printf(&Fil, "divmmc=%d\n",      divmmc[0]));
+	ERR_CHECK_PF(f_printf(&Fil, "divports=%d\n",    divports[0]));
+	ERR_CHECK_PF(f_printf(&Fil, "kmouse=%d\n",   	kmouse[0]));
 	ERR_CHECK_PF(f_printf(&Fil, "mf=%d\n",          mf[0]));
 	ERR_CHECK_PF(f_printf(&Fil, "joystick1=%d\n",   joystick1[0]));
 	ERR_CHECK_PF(f_printf(&Fil, "joystick2=%d\n",   joystick2[0]));
@@ -935,6 +929,14 @@ void main()
 		else if ( strncmp ( line, "divmmc=", 7) == 0) 
 		{
 			divmmc[0] = CLAMP(atoi( line + 7), MAX_DIVMMC);
+		} 
+		else if ( strncmp ( line, "divports=", 9) == 0) 
+		{
+			divports[0] = CLAMP(atoi( line + 9), MAX_DIVPORTS);
+		} 
+		else if ( strncmp ( line, "kmouse=", 7) == 0) 
+		{
+			kmouse[0] = CLAMP(atoi( line + 7), MAX_KMOUSE);
 		} 
 		else if ( strncmp ( line, "mf=", 3) == 0) 
 		{
