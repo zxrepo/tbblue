@@ -1,14 +1,15 @@
 The config.ini file
 -------------------
-Author:  Phoebus R. Dokos (based on work by: V.Trucco, Garry Lancaster &
+Author:  Phoebus R. Dokos (based on documentation by: Garry Lancaster &
                            Allen Allbright)
-Date:	 2018-09-24
+Date:	 2019-06-24
 License: CC BY-NC-SA
-Version: 1.0
+Version: 1.1
 
 Changelog
 ---------
 2018-09-24: 1.0 Initial version
+2019-06-24: 1.1 Major update due to FW changes
 
 Introduction
 ============
