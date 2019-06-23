@@ -393,14 +393,14 @@ unsigned char videoTestMode()
 			if ((l & 0x1000) == 0)
 			{
 				l2_prints("ENTER selects mode");
-				l2_gotoxy(7*8,21*8+4);
-				l2_prints(" SPACE skips mode ");
+				l2_gotoxy(8*8+4,21*8+4);
+				l2_prints("N skips to next");
 			}
 			else
 			{
 				l2_prints("                  ");
-				l2_gotoxy(7*8,21*8+4);
-				l2_prints("                  ");
+				l2_gotoxy(8*8+4,21*8+4);
+				l2_prints("               ");
 			}
 		}
 
@@ -444,8 +444,8 @@ unsigned char videoTestMode()
 			return 1;
 		}
 
-		// Skip this mode if SPACE is pressed.
-		if ((HROW7 & 0x01) == 0)
+		// Skip this mode if N is pressed.
+		if ((HROW7 & 0x08) == 0)
 		{
 			return 0;
 		}
