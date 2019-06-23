@@ -5,6 +5,8 @@
 ;  Copyright (C) 2000, Michael Hope
 ;  Copyright (C) 2015, Fabio Belavenuto & Victor Trucco
 ;
+;  Fixes and enhancements since v1.05: Garry Lancaster
+;
 ;  This library is free software; you can redistribute it and/or modify it
 ;  under the terms of the GNU General Public License as published by the
 ;  Free Software Foundation; either version 2, or (at your option) any

@@ -3,6 +3,8 @@ TBBlue / ZX Spectrum Next project
 
 Copyright (c) 2015 Fabio Belavenuto & Victor Trucco
 
+Fixes and enhancements since v1.05: Garry Lancaster
+
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -44,7 +46,7 @@ void vdp_init()
 	bg = COLOR_BLACK;
 	_flash = 0;
 	_bright = 0;
-	ULAPORT = COLOR_BLUE;
+	ULAPORT = COLOR_BLACK;
 	v = (_flash << 7) | (_bright << 6) | (bg << 3) | fg;
 	for (c = PIX_BASE; c < (PIX_BASE+6144); c++) {
 		poke(c, 0);
@@ -114,6 +116,18 @@ void vdp_gotoxy(unsigned char x, unsigned char y)
 void vdp_gotox(unsigned char x)
 {
 	cx = x & 31;
+}
+
+/*******************************************************************************/
+unsigned char vdp_getx()
+{
+	return cx;
+}
+
+/*******************************************************************************/
+unsigned char vdp_gety()
+{
+	return cy;
 }
 
 /*******************************************************************************/

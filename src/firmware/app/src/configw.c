@@ -1,0 +1,78 @@
+/*
+TBBlue / ZX Spectrum Next project
+
+Copyright (c) 2015 Fabio Belavenuto & Victor Trucco
+
+Fixes and enhancements since v1.05: Garry Lancaster
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#include <stdlib.h>
+#include <string.h>
+#include "hardware.h"
+#include "vdp.h"
+#include "ff.h"
+#include "misc.h"
+#include "config.h"
+
+void save_config()
+{
+	unsigned int i;
+	res = FR_OK;
+
+	// Write config.ini at 14MHz
+	REG_NUM = REG_TURBO;
+	REG_VAL = 2;
+
+	// FA_CREATE_ALWAYS should be used, but f_open always returns an error.
+	ERR_CHECK(f_open(&Fil, CONFIG_FILE, /*FA_CREATE_ALWAYS*/
+					FA_OPEN_EXISTING | FA_WRITE));
+
+	for (i = 0; i < eSettingMAX; i++)
+	{
+		ERR_CHECK_PF(f_printf(&Fil, "%s=%d\n", settingName[i], settings[i]));
+	}
+
+	for (i=0; i < menu_cont; i++)
+	{
+		ERR_CHECK_PF(f_printf(&Fil, "menu=%s,%d,%d,%s", menus[i].title, menus[i].mode, menus[i].video_timing, menus[i].romfile));
+		
+		if (menus[i].divmmc_romfile[0])
+		{
+			ERR_CHECK_PF(f_printf(&Fil, ",%s", menus[i].divmmc_romfile));
+			if (menus[i].mf_romfile[0])
+			{
+				ERR_CHECK_PF(f_printf(&Fil, ",%s", menus[i].mf_romfile));
+			}
+		}
+
+		ERR_CHECK_PF(f_printf(&Fil, "\n"));
+	}
+
+	// Delete any further part of the file that we haven't overwritten
+	ERR_CHECK(f_sync(&Fil));
+	ERR_CHECK(f_truncate(&Fil));
+	ERR_CHECK(f_close(&Fil));
+
+	if (res != FR_OK)
+	{
+		//             12345678901234567890123456789012
+		display_error("Error saving configuration!");
+	}
+
+	// Revert to standard 3.5MHz
+	REG_NUM = REG_TURBO;
+	REG_VAL = 0;
+}

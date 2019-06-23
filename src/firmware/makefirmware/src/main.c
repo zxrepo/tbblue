@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* Defines */
 #define NUMMODULES 4
-#define NUMSCREENS 2
+#define NUMSCREENS 6
 
 #define MAX_PATH 254
 /* Variables */
@@ -31,24 +31,66 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 const char moduledirectory[] = "..//app//";
 const char screendirectory[] = "..//screen//";
 const char *module_files[NUMMODULES] = {
-	"boot.bin",
-	"editor.bin",
-	"updater.bin",
-	"cores.bin"
+	"boot.bin",		// FW_BLK_BOOT
+	"editor.bin",		// FW_BLK_EDITOR
+	"updater.bin",		// FW_BLK_UPDATER
+	"cores.bin",		// FW_BLK_CORES
 };
 const char *screen_files[NUMSCREENS] = {
-	"screen0.scr",
-	"screen1.scr"
+	"screen0.scr",		// FW_BLK_TBBLUE_SCR
+	"screen1.scr",		// FW_BLK_NEXT_SCR
+	"testcard.sl2",		// FW_BLK_TESTCARD_SCR
+	"testcard.npl",		// FW_BLK_TESTCARD_L2PAL
+	"tilemap.npl",		// FW_BLK_TESTCARD_TMPAL
+	"tilemap.dat",		// FW_BLK_TESTCARD_TMDATA
 };
+
+static unsigned char pB[512];
+static int blockA=0, cb=0;
 
 /* Public functions */
 
 // =============================================================================
+
+int addFile(FILE *fileFw, const char *filename)
+{
+	FILE *fileBin;
+	unsigned buffer[512];
+	int size, blocks, c;
+
+	if (!(fileBin = fopen(filename, "rb"))) {
+		fprintf(stderr, "Error opening '%s'\n", filename);
+		return -1;
+	}
+
+	fseek(fileBin, 0, SEEK_END);
+	size = ftell(fileBin);
+	fseek(fileBin, 0, SEEK_SET);
+
+	printf("Processing file '%s', filesize %d\n", filename, size);
+	printf("Block id: 0x%02x, file block number 0x%04x\n", cb/4, blockA);
+
+	blocks = (size + 511) / 512;
+	pB[cb++] = blockA % 256;	pB[cb++] = blockA / 256;
+	pB[cb++] = blocks % 256;	pB[cb++] = blocks / 256;
+	blockA += blocks;
+	c = 0;
+	while(c < size) {
+		memset(buffer, 0, 512);
+		fread(buffer, 1, 512, fileBin);
+		fwrite(buffer, 1, 512, fileFw);
+		c += 512;
+	}
+
+	fclose(fileBin);
+	return 0;
+}
+
+
 int main(int argc, char *argv[]) {
-	FILE			*fileBin = NULL, *fileFw = NULL;
-	char			path[MAX_PATH];
-	unsigned char	pB[512], buffer[512];
-	int				size, blocks, blockA=0, cb=0, i, c;
+	FILE *fileFw = NULL;
+	char path[MAX_PATH];
+	int i;
 
 	if (!(fileFw = fopen("TBBLUE.FW", "wb"))) {
 		fprintf(stderr, "Error creating TBBLUE.FW file\n");
@@ -62,56 +104,24 @@ int main(int argc, char *argv[]) {
 	for (i = 0; i < NUMMODULES; i++) {
 		strcpy(path, moduledirectory);
 		strcat(path, module_files[i]);
-		if (!(fileBin = fopen(path, "rb"))) {
-			fprintf(stderr, "Error opening '%s'\n", path);
+
+		if (addFile(fileFw, path) != 0)
+		{
 			fclose(fileFw);
 			return -1;
 		}
-		fseek(fileBin, 0, SEEK_END);
-		size = ftell(fileBin);
-		fseek(fileBin, 0, SEEK_SET);
-		printf("Processing file '%s', filesize %d\n", path, size);
-
-		blocks = (size + 511) / 512;
-		pB[cb++] = blockA % 256;	pB[cb++] = blockA / 256;
-		pB[cb++] = blocks % 256;	pB[cb++] = blocks / 256;
-		blockA += blocks;
-		c = 0;
-		while(c < size) {
-			memset(buffer, 0, 512);
-			fread(buffer, 1, 512, fileBin);
-			fwrite(buffer, 1, 512, fileFw);
-			c += 512;
-		}
-		fclose(fileBin);
 	}
 
 	// Embed screens
 	for (i = 0; i < NUMSCREENS; i++) {
 		strcpy(path, screendirectory);
 		strcat(path, screen_files[i]);
-		if (!(fileBin = fopen(path, "rb"))) {
-			fprintf(stderr, "Error opening '%s'\n", path);
+
+		if (addFile(fileFw, path) != 0)
+		{
 			fclose(fileFw);
 			return -1;
 		}
-		fseek(fileBin, 0, SEEK_END);
-		size = ftell(fileBin);
-		fseek(fileBin, 0, SEEK_SET);
-		printf("Processing file '%s', filesize %d\n", path, size);
-
-		blocks = (size + 511) / 512;
-		pB[cb++] = blockA % 256;	pB[cb++] = blockA / 256;
-		pB[cb++] = blocks % 256;	pB[cb++] = blocks / 256;
-		blockA += blocks;
-		c = 0;
-		while(c < size) {
-			memset(buffer, 0, 512);
-			fread(buffer, 1, 512, fileBin);
-			fwrite(buffer, 1, 512, fileFw);
-			c += 512;
-		}
-		fclose(fileBin);
 	}
 
 	fseek(fileFw, 0, SEEK_SET);

@@ -26,9 +26,10 @@ __sfr __at 0xEB SD_DATA;
 __sfr __at 0xFE ULAPORT;
 __sfr __banked __at 0x243B REG_NUM;
 __sfr __banked __at 0x253B REG_VAL;
-
+__sfr __banked __at 0x123B L2PORT;
 __sfr __banked __at 0x103B LED;
-
+__sfr __banked __at 0xfffd AY_REG;
+__sfr __banked __at 0xbffd AY_DATA;
 
 /* Keyboard */
 __sfr __banked __at 0xFEFE HROW0; // SHIFT,Z,X,C,V
@@ -73,25 +74,50 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define HWID_ZXNEXT_AB	250		/* ZX Spectrum Next Anti-brick */
 
 /* Register numbers */
-#define REG_MACHID		0
-#define REG_VERSION		1
-#define REG_RESET		2
-#define REG_MACHTYPE	3
-#define REG_RAMPAGE		4
-#define REG_PERIPH1		5
-#define REG_PERIPH2		6
-#define REG_TURBO		7
-#define REG_PERIPH3		8
-#define REG_PERIPH4		9
-#define REG_VERSION_SUB 14
-#define REG_ANTIBRICK	16
-#define REG_VIDEOREG	15
-#define REG_VIDEOT		17
-#define REG_KMHA		40
-#define REG_KMLA		41
-#define REG_KMHD		42
-#define REG_KMLD		43
+#define REG_MACHID		0x00
+#define REG_VERSION		0x01
+#define REG_RESET		0x02
+#define REG_MACHTYPE		0x03
+#define REG_RAMPAGE		0x04
+#define REG_PERIPH1		0x05
+#define REG_PERIPH2		0x06
+#define REG_TURBO		0x07
+#define REG_PERIPH3		0x08
+#define REG_PERIPH4		0x09
+#define REG_VERSION_SUB 	0x0e
+#define REG_ANTIBRICK		0x10
+#define REG_VIDEOT		0x11
+#define REG_L2BANK		0x12
+#define REG_TRANSPARENCY	0x14
+#define	REG_SLU_MODE		0x15
+#define REG_KMHA		0x28
+#define REG_KMLA		0x29
+#define REG_KMHD		0x2a
+#define REG_KMLD		0x2b
+#define REG_PAL_INDEX		0x40
+#define REG_PAL_VALUE_8		0x41
+#define REG_PAL_CTRL		0x43
+#define REG_PAL_VALUE_9		0x44
+#define REG_TILEMAP_CTRL	0x6b
+#define REG_TILEMAP_ATTR	0x6c
+#define REG_TILEMAP_BASE	0x6e
+#define REG_TILEDEF_BASE	0x6f
 #define REG_DEBUG		0xFF
+
+/* AY register numbers */
+#define AY_REG_TONE_FINE_A	0x00
+#define AY_REG_TONE_COARSE_A	0x01
+#define AY_REG_TONE_FINE_B	0x02
+#define AY_REG_TONE_COARSE_B	0x03
+#define AY_REG_TONE_FINE_C	0x04
+#define AY_REG_TONE_COARSE_C	0x05
+#define AY_REG_NOISE_PITCH	0x06
+#define AY_REG_MIXER		0x07
+#define AY_REG_VOLUME_A		0x08
+#define AY_REG_VOLUME_B		0x09
+#define AY_REG_VOLUME_C		0x0a
+#define AY_REG_ENV_FINE 	0x0b
+#define AY_REG_ENV_COARSE	0x0c
 
 /* Reset types */
 #define RESET_POWERON	4
@@ -109,6 +135,28 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define RAMPAGE_ROMDIVMMC	0x04 /* 0x18 */
 #define RAMPAGE_ROMMF		0x05 /* 0x19 */
 #define RAMPAGE_ROMSPECCY	0x00 /* 0x1C */
+#define RAMPAGE_RAMSPECCY	0x10	// start of standard ZX RAM
 
+/* Palette ids */
+#define PALETTE_ULA_0		0x00
+#define PALETTE_ULA_1		0x40
+#define PALETTE_L2_0		0x10
+#define PALETTE_L2_1		0x50
+#define PALETTE_SPRITES_0	0x20
+#define PALETTE_SPRITES_1	0x60
+#define PALETTE_TILEMAP_0	0x30
+#define PALETTE_TILEMAP_1	0x70
+
+/* Firmware block numbers */
+#define FW_BLK_BOOT		0
+#define FW_BLK_EDITOR		1
+#define FW_BLK_UPDATER		2
+#define	FW_BLK_CORES		3
+#define	FW_BLK_TBBLUE_SCR	4
+#define	FW_BLK_NEXT_SCR		5
+#define	FW_BLK_TESTCARD_SCR	6
+#define FW_BLK_TESTCARD_L2PAL	7
+#define FW_BLK_TESTCARD_TMPAL	8
+#define FW_BLK_TESTCARD_TMDATA	9
 
 #endif /* _HARDWARE_H */

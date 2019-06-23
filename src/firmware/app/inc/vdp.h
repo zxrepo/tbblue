@@ -52,6 +52,8 @@ void vdp_setbg(unsigned char background);
 void vdp_cls();
 void vdp_gotoxy(unsigned char x, unsigned char y);
 void vdp_gotox(unsigned char x);
+unsigned char vdp_getx();
+unsigned char vdp_gety();
 void vdp_putchar(unsigned char c);
 void vdp_prints(const char *str);
 void puthex8(unsigned char v);

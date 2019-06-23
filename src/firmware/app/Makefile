@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2015 Fabio Belavenuto & Victor Trucco
 #
+# Fixes and enhancements since v1.05: Garry Lancaster
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -31,16 +33,16 @@ ODIR = obj
 CFLAGS = -mz80 --opt-code-size  -I$(IDIR) -I..
 LDFLAGS = -mz80 --code-loc 0x6010 --data-loc 0 --no-std-crt0
 
-_OBJS0 = crt0.rel boot.rel vdp.rel diskio.rel ffro.rel
+_OBJS0 = crt0.rel boot.rel vdp.rel diskio.rel ff.rel misc.rel config.rel configw.rel videotest.rel fwfile.rel layers.rel
 OBJS0 = $(patsubst %,$(ODIR)/%,$(_OBJS0))
 
-_OBJS1 = crt0.rel editor.rel vdp.rel diskio.rel ff.rel
+_OBJS1 = crt0.rel editor.rel vdp.rel diskio.rel ff.rel misc.rel config.rel configw.rel
 OBJS1 = $(patsubst %,$(ODIR)/%,$(_OBJS1))
 
-_OBJS2 = crt0.rel updater.rel vdp.rel spi.rel diskio.rel ffro.rel
+_OBJS2 = crt0.rel updater.rel vdp.rel spi.rel diskio.rel ffro.rel misc.rel config.rel
 OBJS2 = $(patsubst %,$(ODIR)/%,$(_OBJS2))
 
-_OBJS3 = crt0.rel cores.rel vdp.rel spi.rel diskio.rel ffro.rel
+_OBJS3 = crt0.rel cores.rel vdp.rel spi.rel diskio.rel ffro.rel misc.rel config.rel
 OBJS3 = $(patsubst %,$(ODIR)/%,$(_OBJS3))
 
 all:  boot.ihx editor.ihx updater.ihx cores.ihx
@@ -60,7 +62,7 @@ updater.ihx: $(OBJS2)
 cores.ihx: $(OBJS3)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS3)
 	$(H2B) -e bin $@
-	
+
 .PHONY: clean dir
 
 dir:
