@@ -1,11 +1,11 @@
-Official TBBlue Distribution repository for the ZX Spectrum Next computer
+Official System Distribution repository for the ZX Spectrum Next computer
 
 Current versions  
 ================  
 
 |Title |Version|RT?  	|  
 |---	|--:	|---	|  
-|*TBBlue*| **1.03** |RTM|  
+|*System/Next*| **1.00** |RTM|  
 |*NextZXOS*|**2.00F**|  |  
 |*Core*|**2.00.28**	|B6|  
 |*Firmware*|**1.14b**|  |  
@@ -31,4 +31,4 @@ The **_ZX 80_** and **_ZX 81_** *EMULATORS* are © **Paul Farrow**.
 **_Gosh Wonderful_** and **_Looking Glass_** are © **Geoff Wearmouth**.  
 _**+3e**_, **_NextZXOS_** and **_NextBASIC_** are © **Garry Lancaster**.  
 **_TBBlue_** is © **Victor Trucco**, **Fabio Belavenuto**.  
-**_Spectrum Next_** is © **SpecNext Ltd**.  
+**_Spectrum Next_** and **_System/Next_** are © **SpecNext Ltd**.  
