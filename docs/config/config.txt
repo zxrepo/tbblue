@@ -14,8 +14,9 @@ Changelog
 Introduction
 ============
 Configuration of your ZX Spectrum Next computer can be done in two ways:
-1. Via the Boot Screen (by pressing <SPACEBAR> while booting and then entering 
-   the Editor Module with "E")
+1 a. Via the Boot Screen (by pressing <SPACEBAR> while booting and then entering 
+     the Editor Module with "E")
+  b. Automatically upon boot specifically for the screen detection/adjustment
 2. Via the config.ini file
 
 The second method provides access to some settings not found on the regular ZX 
@@ -163,14 +164,7 @@ have a membrane keyboard attached or a regular cased Next.
 Default setting:
 ps2=0
 
-14. lightpen
-This allows the use of a Microdigital lightpen interface. It's unavailable on ZX
-Spectrum Next boards and can be safely disregarded
-
-Default setting:
-lightpen=0
-
-15. scanlines
+14. scanlines
 This setting produces a cosmetic scanline-like effect of variable intensity from
 totally disabled (0), to 75% (1), 50% (2) and 25% (3).
 Scanlines are also controlled on the fly with the F8 key on the PS/2 keyboard 
@@ -179,20 +173,26 @@ Scanlines are also controlled on the fly with the F8 key on the PS/2 keyboard
 Default setting:
 scanlines=0
 
-16. dac
+15. dac
 The dac setting only applies to the Vtrucco development board and can be safely 
 disregarded as it doesn't apply to the ZX Spectrum Next.
 
 Default setting:
 dac=1
 
-17. turbo
+16. turbo
 turbo, enables(1) or disables (0) access to speeds over the standard 3.58Mhz. If
 enabled, speed can be also overriden on the fly with the F7 key on a PS/2 
 keyboard (or M1+7)
 
 Default setting:
 turbo=1
+
+17. timing
+timing sets a global screenmode setting from 0..7 for all menu items that have a
+screen mode set to 8 and it's set automatically from the new testcard video
+setting module upon boot. If a menu item contains a video mode different from 
+8 then this setting is overridden.
 
 18. default
 this setting bridges the global configuration section with the per-personality 
@@ -244,6 +244,8 @@ modern HDMI monitors as well as changing the aspect ratio and border size
 (Especially for the 60Hz HDMI setting 7). 
 Many HDMI monitors will work with a setting of 0 to 6 however ALL HDMI monitors 
 will work with a setting of 7.
+A setting of 8 allows the video testing boot module to set the screen according
+to the user's input during boot (See timing setting above)
 
 Main_ROM_Image_File is a ROM image file that's appropriate for the machine type
 you've selected in the previous setting e.g. 48.rom for a standard 48K ZX 
