@@ -164,24 +164,25 @@ static void display_about(void)
 	vdp_gotoxy(2, 4); vdp_prints("Fabio Belavenuto");
 	vdp_gotoxy(2, 5); vdp_prints("Henrique Olifiers");
 	vdp_gotoxy(2, 6); vdp_prints("Rick Dickinson");
-	vdp_gotoxy(2, 7); vdp_prints("Jim Bagley");
+	vdp_gotoxy(2, 7); vdp_prints("Phil Candy");
+	vdp_gotoxy(2, 8); vdp_prints("Jim Bagley");
 
 	vdp_setcolor(COLOR_BLUE, COLOR_BLACK, COLOR_LYELLOW);
-	vdp_gotoxy(2, 9); vdp_prints("The Folks Who Made It Happen");
+	vdp_gotoxy(2, 10); vdp_prints("The Folks Who Made It Happen");
 	vdp_setcolor(COLOR_BLUE, COLOR_BLACK, COLOR_GRAY);
-	vdp_gotoxy(2, 10); vdp_prints("Allen Albright");
-	vdp_gotoxy(2, 11); vdp_prints("Mike Cadwallader");
-	vdp_gotoxy(2, 12); vdp_prints("Phoebus Dokos");
-	vdp_gotoxy(2, 13); vdp_prints("Garry Lancaster");
+	vdp_gotoxy(2, 11); vdp_prints("Allen Albright");
+	vdp_gotoxy(2, 12); vdp_prints("Mike Cadwallader");
+	vdp_gotoxy(2, 13); vdp_prints("Phoebus Dokos");
+	vdp_gotoxy(2, 14); vdp_prints("Garry Lancaster");
 
 	vdp_setcolor(COLOR_BLUE, COLOR_BLACK, COLOR_LYELLOW);
-	vdp_gotoxy(2, 15); vdp_prints("The Super Backers");
+	vdp_gotoxy(2, 16); vdp_prints("The Super Backers");
 	vdp_setcolor(COLOR_BLUE, COLOR_BLACK, COLOR_GRAY);
-	vdp_gotoxy(2, 16); vdp_prints("Paul Edward Howes");
-	vdp_gotoxy(2, 17); vdp_prints("Jake Warren");
-	vdp_gotoxy(2, 18); vdp_prints("Steve Brown (aka Gilby)");
-	vdp_gotoxy(2, 19); vdp_prints("Dan Birch");
-	vdp_gotoxy(2, 20); vdp_prints("Bob Bazley");
+	vdp_gotoxy(2, 17); vdp_prints("Paul Edward Howes");
+	vdp_gotoxy(2, 18); vdp_prints("Jake Warren");
+	vdp_gotoxy(2, 19); vdp_prints("Steve Brown (aka Gilby)");
+	vdp_gotoxy(2, 20); vdp_prints("Dan Birch");
+	vdp_gotoxy(2, 21); vdp_prints("Bob Bazley");
 
 	// Revert to standard 3.5MHz
 	REG_NUM = REG_TURBO;

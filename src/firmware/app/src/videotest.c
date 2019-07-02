@@ -46,7 +46,7 @@ unsigned char *pVidTestIter = (unsigned char *)VIDITER_OFFSET;
 unsigned char *pVidTestBlack = (unsigned char *)VIDBLACK_OFFSET;
 unsigned char *pVidTestWhite = (unsigned char *)VIDWHITE_OFFSET;
 
-const testmodeitem modesHDMI[] =
+const testmodeitem modesDigital[] =
 {
 	{ 7, 0, 1 },
 	{ 7, 1, 1 },
@@ -55,7 +55,7 @@ const testmodeitem modesHDMI[] =
 	{ 255, 255, 255 }
 };
 
-const testmodeitem modesSCART[] =
+const testmodeitem modesRGB[] =
 {`
 	{ 0, 0, 0 },
 	{ 0, 1, 0 },
@@ -87,11 +87,11 @@ const testmodeitem modesVGA[] =
 
 const testmodeitem modesAll[] =
 {
-	// HDMI first
+	// Digital first
 	{ 7, 0, 1 },
 	{ 7, 1, 1 },
 
-	// SCART next
+	// RGB next
 	{ 0, 0, 0 },
 	{ 0, 1, 0 },
 
@@ -119,8 +119,8 @@ const testmodeitem *modeTables[] =
 {
 	0,			// eVidTestNone
 	modesAll,		// eVidTestAll
-	modesHDMI,		// eVidTestHDMI
-	modesSCART,		// eVidTestSCART
+	modesDigital,		// eVidTestDigital
+	modesRGB,		// eVidTestRGB
 	modesVGA,		// eVidTestVGA
 };
 
@@ -128,8 +128,8 @@ const char *modeName[] =
 {
 	"",			// eVidTestNone
 	"ALL",			// eVidTestAll
-	"HDMI",			// eVidTestHDMI
-	"SCART",		// eVidTestSCART
+	"DIGI",			// eVidTestDigital
+	"RGB",			// eVidTestRGB
 	"VGA",			// eVidTestVGA
 };
 
@@ -246,13 +246,13 @@ unsigned char videoTestReselect()
 	{
 		mode = eVidTestAll;
 	}
-	else if ((HROW1 & 0x02) == 0)	// "S"
+	else if ((HROW2 & 0x08) == 0)	// "R"
 	{
-		mode = eVidTestSCART;
+		mode = eVidTestRGB;
 	}
-	else if ((HROW6 & 0x10) == 0)	// "H"
+	else if ((HROW1 & 0x04) == 0)	// "D"
 	{
-		mode = eVidTestHDMI;
+		mode = eVidTestDigital;
 	}
 
 	if ((mode != eVidTestNone)
