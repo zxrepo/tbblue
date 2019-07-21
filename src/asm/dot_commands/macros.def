@@ -43,6 +43,10 @@ endm
 
 if Z80N
 
+macro swapnib
+        defb    $ed,$23
+endm
+
 macro mul_de
         defb    $ed,$30
 endm

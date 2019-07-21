@@ -1,3 +1,49 @@
+v2.01 (2019-07-21)
+==================
+* Added IDE_TOKENISER call, providing interface to BASIC line tokenising and
+  detokenisation.
+* Added .BAS2TXT and .TXT2BAS dot commands, allowing NextBASIC programs to be
+  easily converted between BASIC and plain text formats.
+* Improved startup error messages when there are missing system files or
+  version mismatches.
+* Ensured default sprite, layer & palette restored when loading legacy
+  software (.TAP/.SNA/.SNX/.Z80/.O/.P/.DSK) and .NEX files.
+* Legacy software (.Z80/.SNA/.SNX/.O/.P/.TAP) is now loaded with 48K or 128K
+  machine timings when approriate instead of standard Next/+3 timings.
+* LOAD/VERIFY..BANK now uses the file length as the default rather than 16K,
+  allowing short files to be more easily loaded to a bank.
+* REMOUNT/reboot/IDE_DOS_MAP now restore the last current working
+  directory that was set on each drive when it is remapped (if it exists).
+* Browser remembers last position in the current directory, and returns to it.
+* If filename is too long to fit in the display, the Browser now ensures that
+  both the start and end of the name can be seen (~ is placed where characters
+  have been omitted).
+* The Browser will now substitute LFNs rather than short names if the filename
+  character is quoted in browser.cfg (eg use "|" rather than |). Only the first
+  quote is checked, so new names can be created from LFNs (eg "|.bak")
+* If SYMBOL-SHIFT is held down when ENTER is pressed, Browser now selects the
+  2nd matching line in browser.cfg for the file extension instead of the first.
+* Added filter option (press "F") to the Browser, accepting any wildcard
+  pattern (eg "a*.tap" to show only .TAP files beginning with A)
+* No longer close #3 at BASIC reports, allowing an alternative printer channel
+  to be attached permanently to #3.
+* Fixed problems loading TAP-based software using both the printer buffer and
+  SPECTRUM command (eg Daley Thompson's Super-Test).
+* Fix for ENTER/SPACE pressed at a report being used immediately by the Browser
+  or menu.
+* Fixed bug where editing line was printed to the lower screen if a mode key
+  (EXTEND, GRAPH, CAPS) was pressed when NEXT #0 was used in LAYER 0 mode.
+* Fixed default tilemap clip window (x2/y2 were transposed).
+* Fixed the +3DOS version of IDE_PATH to not change the default drive.
+* Added fixed 48K keymap to the Multiface.
+* Minor parser optimisations.
+* Updated credits on Multiface "About" screen.
+* Updated browser.cfg to use .wavplay for .WAV files.
+* Updated browser.cfg to provide LFNs to .MORE.
+* Updated browser.cfg to display a text version of .BAS files if selected
+  with SYMBOL SHIFT + ENTER.
+
+
 v2.00F (2019-05-18)
 ===================
 * Rewrote text windowing code to use the Z80N barrel shift instructions,

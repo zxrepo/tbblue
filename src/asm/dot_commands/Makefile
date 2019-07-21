@@ -18,6 +18,8 @@ all:
 	$(PASMO) browse.asm BROWSE browse.sym
 	$(PASMO) nextver.asm NEXTVER nextver.sym
 	$(PASMO) associate.asm ASSOCIATE associate.sym
+	$(PASMO) bas2txt.asm BAS2TXT bas2txt.sym
+	$(PASMO) txt2bas.asm TXT2BAS txt2bas.sym
 
 clean:
-	$(RM) $$ ASSOCIATE CPM DEFRAG LFN MEM MKDATA MKSWAP INSTALL UNINSTALL BROWSE NEXTVER *.sym
+	$(RM) $$ ASSOCIATE CPM DEFRAG LFN MEM MKDATA MKSWAP INSTALL UNINSTALL BROWSE NEXTVER BAS2TXT TXT2BAS *.sym
