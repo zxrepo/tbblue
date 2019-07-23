@@ -34,7 +34,7 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = " 1.14c";
+unsigned char * FW_version = " 1.14d";
 
 // minimal required for this FW
 unsigned long minimal = 0x010A2F; // 01 0A 2F = 1.10.47
@@ -425,17 +425,31 @@ void main()
 
 		if (videoTestActive())
 		{
-			// Enter video test if A/V/H/S pressed.
+			// Enter video test if A/V/D/R pressed.
 			videoTestCycle();
 			break;
+		}
+
+		if ( ((HROW0 & 0x04) == 0) &&
+		     ((HROW7 & 0x08) == 0) )
+		{
+			// If N,X held down, reset config.ini to defaults.
+			reset_settings();
+			save_config();
+			vdp_cls();
+			vdp_gotoxy(3, 3);
+			vdp_prints("Settings reset to defaults!\n\n");
+			vdp_gotoxy(7, 7);
+			vdp_prints("Turn the power off");
+			for (;;);
 		}
 	}
 
 	// Clear off the video mode selection prompts.
 	vdp_gotoxy(1, 16);
 	vdp_prints("                               ");
-	vdp_gotoxy(2, 17);
-	vdp_prints("                             ");
+	vdp_gotoxy(1, 17);
+	vdp_prints("                               ");
 	vdp_gotoxy(0, 10);
 
 	// Perform remaining boot operations at 14MHz
@@ -445,12 +459,28 @@ void main()
 	// Force MF and/or DivMMC if ROMs were specified.
 	if (pMenu->mf_romfile[0])
 	{
-		settings[eSettingMF] = 1;
+		if (strncmp(pMenu->mf_romfile, "<none>", 6) == 0)
+		{
+			settings[eSettingMF] = 0;
+			pMenu->mf_romfile[0] = 0;
+		}
+		else
+		{
+			settings[eSettingMF] = 1;
+		}
 	}
 
 	if (pMenu->divmmc_romfile[0])
 	{
-		settings[eSettingDivMMC] = 1;
+		if (strncmp(pMenu->divmmc_romfile,"<none>", 6) == 0)
+		{
+			settings[eSettingDivMMC] = 0;
+			pMenu->divmmc_romfile[0] = 0;
+		}
+		else
+		{
+			settings[eSettingDivMMC] = 1;
+		}
 	}
 
 	init_registers();

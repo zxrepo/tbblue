@@ -77,10 +77,10 @@ $(ODIR)/crt0.rel: $(SDIR)/crt0.s
 $(ODIR)/spi.rel: $(SDIR)/spi.s
 	$(AS) -o $@ $<
 
-$(ODIR)/%.rel: $(SDIR)/%.c ../hardware.h
+$(ODIR)/%.rel: $(SDIR)/%.c $(IDIR)/*.h ../hardware.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(ODIR)/%.rel: $(SDIR)/ff/%.c ../hardware.h
+$(ODIR)/%.rel: $(SDIR)/ff/%.c $(IDIR)/*.h ../hardware.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(ODIR)/%.rel: $(SDIR)/ff/option/%.c

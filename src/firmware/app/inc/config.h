@@ -115,6 +115,7 @@ extern mnuitem *pMenu;
 void parsestring(char *pDest, unsigned int maxlen);
 void parsenumber(unsigned char *pValue);
 void update_video_settings();
+void reset_settings();
 void load_config();
 void save_config();
 

@@ -85,7 +85,7 @@ const unsigned char settingDefaults[eSettingMAX] =
 	0,			// eSettingStereoMode
 	1,			// eSettingTurboSound
 	1,			// eSettingCovox
-	1,			// eSettingDivMMC
+	0,			// eSettingDivMMC
 	1,			// eSettingDivPorts
 	1,			// eSettingKMouse
 	0,			// eSettingMF
@@ -186,6 +186,12 @@ void update_video_settings()
 }
 
 
+void reset_settings()
+{
+	// Default all options to something sensible
+	memcpy(&settings, &settingDefaults, sizeof(settings));
+}
+
 void load_config()
 {
 	unsigned int i;
@@ -195,7 +201,7 @@ void load_config()
 	REG_VAL = 2;
 
 	// Default all options to something sensible
-	memcpy(&settings, &settingDefaults, sizeof(settings));
+	reset_settings();
 
 	// Give a work area to the default drive
 	f_mount(&FatFs, "", 0);

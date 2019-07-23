@@ -240,7 +240,7 @@ BYTE send_cmd (		/* Returns command response (bit7==1:Send failed)*/
 	{
 		rcvr_mmc(buf, 8);	/* Skip up to 8 bytes whilst read stops */
 	}
-	
+
 	d = wait_response();
 
 	return d;			/* Return with the response value */
