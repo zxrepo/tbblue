@@ -5,6 +5,10 @@
 ; Assembles with sjasmplus - https://github.com/z00m128/sjasmplus
 ; 
 ; Changelist:
+; v11 24/07/2019 RVG   Now does core and nex version checks before clearing ULA
+;                      screen and setting border, and doesn't CLS when returning
+;                      custom BASIC errors. This plays nicer with different
+;                      layer modes, and is more in line with other dot commands.
 ; v10 02/06/2019 RVG   Now skips core version check if nextreg 0 reports as an
 ;                      emulator.
 ; v9  19/02/2019 RVG   If the word at HEADER_FILEHANDLEADDR < $4000, the open 
@@ -217,7 +221,8 @@ loadbig
 	ELSE
 	ld	sp,$3fff
 	ENDIF	
-	push ix:call fopen:pop ix	
+	Set14mhz	
+	push ix:call fopen:pop ix
 	call getCurrentCore
 	
 	; set transparency on ULA
@@ -226,15 +231,11 @@ loadbig
 	NEXTREG_nn PALETTE_CONTROL_REGISTER, 0
 	NEXTREG_nn PALETTE_INDEX_REGISTER, 	$18
 	NEXTREG_nn PALETTE_VALUE_REGISTER, 	$e3
-	xor a:out (254),a
-	ld	hl,$5800:ld de,$5801:ld bc,$2ff:ld (hl),0:ldir
+;   xor a:out (254),a
+;   ld hl,$5800:ld de,$5801:ld bc,$2ff:ld (hl),0:ldir
 	ld	bc,4667:ld a,0:out (c),a
 	NEXTREG_nn SPRITE_CONTROL_REGISTER,GRAPHIC_PRIORITIES_SLU + GRAPHIC_SPRITES_VISIBLE
 
-	Set14mhz
-	
-
-	
 ;	ld	a,LAYER_2_PAGE_0*2:NEXTREG_A MMU_REGISTER_6:inc a:NEXTREG_A MMU_REGISTER_7:ld	hl,$c000:ld de,$c001:ld bc,$3fff:ld (hl),l:ldir
 ;	ld	a,LAYER_2_PAGE_1*2:NEXTREG_A MMU_REGISTER_6:inc a:NEXTREG_A MMU_REGISTER_7:ld	hl,$c000:ld de,$c001:ld bc,$3fff:ld (hl),l:ldir
 ;	ld	a,LAYER_2_PAGE_2*2:NEXTREG_A MMU_REGISTER_6:inc a:NEXTREG_A MMU_REGISTER_7:ld	hl,$c000:ld de,$c001:ld bc,$3fff:ld (hl),l:ldir
@@ -269,6 +270,9 @@ loadbig
 .o1	ld a,($c000+HEADER_CORE_MINOR)                  :cp h:jr z,.o2:jp nc,coreUpdate:jr .ok
 .o2	ld a,($c000+HEADER_CORE_SUBMINOR)               :cp e:jr z,.ok:jp nc,coreUpdate
 .ok
+
+	xor a:out (254),a
+	ld	hl,$5800:ld de,$5801:ld bc,$2ff:ld (hl),0:ldir
 
 	ld a, ($c000+HEADER_ENTRYBANK):ld (.entryBankSMC),a
 	ld a,($c000+HEADER_DONTRESETNEXTREGS):or a:jp nz,.dontresetregs
@@ -594,7 +598,6 @@ fclose
 ;-------------
 coreUpdate
 	ld sp,(oldStack)
-	call clsWhite
 	ld hl,coretext:call print_rst16	
 	ld hl,(CoreMajor):ld h,0:call dec8:ld a,".":rst 16
 	ld hl,(CoreMinor):ld h,0:call dec8:ld a,".":rst 16
@@ -611,7 +614,6 @@ coreUpdate
 ;-------------
 loaderUpdate
 	ld sp,(oldStack)
-	call clsWhite
 	ld a,($c000+HEADER_VERSION_MAJOR)
 	ld (loadervertextMajor),a
 	ld a,($c000+HEADER_VERSION_MINOR)
@@ -640,12 +642,6 @@ dec0
 	add hl,de
 	rst 16
 	ret
-clsWhite
-	ld	hl,$4000:ld de,$4001:ld bc,$17ff:ld (hl),0:ldir
-	ld	hl,$5800:ld de,$5801:ld bc,$2ff:ld (hl),$38:ldir
-	ld a,22:rst 16:xor a:rst 16:xor a:rst 16
-	ld a,7:out ($fe),a
-	ret	
 
 coretext
 	db	"Your core is ",0
