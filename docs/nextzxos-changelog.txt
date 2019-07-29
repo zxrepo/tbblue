@@ -1,3 +1,25 @@
+v2.01A (2019-07-29)
+===================
+* Fixed .TXT2BAS to deal correctly with CRLF endings as well as CR or LF.
+* Fixed version mismatch error messages when ROM version has a sub-letter.
+* Fixed INPUT to not clear lower-screen during syntax-checking.
+* Updated browser.cfg to clear screen before loading .Z80/.SNA/.SNX/.O/.P/.NEX
+* Fixed L/R parameters in PLAY command (previously these were inverted).
+* Fix for a crash if error opening source file in COPY..TO command.
+* Fix for COPY..TO file/#n, which were incorrectly using SCREEN$ as destination.
+* Fix for editor lower screen becoming inverted if booted with the last available
+  drive (usually M:) as the default.
+* Fix for incorrect statement number in "9 STOP" and "L BREAK" reports.
+* Fix for "statement lost" error occurring in FOR or REPEAT loops which
+  performed no iterations and had no further statements on the loop start
+  line, and where the loop terminator was on the following line.
+* Fixed menus to clear bottom-right corner (on-screen character could show
+  through).
+* Fixed Calculator mode evaluation: a decimal number at the start of input was
+  mis-identified as a line number followed by a dot command, so further functions
+  (eg PI) remained untokenised.
+
+
 v2.01 (2019-07-21)
 ==================
 * Added IDE_TOKENISER call, providing interface to BASIC line tokenising and

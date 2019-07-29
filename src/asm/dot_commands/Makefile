@@ -3,7 +3,7 @@
 #
 
 PASMO = pasmo --nocase
-RM = rm
+RM = rm -f
 
 all:
 	$(PASMO) $$.asm $$ $$.sym
