@@ -264,20 +264,6 @@ browse_start:
         ldir                            ; copy help text into main RAM
         ld      (de),a                  ; terminate with $ff
 
-        ; Save TSTACK memory and reset OLDSP to the top. This is necessary
-        ; because M_P3DOS switches the stack to OLDSP when making a call
-        ; in the ROM2/5/2/7 configuration. However, if a REMOUNT is performed
-        ; within the Browser dialog, the stack usage exceeds the available
-        ; space and some system variables (notably COORDSX..PAPER2) are
-        ; overwritten.
-        ld      hl,(OLDSP)
-        ld      (saved_oldsp),hl
-        ld      hl,TSTACK
-        ld      (OLDSP),hl
-        ld      de,saved_tstack
-        ld      bc,TSTACK+1-TMPVARS
-        lddr
-
         ; Show the dialog
         pop     de                      ; DE=help text
         pop     hl                      ; HL=filetypes buffer
@@ -373,14 +359,6 @@ browse_gotfile_hl:
         ld      de,saved_filename
         call    copy_RAM7_to_de         ; copy filename from RAM 7 to DivMMC RAM
         ld      (saved_namelen),bc      ; and save its length
-
-        ; Restore the saved TSTACK.
-        ld      hl,(saved_oldsp)
-        ld      (OLDSP),hl
-        ld      hl,saved_tstack
-        ld      de,TSTACK
-        ld      bc,TSTACK+1-TMPVARS
-        lddr
 
         ; Restore the main RAM that we saved
         ld      sp,temp_stack           ; move SP to temp area in DivMMC RAM
@@ -946,7 +924,7 @@ option_enablecaps:
 
 ; TAB 32 used within help message so it is formatted wide in 64/85 column mode.
 msg_help:
-        defm    "BROWSE v1.0 by Garry Lancaster",$0d
+        defm    "BROWSE v1.1 by Garry Lancaster",$0d
         defm    "Uses Browser to select filename",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    " .BROWSE [OPTION]... VARIABLE$",$0d
@@ -1115,13 +1093,6 @@ command_tail:
 
         defs    256                     ; space for temporary stack
 temp_stack:
-
-saved_oldsp:
-        defw    0
-
-        defs    255                     ; space for saved TSTACK
-saved_tstack:
-        defs    1                       ; first byte of saved TSTACK
 
 saved_ram:
 ; NOTE: Do not place anything after here

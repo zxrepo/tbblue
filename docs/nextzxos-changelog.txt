@@ -1,3 +1,35 @@
+v2.01B (2019-08-04)
+===================
+* Added "Clear" option to NextBASIC editor menu. This deletes all variables
+  and resets RAMTOP to just below UDGs. Useful when memory has become so low
+  it is impossible to interpret command lines to perform CLEARs or line deletes.
+* Added settings for timings, DMA mode and AY mono modes to Multiface.
+* SPECTRUM command now sets appropriate legacy modes, like snapshot and 48K/USR0
+  TAP loading do.
+* DMA mode is now defaulted to Next DMA at reset/NEW, and changed to Z80 DMA
+  when loading legacy software.
+* SNX files no longer have legacy software modes applied to them.
+* Reinstated "Wrong file type" error when attempting to LOAD incorrect file
+  types from SD (this was previously the unhelpful "R Tape loading error").
+* Fixed reversed naming of AY/YM audiochip modes in Multiface.
+* Multiface/reset/NEW now sets volumes on all AY channels to zero, ensuring
+  no AY output can be heard (fixes interrupting ScrollNutter, amongst others).
+* Fixed Multiface, BASIC editor & screensaver to save/restore all clip windows.
+* Fixed Multiface to save/restore 9-bit palette register 2nd byte flag.
+* Fixed FATfs to return non-ASCII characters directly (as graphics characters)
+  rather than replacing with underscores. This allows such filenames to be
+  interacted with directly instead of needing to use the short filename.
+* Fixed bug where menus/editor/Browser displayed incorrectly if the system
+  variable CHARS pointed above $c000.
+* Fixed an issue where use of the Browser in certain circumstances (particularly
+  remounts and copying files to IDEDOS drives) could cause TSTACK to grow down
+  and overwrite some system variables.
+* Fixed esxDOS f_read/f_write to treat BC=0 as zero bytes (previously considered
+  to be 64K, like +3DOS's DOS_READ/DOS_WRITE).
+* Fixed IDE_CAPACITY to return an error for invalid device numbers.
+* Updated "About" screen credits.
+
+
 v2.01A (2019-07-29)
 ===================
 * Fixed .TXT2BAS to deal correctly with CRLF endings as well as CR or LF.
