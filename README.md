@@ -5,10 +5,10 @@ Current versions
 
 |Title |Version|RT?  	|  
 |---	|--:	|---	|  
-|*System/Next*| **1.00** |RTM|  
+|*System/Next*| **1.01** |RTM|  
 |*NextZXOS*|**2.01B**|  |  
 |*Core*|**2.00.28**	|B6|  
-|*Firmware*|**1.14b**|  |  
+|*Firmware*|**1.14d**|  |  
   
   
 Contributor Requests
