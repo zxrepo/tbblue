@@ -1,3 +1,15 @@
+v2.01C (2019-08-14)
+===================
+* Rewrote drive detection code, so available drives match those seen by the
+  firmware and by esxDOS 0.8.7:
+   + removed support for extended partitions (not supported by esxDOS/Firmware)
+   + ignore partition types, allowing FAT volumes to be detected in any primary
+     partition (some have been seen in the wild with bogus/invalid partition types)
+   + fixed a potential crash if there was an error reading the FSI sector
+* Changed partition naming to include just a single digit (primary partition id),
+  removing the "sN" indicating secondary partition number.
+
+
 v2.01B (2019-08-04)
 ===================
 * Added "Clear" option to NextBASIC editor menu. This deletes all variables

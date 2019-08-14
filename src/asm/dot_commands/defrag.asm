@@ -190,7 +190,7 @@ dodefrag:
         call    printmsg                ; "Finding space..."
 defrag_search_loop:
         ld      a,'.'
-        print_char
+        print_char()
         ld      hl,(temp_num)
         inc     hl                      ; HL=next temporary file number
         ld      (temp_num),hl
@@ -380,7 +380,7 @@ delete_tmps:
         call    printmsg                ; "Deleting temporary files"
 delete_tmps_loop:
         ld      a,'.'
-        print_char
+        print_char()
         ld      hl,(temp_num)           ; get next temp file to delete
         ld      a,h
         or      l
@@ -579,7 +579,7 @@ no_rounding:
         call48k OUT_CODE_r3     ; output units
         pop     bc
         ld      a,c
-        print_char              ; "K" or "M"
+        print_char()            ; "K" or "M"
         ret
 
 
@@ -592,7 +592,7 @@ printmsg:
         inc     hl
         and     a
         ret     z                       ; exit if terminator
-        print_char
+        print_char()
         jr      printmsg
 
 

@@ -223,7 +223,7 @@ do_list_loop:
         ex      de,hl                   ; DE=line address, BC=length
         call48k PR_STRING_r3            ; use ROM to print it
         ld      a,$0d                   ; CR
-        print_char
+        print_char()
         jr      do_list_loop
 do_list_end:
         pop     hl                      ; discard line offset
@@ -244,7 +244,7 @@ do_show_action:
         ex      de,hl                   ; DE=line address, BC=length
         call48k PR_STRING_r3            ; use ROM to print it
         ld      a,$0d                   ; CR
-        print_char
+        print_char()
         jr      finished
 type_not_found:
         ld      hl,msg_nomatchingline
@@ -594,7 +594,7 @@ printmsg:
         inc     a
         ret     z                       ; exit if terminator
         dec     a
-        print_char
+        print_char()
         jr      printmsg
 
 
@@ -730,7 +730,7 @@ perform_option_end:
 option_mismatch:
         ld      a,b                     ; A=remaining characters to skip
 skip_option:
-        addhl_A                         ; skip the option name
+        addhl_A()                       ; skip the option name
         inc     hl                      ; and the routine address
         inc     hl
         jr      check_next_option
@@ -738,7 +738,7 @@ skip_option:
 invalid_option:
         ld      hl,temparg-1
         ld      a,c
-        addhl_A
+        addhl_A()
         set     7,(hl)                  ; set error terminator at end of option
         ld      hl,msg_unknownoption
         jp      err_custom

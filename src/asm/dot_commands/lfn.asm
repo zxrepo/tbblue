@@ -164,11 +164,11 @@ printlfn:
         inc     hl
         cp      $ff
         jr      z,printlfn_end          ; on if terminator found
-        print_char                      ; else print char
+        print_char()                    ; else print char
         jr      printlfn
 printlfn_end:
         ld      a,$0d
-        print_char                      ; CR
+        print_char()                    ; CR
         and     a                       ; success
         ret
 
@@ -182,7 +182,7 @@ printmsg:
         inc     hl
         and     a
         ret     z                       ; exit if terminator
-        print_char
+        print_char()
         jr      printmsg
 
 

@@ -413,15 +413,15 @@ browse_gotfile_hl:
         ; Restore character size and attributes for layer 1 (changed by
         ; Browser) and then restore original layer/mode.
         ld      a,30
-        print_char
+        print_char()
         ld      a,(saved_l11size)
-        print_char                      ; restore layer 1,1 char size
+        print_char()                    ; restore layer 1,1 char size
         ld      a,24
-        print_char
+        print_char()
         ld      a,(saved_l11attr)
-        print_char                      ; restore layer 1,1 attributes
+        print_char()                    ; restore layer 1,1 attributes
         ld      a,14
-        print_char                      ; clear the layer 1,1 screen
+        print_char()                    ; clear the layer 1,1 screen
         ld      bc,(saved_submode)
         call    set_mode                ; restore original mode
         ld      a,(saved_layer)
@@ -433,7 +433,7 @@ browse_gotfile_hl:
         cp      1
         jr      z,end_cls               ; no need to clear layer 1,1 again
         ld      a,14
-        print_char                      ; otherwise clear a layer 1 screen
+        print_char()                    ; otherwise clear a layer 1 screen
         jr      end_cls
 cls_layer0:
         call48k CLS_r3
@@ -452,7 +452,7 @@ printmsg:
         inc     a
         ret     z                       ; exit if terminator
         dec     a
-        print_char
+        print_char()
         jr      printmsg
 
 
@@ -634,7 +634,7 @@ perform_option_end:
 option_mismatch:
         ld      a,b                     ; A=remaining characters to skip
 skip_option:
-        addhl_A                         ; skip the option name
+        addhl_A()                       ; skip the option name
         inc     hl                      ; and the routine address
         inc     hl
         jr      check_next_option
@@ -642,7 +642,7 @@ skip_option:
 invalid_option:
         ld      hl,temparg-1
         ld      a,c
-        addhl_A
+        addhl_A()
         set     7,(hl)                  ; set error terminator at end of option
         ld      hl,msg_unknownoption
         jp      err_custom

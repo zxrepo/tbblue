@@ -213,7 +213,7 @@ good_nextzxos:
         call    printmsg                ; "Finding space..."
 unfrag_search_loop:
         ld      a,'.'
-        print_char
+        print_char()
         ld      hl,(temp_num)
         inc     hl                      ; HL=next temporary file number
         ld      (temp_num),hl
@@ -446,7 +446,7 @@ delete_tmps:
         call    printmsg                ; "Deleting temporary files"
 delete_tmps_loop:
         ld      a,'.'
-        print_char
+        print_char()
         ld      hl,(temp_num)           ; get next temp file to delete
         ld      a,h
         or      l
@@ -535,7 +535,7 @@ printmsg:
         inc     hl
         and     a
         ret     z                       ; exit if terminator
-        print_char
+        print_char()
         jr      printmsg
 
 

@@ -256,7 +256,7 @@ bas2txt_start:
         ld      a,(mmu_id)              ; NXR_MMU3 (@ $6000)/NXR_MMU5 (@ $a000)
         sub     nxr_mmu0                ; A=3 or 5
         add     a,a                     ; A=$06 or $0a
-        swapnib                         ; A=$60 or $a0
+        swapnib()                       ; A=$60 or $a0
         ld      h,a
         ld      l,0                     ; HL=$6000 or $a000
         ld      (mmu_addr),hl           ; save it
@@ -768,7 +768,7 @@ printmsg:
         inc     a
         ret     z                       ; exit if terminator
         dec     a
-        print_char
+        print_char()
         jr      printmsg
 
 
@@ -904,7 +904,7 @@ perform_option_end:
 option_mismatch:
         ld      a,b                     ; A=remaining characters to skip
 skip_option:
-        addhl_A                         ; skip the option name
+        addhl_A()                       ; skip the option name
         inc     hl                      ; and the routine address
         inc     hl
         jr      check_next_option
@@ -912,7 +912,7 @@ skip_option:
 invalid_option:
         ld      hl,temparg-1
         ld      a,c
-        addhl_A
+        addhl_A()
         set     7,(hl)                  ; set error terminator at end of option
         ld      hl,msg_unknownoption
         jp      err_custom

@@ -226,7 +226,7 @@ txt2bas_start:
         ld      a,(mmu_id)              ; NXR_MMU3 (@ $6000)/NXR_MMU5 (@ $a000)
         sub     nxr_mmu0                ; A=3 or 5
         add     a,a                     ; A=$06 or $0a
-        swapnib                         ; A=$60 or $a0
+        swapnib()                       ; A=$60 or $a0
         ld      h,a
         ld      l,0                     ; HL=$6000 or $a000
         ld      (mmu_addr),hl           ; save it
@@ -775,7 +775,7 @@ bad_directive:
 
 printline:
         ld      a,(hl)
-        print_char                      ; print a character
+        print_char()                    ; print a character
         ld      a,(hl)
         inc     hl
         cp      $0d
@@ -1066,7 +1066,7 @@ output_append:
         pop     ix                      ; IX=length
         ld      de,bank_output0
         ld      a,(bufout_bank)
-        addde_A
+        addde_A()
         ld      a,(de)
         ld      b,a                     ; B=current output buffer bank id
         ld      de,(bufout_addr)        ; DE=current output buffer address
@@ -1110,7 +1110,7 @@ new_output_bank:
         ld      a,(hl)
         cp      MAX_OUTPUT_BANKS
         jr      nc,out_of_memory        ; don't allocate too many banks
-        addde_a                         ; DE=address to store bank id
+        addde_A()                       ; DE=address to store bank id
         push    de
         call    allocate_bank           ; get a new bank
         pop     de
@@ -1218,7 +1218,7 @@ show_line_number_loop:
         jr      z,show_syntax_error_loop; on when untokenised start reached
         ld      a,(hl)
         inc     hl
-        print_char
+        print_char()
         jr      show_line_number_loop
 show_syntax_error_loop:
         ld      a,d
@@ -1229,7 +1229,7 @@ show_syntax_error_loop:
         call    z,printmsg
         pop     hl
         ld      a,(hl)                  ; A=char
-        print_char
+        print_char()
         ld      a,(hl)                  ; fetch char again
         inc     hl
         cp      $0d                     ; keep going until ENTER processed
@@ -1251,7 +1251,7 @@ printmsg:
         inc     a
         ret     z                       ; exit if terminator
         dec     a
-        print_char
+        print_char()
         jr      printmsg
 
 
@@ -1387,7 +1387,7 @@ perform_option_end:
 option_mismatch:
         ld      a,b                     ; A=remaining characters to skip
 skip_option:
-        addhl_A                         ; skip the option name
+        addhl_A()                       ; skip the option name
         inc     hl                      ; and the routine address
         inc     hl
         jr      check_next_option
@@ -1395,7 +1395,7 @@ skip_option:
 invalid_option:
         ld      hl,temparg-1
         ld      a,c
-        addhl_A
+        addhl_A()
         set     7,(hl)                  ; set error terminator at end of option
         ld      hl,msg_unknownoption
         jp      err_custom

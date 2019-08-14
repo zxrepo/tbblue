@@ -41,72 +41,171 @@ endm
 
 ; Macros for ZX Spectrum Next new instructions
 
-if Z80N
-
 macro swapnib
+if Z80N
         defb    $ed,$23
+else
+.ERROR swapnib not available
+endif
 endm
 
 macro mul_de
+if Z80N
         defb    $ed,$30
+else
+.ERROR mul_de not available
+endif
 endm
 
 macro addhl_A
+if Z80N
         defb    $ed,$31
+else
+.ERROR addhl_A not available
+endif
 endm
 
 macro addde_A
+if Z80N
         defb    $ed,$32
+else
+.ERROR addde_A not available
+endif
 endm
 
 macro addbc_A
+if Z80N
         defb    $ed,$33
+else
+.ERROR addbc_A not available
+endif
 endm
 
 macro addhl_N,val
+if Z80N
         defb    $ed,$34,(val)&$ff,(val)/$100
+else
+.ERROR addhl_N not available
+endif
 endm
 
 macro addde_N,val
+if Z80N
         defb    $ed,$35,(val)&$ff,(val)/$100
+else
+.ERROR addde_N not available
+endif
 endm
 
 macro addbc_N,val
+if Z80N
         defb    $ed,$36,(val)&$ff,(val)/$100
+else
+.ERROR addbc_N not available
+endif
 endm
 
 macro pushval,val
+if Z80N
         ; NOTE: PUSHVAL is big-endian
         defb    $ed,$8a,(val)/$100,(val)&$ff
+else
+.ERROR pushval not available
+endif
 endm
 
 macro nxtregn,reg,val
+if Z80N
         defb    $ed,$91,reg,val
+else
+.ERROR nxtregn not available
+endif
 endm
 
 macro nxtrega,val
+if Z80N
         defb    $ed,$92,val
+else
+.ERROR nxtrega not available
+endif
 endm
 
 macro pixeldn
+if Z80N
         defb    $ed,$93
+else
+.ERROR pixeldn not available
+endif
 endm
 
 macro pixelad
+if Z80N
         defb    $ed,$94
+else
+.ERROR pixelad not available
+endif
 endm
 
 macro setae
+if Z80N
         defb    $ed,$95
+else
+.ERROR setae not available
+endif
+endm
+
+macro bsla
+if Z80N
+        defb    $ed,$28
+else
+.ERROR bsla not available
+endif
+endm
+
+macro bsra
+if Z80N
+        defb    $ed,$29
+else
+.ERROR bsra not available
+endif
+endm
+
+macro bsrl
+if Z80N
+        defb    $ed,$2a
+else
+.ERROR bsrl not available
+endif
+endm
+
+macro bsrf
+if Z80N
+        defb    $ed,$2b
+else
+.ERROR bsrf not available
+endif
+endm
+
+macro brlc
+if Z80N
+        defb    $ed,$2c
+else
+.ERROR brlc not available
+endif
 endm
 
 macro ldix
+if Z80N
         defb    $ed,$a4
+else
+.ERROR ldix not available
+endif
 endm
 
 macro ldirx
+if Z80N
         defb    $ed,$b4
+else
+.ERROR ldirx not available
+endif
 endm
-
-endif ; Z80N
-

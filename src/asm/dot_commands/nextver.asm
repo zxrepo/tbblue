@@ -201,9 +201,9 @@ skip_assign:
         jr      z,finished
         ld      a,ixh
         add     a,'0'                   ; major
-        print_char
+        print_char()
         ld      a,'.'
-        print_char
+        print_char()
         ld      a,ixl
         rrca
         rrca
@@ -211,13 +211,13 @@ skip_assign:
         rrca
         and     $0f
         add     a,'0'                   ; middle
-        print_char
+        print_char()
         ld      a,ixl
         and     $0f
         add     a,'0'                   ; minor
-        print_char
+        print_char()
         ld      a,$0d
-        print_char
+        print_char()
 
 finished:
         and     a                       ; completed successfully
@@ -234,7 +234,7 @@ printmsg:
         inc     a
         ret     z                       ; exit if terminator
         dec     a
-        print_char
+        print_char()
         jr      printmsg
 
 
@@ -356,7 +356,7 @@ perform_option_end:
 option_mismatch:
         ld      a,b                     ; A=remaining characters to skip
 skip_option:
-        addhl_A                         ; skip the option name
+        addhl_A()                       ; skip the option name
         inc     hl                      ; and the routine address
         inc     hl
         jr      check_next_option
@@ -364,7 +364,7 @@ skip_option:
 invalid_option:
         ld      hl,temparg-1
         ld      a,c
-        addhl_A
+        addhl_A()
         set     7,(hl)                  ; set error terminator at end of option
         ld      hl,msg_unknownoption
         jp      err_custom

@@ -182,7 +182,7 @@ printmsg:
         inc     hl
         and     a
         ret     z                       ; exit if terminator
-        print_char
+        print_char()
         jr      printmsg
 
 
