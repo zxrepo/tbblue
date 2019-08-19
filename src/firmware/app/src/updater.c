@@ -66,26 +66,24 @@ static unsigned char wait_resp() {
 		// key Y
 		if ((HROW5 & (1 << 4)) == 0) {
 			r = 2;
-			while(!(HROW1 & 0x02));
 			break;
 		}
 		// key N
 		if ((HROW7 & (1 << 3)) == 0) {
 			r = 3;
-			while(!(HROW7 & 0x08));
 			break;
 		}
 
 		bts = REG_VAL;
 
 
-		if ( bts & 1 > 0) //MF button, same as N
+		if (bts & 1) //MF button, same as N
 		{
 			r = 3;
 			break;
 		}
 
-		if ( bts & 2 > 0) //Drive button, same as Y
+		if (bts & 2) //Drive button, same as Y
 		{
 			r = 2;
 			break;
@@ -136,6 +134,9 @@ void main() {
 		vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_RED);
 		vdp_gotoxy(11, 2);
 		vdp_prints("Anti-Brick\n\n");
+	
+		REG_NUM = REG_ANTIBRICK;
+		while (REG_VAL & 3);
 	}
 	else
 	{

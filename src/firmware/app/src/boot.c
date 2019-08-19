@@ -34,7 +34,7 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = " 1.14d";
+unsigned char * FW_version = " 1.14e";
 
 // minimal required for this FW
 unsigned long minimal = 0x010A2F; // 01 0A 2F = 1.10.47
