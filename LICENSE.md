@@ -1,10 +1,10 @@
 The Next License
 ----------------
 
-The license itself is Copyright (c) 2018 Phoebus Dokos / SpecNext Ltd and is goverened by the Attribution-ShareAlike CC BY-SA license.  
+The license itself is Copyright (c) 2018 - 2019 Phoebus Dokos / SpecNext Ltd and is goverened by the Attribution-ShareAlike CC BY-SA license.  
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
-of the **TBBlue Distribution** (software, documents, associated media files, schematics and production notes) (the "_Distribution_"), to deal in the distribution in
+of the **System/Next Distribution** (software, documents, associated media files, schematics and production notes) (the "_Distribution_"), to deal in the distribution in
 its entirety without restriction, including without limitation the rights to use, 
 copy, publish and distribute exact copies of the _Distribution_, and to permit 
 persons to whom the _Distribution_ is furnished to do so, subject to the following 
