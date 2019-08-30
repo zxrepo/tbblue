@@ -38,8 +38,6 @@ unsigned char * strVidMagic = "VideoTest";
 #define VIDBLACK_OFFSET (VIDITER_OFFSET + 1)
 #define VIDWHITE_OFFSET (VIDBLACK_OFFSET + 1)
 
-#define L2_BANK 8
-
 unsigned char *pVidMagic = (unsigned char *)VIDMAGIC_OFFSET;
 unsigned char *pVidTestMode = (unsigned char *)VIDMODE_OFFSET;
 unsigned char *pVidTestIter = (unsigned char *)VIDITER_OFFSET;

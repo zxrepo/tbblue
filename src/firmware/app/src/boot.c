@@ -34,7 +34,7 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = " 1.14e";
+unsigned char * FW_version = "1.14f";
 
 // minimal required for this FW
 unsigned long minimal = 0x010A2F; // 01 0A 2F = 1.10.47
@@ -286,12 +286,12 @@ void display_bootscreen()
 	vdp_gotoxy(1, 17);
 	vdp_prints("A=all, D=Digital, V=VGA, R=RGB");
 
-	vdp_gotoxy(14, 21);
-	vdp_prints("Firmware v.");
+	vdp_gotoxy(15, 21);
+	vdp_prints("Firmware v");
 	vdp_prints(FW_version);
 
-	vdp_gotoxy(12, 22);
-	vdp_prints("    Core v.");
+	vdp_gotoxy(19, 22);
+	vdp_prints("Core v");
 	sprintf(t, "%d.%02d.%02d", mach_version_major, mach_version_minor, mach_version_sub);
 	vdp_prints(t);
 

@@ -20,6 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef _LAYERS_H
 #define _LAYERS_H
 
+#define L2_BANK 8
+
 void l2_gotoxy(unsigned char x, unsigned char y);
 void l2_setcolours(unsigned char i, unsigned char p);
 void l2_putchar(unsigned char ch);

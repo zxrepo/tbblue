@@ -45,21 +45,13 @@ void l2_putchar(unsigned char ch)
 {
 	l2_ch = ch - 32;
 
-	__asm;
 	// Bind the correct layer2 bank for writing at 0x0000..0x3fff
-	ld	bc, # 0x123b
-	in	a,(c)
-	push	af
-	and	# 2
-	or	# 1
-	ld	e,a
-	ld	a,(_l2_y)
-	ld	d,a
-	and	# 0xc0
-	or	e
-	out	(c),a
+	REG_NUM = REG_RAMPAGE;
+	REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + (l2_y >> 6);
+
+	__asm;
 	// Form address to write to in DE
-	ld	a,d
+	ld	a,(_l2_y)
 	and	# 0x3f
 	ld	d,a
 	ld	a,(_l2_x)
@@ -102,10 +94,6 @@ _l2_putchar_pixel_set:
 	pop	de
 	dec	c
 	jr	nz,_l2_putchar_row_loop
-	// Turn off layer 2 writes, restoring original setting
-	pop	af
-	ld	bc, # 0x123b
-	out	(c),a
 	__endasm;
 }
 

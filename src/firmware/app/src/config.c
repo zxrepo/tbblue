@@ -204,7 +204,12 @@ void load_config()
 	reset_settings();
 
 	// Give a work area to the default drive
-	f_mount(&FatFs, "", 0);
+	res = f_mount(&FatFs, "", 0);
+	if (res != FR_OK)
+	{
+		//             12345678901234567890123456789012
+		display_error("Error mounting SD card!");
+	}
 
 	res = f_open(&Fil, CONFIG_FILE, FA_READ);
 	if (res != FR_OK)
@@ -219,7 +224,7 @@ void load_config()
 		if (!f_gets(line, 255, &Fil))
 		{
 			//             12345678901234567890123456789012
-			display_error("Error reading configuration!");
+			display_error("Error reading file data!");
 		}
 
 		if (line[0] == ';')
