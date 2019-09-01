@@ -51,7 +51,7 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define NEXT_UPDATE_FILE2   "TBBLUE.TBU"
 #define NEXT_FIRMWARE_FILE  "TBBLUE  FW "
 #define NEXT_FIRMWARE_FILE2 "TBBLUE.FW"
-#define NEXT_DIRECTORY      "/tbblue/"
+#define NEXT_DIRECTORY      "/machines/next/"
 #define CONFIG_FILE         NEXT_DIRECTORY "config.ini"
 #define TIMING_FILE         NEXT_DIRECTORY "timing.ini"
 #define ESXMMC_FILE         "esxmmc.rom"
