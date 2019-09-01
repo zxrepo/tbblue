@@ -1,3 +1,41 @@
+v2.01d (2019-09-01)
+===================
+* ZX80/ZX81 ROMs now loaded from the new location of C:/MACHINES/NEXT, to
+  match new firmware v1.15.
+* Internal overlay re-organisation.
+* Complete rewrite of renumber (from menu & with LINE n,m command). This fixes
+  issues with the previous routine not always updating line references.
+  Line references are now always updated to integer format (%linenum) as a
+  minor speed & space optimisation.
+  Computed line references are now marked with a "?" in the listing to indicate
+  these should be manually corrected, as are references that could not be
+  updated in the unlikely event of lack of memory.
+* Changed SNA/Z80 snapshot loading to use bytes on the stack rather than the
+  screen for the final boot operation. This fixes any visible screen corruption
+  and also fixes snapshots such as Ranarama.z80 which checked for this.
+* Updated the LAYER OVER n command to accept the new blending modes (6 & 7).
+* Ensure turbo-key (F8) is enabled on NEW/reset, in case software has disabled
+  it.
+* Fixed CAT "T:" and BANK..LINE commands to output correct token text in
+  non-Layer0 modes (they were incorrectly displaying UDGs instead).
+* Fixed screen flicker when operating in 64/85-column command-line mode.
+* Fixed screen flicker on return from the Multiface.
+* Fixed brief visible screen corruption when switching to Timex/lo-res modes.
+* Layer2 screen now cleared to black at reset/NEW.
+* Fix for command-line mode incorrectly using the editor's clip window
+  definitions instead of BASIC. This caused missing sprites when running games
+  such as Pogie using .RUN/SPECTRUM from the command-line.
+* Fixed TILE command for compatibility with new 3.x series cores which provide
+  a new 48K mapping mode with port $123b.
+* Fixed issue where the Browser's current drive could be accidentally changed
+  by programs writing to RAM8 (such as OVERSCAN.SNA).
+* Fixed bug where PROC..TO didn't return string values correctly if the
+  destination was a dimensioned character array or a sliced string.
+* Fixed bug where CLEAR/RUN in autoexec.bas or IDE_BASIC call could crash the
+  system on return due to the stack being relocated.
+* Updated the default welcome program to CLEAR variables before exiting.
+
+
 v2.01C (2019-08-14)
 ===================
 * Rewrote drive detection code, so available drives match those seen by the
