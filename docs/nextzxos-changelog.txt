@@ -1,3 +1,10 @@
+v2.01e (2019-09-02)
+===================
+* Fixed a flaw in v2.01d's revised snapshot executor: the final RAM
+  configuration was not set until after the PC had been pushed to the stack,
+  so a snapshot could crash if SP>$c000 and current RAM page <> last RAM page
+  in the snapshot file.
+
 v2.01d (2019-09-01)
 ===================
 * ZX80/ZX81 ROMs now loaded from the new location of C:/MACHINES/NEXT, to
