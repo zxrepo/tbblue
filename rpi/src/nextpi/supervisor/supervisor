@@ -1,0 +1,3 @@
+#!/bin/bash
+
+/bin/bash --rcfile /opt/nextpi/supervisor/.bashrc

@@ -1,0 +1,22 @@
+NextPi Custom commands
+
+NextPi has a series of custom commands to do tasks specific to itself.
+These commands all start with nextpi-, and are spread between three locations.
+
+1) /opt/nextpi/bin
+2) /NextPi/nextpi
+3) /ram/nextpi
+
+ -- they are searched in reverse order (i.e., RAM first)
+
+#1 is READ ONLY by default, these are our system commands, and "builtin" - these are the ones that clients interacting with the Pi over UART can "depend upon".  I (D.) will be adding to these to reflect the core value proposition of NextPi, and the "central default command structure" will based out of here. Mostly BASH and Python2.7 is the plan. (Anticipated empty space: 100M, reserved for system use, more space CAN be made available, but I am "pre-allocating" that for Allen and I (D.) to expand the featureset)
+
+#2 is READ WRITE by default, these are stored in the 50Meg user persistant partition, games can (after managing diskspace) store their own files here, these will persist between reboots - if a game wants to install a persistant extension to NextPi this is where the entrypoint should live. (Anticipated empty space: 40M usable)
+
+#3 is READ WRITE VOLATILE by default, files stored here will NOT persist between reboots, but will not cause any block-wear-and-use on the SD card, therefore increasing live expectancy for the card. Games are advised to use this storage where possible (Anticipated empty space: 240M, fluctuates as Pi RAM used changes)
+
+Interested devs are encouraged to use their keyboard and monitor to inspect the contents of these files to see how the underlying linux system is configured.
+
+There is an example "new persistent" command, nextpi-date_set in /NextPi/nextpi for devs to see how this can work.
+
+Please note that calling the native Linux utilities (as within these packages) is discouraged to ensure future compatibility...

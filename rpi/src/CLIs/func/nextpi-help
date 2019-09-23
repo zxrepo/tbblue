@@ -1,0 +1,20 @@
+#!/bin/bash
+{
+	#////////////////////////////////////
+	# NextPi-Help
+	#
+	#////////////////////////////////////
+	# Created by Xalior / Stale Pixels
+	#
+	#////////////////////////////////////
+
+
+	help_link() {
+		echo
+		echo "`basename $0`: error"
+		echo
+		echo "  Please visit http://specnext.dev/wiki/Pi:`echo $G_HELP_URL`"
+		echo
+	}
+
+}

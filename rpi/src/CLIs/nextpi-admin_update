@@ -1,0 +1,39 @@
+#!/bin/bash
+
+install_update() {
+	echo -n "Inspecting Dongle for Update..."
+	if [ -f /mnt/dongle/update.log ]; then
+		echo "Update.log found - skipping!"
+	else 
+		if [ -f /mnt/dongle/update.tar ]; then
+			echo "Found update - extracting"
+			mkdir -p /tmp/update
+			cd /tmp/update
+			tar -xvf /mnt/dongle/update.tar -C /tmp/update
+			#md5sum /tmp/update/stage1.sh | cut -d\  -f1
+			bash /tmp/update/stage1.sh | tee /tmp/update.log
+		else
+			echo "No update found - continuing startup"
+		fi
+	fi	
+	sleep 1
+}
+
+echo
+echo "All aboard the train to dongletown..."
+
+if [ -a "/dev/sda1" ]; then
+	echo "Found Dongle"
+	mount -n /dev/sda1 /mnt/dongle
+	install_update
+else 
+	if [ -a "/dev/sda" ]; then
+		echo "Found potentially wrongly formatted Dongle, checking anyway..."
+		mount -n /dev/sda /mnt/dongle
+		install_update
+	else
+		echo "This train couldn't find dongletown..."
+	fi
+fi
+
+

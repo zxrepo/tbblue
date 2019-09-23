@@ -1,0 +1,5 @@
+#!/bin/bash
+
+## SETUP PATHS
+
+PATH=/ram/nextpi:/mnt/dongle/nextpi:/NextPi/nextpi:/opt/nextpi/bin:$PATH

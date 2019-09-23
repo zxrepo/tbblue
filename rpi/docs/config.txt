@@ -1,0 +1,16 @@
+The following changes have been made to config.txt - those marked 'required for "NextPi Compatability"' are only needed on actual "Deployed Devices" in real nexts.
+
+gpu_mem_512=16
+	Forces GPU to only take 16Meg of Memory. This may cause problems for people wanting to do high texture 3D work later, but we can cross that bridge when we come to it...
+
+dtparam=i2s
+	Enable the I2S ALT mode on the Broadcom Silicon - required for "NextPi Compatability"
+
+enable_uart=1
+	Enable the UART ALT mode on the Broadcome Silicon - required for "NextPi Compatability"
+
+dtoverlay=specnext-dac
+	Enables the I2S TOSLink-alike soundcard in the Pi, and ALSA - required for "NextPi Compatability"
+
+dtoverlay=rpi3-bt-miniuart 
+	Swaps the MiniUART and the Real (fast) UART on machines with Wifi/Bluetooth. Technically this is not supported on "real NextPis", but has been added as a convenience for people who cannot get Pi0, and only get Pi0W.  UTTERLY UNTESTED ON Pi0W.

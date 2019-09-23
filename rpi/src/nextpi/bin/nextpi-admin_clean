@@ -1,0 +1,28 @@
+#!/bin/bash 
+
+# Make sure we know who and what we are
+echo -n "CLEANING FOR VERSION " && cat /opt/nextpi/VERSION
+
+# Clean any Debian Droppings -- full path to bypass any aliases...
+/usr/bin/apt-get clean
+/usr/bin/apt-get autoremove
+
+# Remove backup droppings
+rm -rf /boot/._* /boot/"System Volume Information"
+rm -rf /NextPi/._* /NextPi/"System Volume Information"
+
+if [ "$1" == "--update" ] || [ "$2" == "--update" ]; then
+	echo "Updating package catalog in /boot"
+	# Generate package report in /boot
+	echo -n "NextPi Package Selection - v" > /boot/packages.txt
+	cat /opt/nextpi/VERSION >> /boot/packages.txt
+	echo >> /boot/packages.txt
+	dpkg --get-selections >> /boot/packages.txt
+
+	echo "Updating usage report in /boot"
+	# Generate usage report in /boot
+	echo -n "NextPi Usage Report - v" > /boot/df-h.txt
+	cat /opt/nextpi/VERSION >> /boot/df-h.txt
+	echo >> /boot/df-h.txt
+	df -h | grep -v "/run" | grep -v "/var" | grep -v "/sys" | grep -v devtmpfs | grep -v shm | grep -v "/tmp" | grep -v dongle >> /boot/df-h.txt
+fi
