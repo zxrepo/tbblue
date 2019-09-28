@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+
+from inputs import get_gamepad
+from pylib.help import help
+
+import argparse
+
+def event_stream(event):
+    if event.ev_type == "Sync":
+        return
+
+    print(event.ev_type, event.code, event.state)
+
+stream_formats = {
+    "EventStream": event_stream
+}
+
+def main():
+    parser = argparse.ArgumentParser(description='Read an xbox control pad and return the data, requireds a format type')
+
+    parser.add_argument('--format', '-f', type=str,  dest='format', default=None,
+                        help='Format of interface with Next, no default',
+                        choices=['EventStream'],
+                        nargs='?')
+
+    args = parser.parse_args()
+
+    if args.format is None:
+        help()
+        return
+
+    while 1:
+            events = get_gamepad()
+
+            for event in events:
+                stream_formats.get(args.format)(event)
+
+
+if __name__ == "__main__":
+    main()

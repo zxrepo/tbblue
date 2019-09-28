@@ -1,0 +1,7 @@
+#!/bin/bash
+while :
+do
+  cd /ram
+  /bin/bash --rcfile /opt/nextpi/supervisor/.bashrc
+  echo&&echo "Restarting Supervisor"
+done

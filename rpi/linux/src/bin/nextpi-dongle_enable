@@ -1,0 +1,19 @@
+#!/bin/bash
+. /opt/nextpi/bin/func/nextpi-globals
+
+echo
+echo "All aboard the train to dongletown..."
+
+if [ -a "/dev/sda1" ]; then
+	echo "Found Dongle"
+	mount -n /dev/sda1 /mnt/dongle
+	install_update
+else
+	if [ -a "/dev/sda" ]; then
+		echo "Found potentially wrongly formatted Dongle, checking anyway..."
+		mount -n /dev/sda /mnt/dongle
+		install_update
+	else
+		echo "This train couldn't find dongletown..."
+	fi
+fi

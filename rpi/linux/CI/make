@@ -1,0 +1,231 @@
+#!/bin/bash
+DATE=${DATE:=`date +%Y%m%d`}
+
+## This whole file could do with more comments, less typos, more config options, and less hard coding.
+#
+## But I could do with more finters, less pain, and more time too :-P
+#
+# -Dx 20190922
+
+generate_package() {
+	echo $1 >> ./docs/custom-packages.txt
+	porg -fz $1 \
+		| grep -v "/usr/share" \
+		| grep -v "/usr/include" \
+		| grep -v "/u/NextPi" \
+		| tee ./package-lists/$1.lst \
+		| tar -cvzf updates/$1.tar.gz -T -
+}
+
+
+echo "Paranoia Unmounting image mount points - this may error..."
+echo "   3"
+sudo umount ./mnt/loop3
+sudo losetup -d /dev/loop3
+sudo umount /dev/loop3
+echo "  2"
+sudo umount ./mnt/loop2
+sudo losetup -d /dev/loop2
+sudo umount /dev/loop2
+echo " 1"
+sudo umount ./mnt/loop1
+sudo losetup -d /dev/loop1
+sudo umount /dev/loop1
+echo "."
+
+if [[ $2 == "--latest" ]]; then
+	mkdir -p RELEASE
+	cd RELEASE
+	rm NextPi_$DATE.img
+	ln -s ../images/NextPi_latest.img NextPi_$DATE.img
+	cd ..
+fi
+
+if [[ $1 == "--rerelease" ]]; then
+  if [[ $2 == "" ]]; then
+    echo&&echo "ERROR need version folder name"
+    exit -1
+  else
+    echo&&echo -n "Reusing SD image "&& echo "./$2/NextPi_$DATE.img"
+    cp ./$2/NextPi_$DATE.img .
+    rm -rf RELEASE && mkdir RELEASE
+    mv NextPi_$DATE.img RELEASE
+  fi
+else if [[ $1 != "--resume" ]]; then
+    echo&&echo -n "Creating SD image "&& echo "./RELEASE/NextPi_$DATE.img"
+
+    rm -rf RELEASE && mkdir RELEASE
+    sudo dd status=progress if=/dev/sda of=./RELEASE/NextPi_$DATE.img
+    sudo chown $USER:pi ./RELEASE/NextPi_$DATE.img
+    truncate --size=$[1966080*512] ./RELEASE/NextPi_$DATE.img
+    cp ./RELEASE/NextPi_$DATE.img ./images
+    cd images
+    rm NextPi_latest.img 
+    ln -s NextPi_$DATE.img NextPi_latest.img
+    cd ..
+  fi
+fi
+
+echo&&echo "Mounting NextPi /boot"
+sudo losetup -o   4194304 /dev/loop1 ./RELEASE/NextPi_$DATE.img
+sudo mount /dev/loop1 ./mnt/NextPi1
+echo "Mounting NextPi /"
+sudo losetup -o  50331648 /dev/loop2 ./RELEASE/NextPi_$DATE.img
+sudo mount /dev/loop2 ./mnt/NextPi2
+echo "Mounting NextPi /NextPi"
+sudo losetup -o 962592768 /dev/loop3 ./RELEASE/NextPi_$DATE.img
+sudo mount /dev/loop3 ./mnt/NextPi3
+echo
+
+VERSION=`cat ./mnt/NextPi2/opt/nextpi/VERSION`
+
+echo "Generate RELEASE for NextPi $VERSION"
+
+if [[ $1 != "--resume" ]]; then
+	if [[ -d "$VERSION" ]]; then
+	  if [[ $1 == "--rerelease" ]]; then
+	    rm -rf $VERSION
+	  else
+		  echo "ERROR $VERSION exists!"
+		  exit
+		fi
+	fi
+fi
+
+cp ./mnt/NextPi2/opt/nextpi/VERSION RELEASE
+
+echo&&echo "Cleaing File System Gremlins"
+sudo find . -name '"System Volume Information"' -type f -delete
+sudo find . -name '.DS_Store' -type f -delete
+sudo find . -name '._*' -type f -delete
+
+echo&&echo "Copying src"
+cp -rv src ./RELEASE
+
+echo&&echo "Copying NextCommands"
+cp -rv NextCommands ./RELEASE
+
+echo&&echo "Copying BASIC files"
+cp -rv BAS ./RELEASE/.
+
+echo&&echo "Copying 'getting started'"
+cp -rv FirstFiles/. ./RELEASE/.
+
+RELNOTE=`echo -n $VERSION| sed s/\\./_/g`
+
+echo&&echo "Generating 'release-notes/NextPi_$RELNOTE.txt'"
+cat ./template/release-notes.txt | sed s/\$DATE/$DATE/g > release-notes/NextPi_$RELNOTE.txt
+cat ./docs/CHANGELOG.txt >> release-notes/NextPi_$RELNOTE.txt
+
+###
+# CUSTOM PACKAGES
+###
+
+if [[ $3 != "--keep-packages" ]]; then
+	if [[ $1 != "--rerelease" ]]; then
+		echo&&echo "Creating Package lists"
+		rm ./docs/custom-packages
+		rm -rf ./package-lists && mkdir -p package-lists
+	fi
+
+	#CSID
+	cd StalePixels-Packs/csid-mod/
+
+	if [[ $1 != "--rerelease" ]]; then
+	  echo&&echo "Making csid"
+	  ./NextPi/make.sh
+	else
+	  echo&&echo "Rereleasing csid"
+	fi
+
+	echo&&echo "Packaging csid"
+	sudo porg -lp csid "./NextPi/install.sh"
+	cd ../..
+	generate_package csid
+
+	echo&&echo "Installing csid"
+	sudo tar -zxvf updates/csid.tar.gz -C ./mnt/NextPi2/
+
+	#SC68
+	cd StalePixels-Packs/sc68/
+	if [[ $1 != "--rerelease" ]]; then
+	  echo&&echo "Making sc68"
+	  ./NextPi/make.sh
+	else
+	  echo&&echo "Rereleasing sc68"
+	fi
+	
+	echo&&echo "Packaging sc68"
+	sudo porg -lp sc68 "./NextPi/install.sh"
+	cd ../..
+	generate_package sc68
+	
+	echo&&echo "Installing sc68"
+	sudo tar -zxvf updates/sc68.tar.gz -C ./mnt/NextPi2/
+
+	#SJASMPLUS
+	cd StalePixels-Packs/sjasmplus
+
+	if [[ $1 != "--rerelease" ]]; then
+	  echo&&echo "Making sjasmplus"
+	  ./NextPi/make.sh
+	else
+	  echo&&echo "Rereleasing sjasmplus"
+	fi
+
+	echo&&echo "Packaging sjasmplus"
+	sudo porg -lp sjasmplus "./NextPi/install.sh"
+	cd ../..
+	generate_package sjasmplus
+
+	echo&&echo "Installing csid"
+	sudo tar -zxvf updates/sjasmplus.tar.gz -C ./mnt/NextPi2/
+fi
+
+echo&&echo "Copying CLIs"
+cp -rv ./mnt/NextPi2/opt/nextpi/bin ./RELEASE/src/CLIs
+
+echo&&echo "Updating docs"
+cp -v ./mnt/NextPi1/system-packages.txt ./docs
+cp -v ./mnt/NextPi1/python-packages.txt ./docs
+cp -v ./mnt/NextPi1/system-packages.txt ./package-lists/debian.lst
+cp -v ./mnt/NextPi1/python-packages.txt ./package-lists/python.lst
+cp -rv ./package-lists ./docs
+cp -v ./mnt/NextPi1/df-h.txt ./docs
+
+echo&&echo "Copying docs"
+cp -rv ./docs ./RELEASE
+
+echo&&echo "Creating issue.txt"
+sudo rm ./mnt/NextPi1/issue.txt
+echo DietPi v$VERSION > nextpi_issue.txt
+cat ./template/issue.txt >> nextpi_issue.txt
+sudo cp nextpi_issue.txt ./mnt/NextPi1/issue.txt
+rm nextpi_issue.txt
+
+echo "Unmounting image file"
+sudo umount ./mnt/NextPi3
+sudo umount /dev/loop3
+sudo losetup -d /dev/loop3
+
+sudo umount ./mnt/NextPi2
+sudo umount /dev/loop2
+sudo losetup -d /dev/loop2
+
+sudo umount ./mnt/NextPi1
+sudo umount /dev/loop1
+sudo losetup -d /dev/loop1
+
+echo
+if [[ $1 != "--resume" ]]; then
+	echo "Creating release bundle for $VERSION"
+	rm -rf $VERSION
+	mv RELEASE $VERSION
+else
+	echo "Updating release bundle for $VERSION"
+	mkdir -p $VERSION
+	cp -rv RELEASE/* $VERSION
+fi
+
+echo&&echo "Creating release bundle NextPi_$DATE.tar.gz for $VERSION"
+tar -cvzf NextPi_$VERSION.tar.gz $VERSION

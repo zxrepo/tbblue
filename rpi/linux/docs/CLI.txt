@@ -1,11 +1,12 @@
 NextPi Custom commands
 
 NextPi has a series of custom commands to do tasks specific to itself.
-These commands all start with nextpi-, and are spread between three locations.
+These commands all start with nextpi-, and are spread between four locations.
 
 1) /opt/nextpi/bin
 2) /NextPi/nextpi
-3) /ram/nextpi
+3) /mnt/dongle/nextpi
+4) /ram/nextpi
 
  -- they are searched in reverse order (i.e., RAM first)
 

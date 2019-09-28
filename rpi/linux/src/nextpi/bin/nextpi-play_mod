@@ -1,5 +1,0 @@
-#!/bin/bash
-. /opt/nextpi/bin/func/nextpi-globals
-args_required $@
-
-xmp --driver alsa --quiet $@

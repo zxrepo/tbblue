@@ -1,8 +1,10 @@
-NextPi Usage Report - v0.90
+NextPi Usage Report - v0.96
 
 Filesystem      Size  Used Avail Use% Mounted on
-/dev/root       825M  665M  113M  86% /
+/dev/root       825M  614M  164M  79% /
 /dev/mmcblk0p3   42M  2.8M   40M   7% /NextPi
-tmpfs           240M     0  240M   0% /ram
 tmpfs            10M  1.4M  8.7M  14% /DietPi
+tmpfs           240M     0  240M   0% /ram
 /dev/mmcblk0p1   44M   24M   20M  55% /boot
+/dev/loop0      2.0G  360M  1.5G  20% /PlusPack/Developer
+/dev/loop1      190M   28M  148M  16% /PlusPack/Media

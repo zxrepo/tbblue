@@ -10,10 +10,23 @@ NextPi_3) 1880064 1966079   86016   42M  e W95 FAT16 (LBA)
 1) /boot                    -- DietPi defaults and system files
 2) /                        -- EXT4 master filesystem, read only
 3) /mnt/nextpiuser_internal -- User read write, aliased to /NextPi
+Also, not listed above:
+4) /ram		            -- User read write, erased every reboot
+And, optionally:
+5) /mnt/dongle              -- If found, /dev/sda1 or /dev/sda - mounted at boot
 
 Partitions are managed via UUIDs to prevent USB devices from preventing boot.
 
 Partition 2 is mount RO, and is the System ROM -- this can only be edited after enabling RW mode with nextpi-admin_enable
+
 Partition 3 is bound (mount -o bind) to /NextPi for easier system management and system emulation, later, for developers. This is the Persistent partition.
 
-/ram is also a 240M RAM drive, volatile, so lost between power cycles.
+Suggested Operations
+
+Remember -- SD cards wear out the more you write to them, and the SD in the Pi is a "fixed item" so we'd like it to last as long as possible, therefore:
+
+Mostly, it is expected you would use /ram - a 240M RAM drive, volatile, so lost between power cycles - this is best used for "runtime" scratch storage for games, etc.
+
+/NextPi is for persistent patches, or config files needed by the pi, ideally not for media, etc.
+/boot for essential, and DietPi configs, needed at first run
+/ is the ROM, best unmodified for most cases

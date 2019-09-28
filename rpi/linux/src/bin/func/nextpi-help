@@ -1,0 +1,16 @@
+#!/bin/bash
+{
+	#////////////////////////////////////
+	# NextPi-Help
+	#
+	#////////////////////////////////////
+	# Created by Xalior / Stale Pixels
+	#
+	#////////////////////////////////////
+
+
+	help_link() {
+	  /opt/nextpi/bin/pylib/help.py $0
+	}
+
+}

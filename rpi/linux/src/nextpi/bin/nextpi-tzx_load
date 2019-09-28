@@ -1,6 +1,0 @@
-#!/bin/bash
-. /opt/nextpi/bin/func/nextpi-globals
-args_required $@
-
-tape2wav $1 /tmp/out.wav
-play /tmp/out.wav
