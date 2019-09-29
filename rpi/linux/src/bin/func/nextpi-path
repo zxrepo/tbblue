@@ -1,0 +1,20 @@
+#!/bin/bash
+{
+	#////////////////////////////////////
+	# NextPi-Path
+	#
+	#////////////////////////////////////
+	# Created by D. Rimron-Soutter / Stale Pixels
+	#
+	#////////////////////////////////////
+	#
+	# Info:
+	# - Loads the system override path, now outsourced to .bashrc
+	# - Sourced/Loaded as start of all NextPi script
+	#
+	#
+	#////////////////////////////////////
+
+
+	. /root/.bashrc
+}

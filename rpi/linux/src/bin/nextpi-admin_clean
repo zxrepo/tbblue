@@ -1,0 +1,49 @@
+#!/bin/bash 
+
+if [ "$1" == "--system" ]; then
+  # Make sure we know who and what we are
+  echo -n "CLEANING FOR VERSION " && cat /opt/nextpi/VERSION
+
+  echo "Removing any Debian flagged packages"
+  # Purge any packages flagged for deinstallation before release
+  /usr/bin/apt-get remove --purge `dpkg --get-selections | grep deinstall | cut -f1` -y >> /dev/null
+
+
+  # Remove backup droppings
+  rm -rf /boot/._* /boot/"System Volume Information"
+  rm -rf /NextPi/._* /NextPi/"System Volume Information"
+
+  # Remove any Debian items flagged -- full path to bypass any aliases...
+  echo "Removing any Debian stale packages"
+  /usr/bin/apt-get autoremove -y >> /dev/null
+
+  if [ "$2" == "--update" ]; then
+    echo "Updating System Packages in /boot"
+    echo -n "NextPi System Packages - v" > /boot/system-packages.txt
+    cat /opt/nextpi/VERSION >> /boot/system-packages.txt
+    echo >> /boot/system-packages.txt
+    dpkg --get-selections >> /boot/system-packages.txt
+
+    echo "Updating Python Packages in /boot"
+    echo -n "NextPi System Packages - v" > /boot/python-packages.txt
+    cat /opt/nextpi/VERSION >> /boot/python-packages.txt
+    echo >> /boot/python-packages.txt
+    pip freeze >> /boot/python-packages.txt
+  fi
+
+  # Clean any Debian Droppings -- full path to bypass any aliases...
+  echo "Removing any route Debian configs"
+  /usr/bin/apt-get clean -y >> /dev/null
+else
+  rm -rf /ram/*
+  mkdir /ram/nextpi
+fi
+
+if [ "$1" == "--update" ] || [ "$2" == "--update" ]; then
+  echo "Updating usage report in /boot"
+  # Generate usage report in /boot
+  echo -n "NextPi Usage Report - v" > /boot/df-h.txt
+  cat /opt/nextpi/VERSION >> /boot/df-h.txt
+  echo >> /boot/df-h.txt
+  df -h | grep -v "/run" | grep -v "/var" | grep -v "/sys" | grep -v tmpfs | grep -v shm | grep -v dev/loop | grep -v dongle >> /boot/df-h.txt
+fi

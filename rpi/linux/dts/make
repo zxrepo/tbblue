@@ -1,0 +1,2 @@
+#!/bin/sh
+dtc -@ -H epapr -o /boot/overlays/specnext-dac.dtbo -W no-unit_address_vs_reg specnext-dac.dts

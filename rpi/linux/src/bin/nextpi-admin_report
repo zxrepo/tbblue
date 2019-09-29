@@ -1,0 +1,4 @@
+#!/bin/sh 
+
+df -h|grep -v "/run" |grep -v "/var"| grep -v "/sys"| grep -v devtmpfs|grep -v shm|grep -v "/tmp"
+

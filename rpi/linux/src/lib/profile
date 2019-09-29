@@ -1,0 +1,18 @@
+# ~/.profile: executed by Bourne-compatible login shells.
+
+export PYTHONUNBUFFERED=1
+
+alias apt="echo \"APT is DISABLED. Please use manual DPGK instead. Absolute path overrides\""
+alias apt-get="echo \"APT is DISABLED. Please use manual DPGK instead. Absolute path overrides\""
+
+if [ "$BASH" ]; then
+  if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
+  fi
+fi
+
+nextpi-plus_list
+
+# always last line
+mesg n || true
+

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+for i in `mount | grep PlusPack|cut -d/ -f6|cut -d\  -f1`
+do
+	echo "Found PlusPack: $i"
+done
+

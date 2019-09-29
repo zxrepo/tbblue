@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Shortcuts to simple console commands, to make life easier for linux newcomeers
+stty -echo

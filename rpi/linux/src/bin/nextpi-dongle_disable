@@ -1,0 +1,6 @@
+#!/bin/bash
+. /opt/nextpi/bin/func/nextpi-globals
+args_required $@
+
+mount /dev/sda1 /mnt/dongle > /dev/null
+

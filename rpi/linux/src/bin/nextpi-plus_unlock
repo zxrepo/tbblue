@@ -1,0 +1,7 @@
+#!/bin/bash
+. /opt/nextpi/bin/func/nextpi-globals
+args_required $@
+
+umount /PlusPack/$1
+mount /mnt/dongle/$1.img /PlusPack/$1
+
