@@ -1,0 +1,3 @@
+#/bin/bash
+play -nq & sleep 0.1
+killall -9 play 2>&1 > /dev/null
