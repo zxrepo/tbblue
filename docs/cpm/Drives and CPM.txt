@@ -1,5 +1,6 @@
-Drives and CP/M on the ZX Spectrum Next
-=======================================
+Further information about drives and CP/M
+=========================================
+
 
 CP/M on the ZX Spectrum Next cannot access the standard SD card drive C: (or
 other drives you may have due to having additional SD cards inserted, for
@@ -14,7 +15,7 @@ Initially, your SD card is supplied with a single image:
 
         C:/NEXTZXOS/CPMBASE.P3D
 
-When you first start CP/M, this is renamed to:
+When you first start CP/M, this is automatically renamed to:
 
         C:/NEXTZXOS/CPM-A.P3D
 
