@@ -1,0 +1,15 @@
+NextPi Hardware Interfaces
+
+The following interfaces are currently presented for nextPi operation
+
+UART
+
+The UART currently runs at 115,000 and is paired to a BASH Supervisor shell, running at ROOT, with a preconfigured path to support the default CLI override system.
+
+I2S DAC
+
+The ALSA stack is configured to emulate a TOSLink interface, sending digital PCMdata to the Next for it to decode upon its own DAC natively.  This means that any API that natively supports ALSA gets access to the next DAC. Because this DAC is a "pure digital" solution, with no DSP attached, volume control needs to be done at the sample level, upon the pi, or upon the next itself.
+
+MORE
+
+to follow.... :-P

@@ -1,0 +1,56 @@
+#!/bin/bash
+
+nextpi-dongle_enable
+
+echo 
+echo "Checking for NextPi Plus Packs"
+
+echo -n "  Developer: "
+if [ -f "/mnt/dongle/Developer.img" ]; then
+	mount -nr /mnt/dongle/Developer.img /PlusPack/Developer
+  if [ -f "/PlusPack/Developer/nextpi/autoexec.sh" ]; then
+		echo " [autoexec.sh] "
+		. /PlusPack/Developer/nextpi/autoexec.sh
+  fi
+  echo "done"
+else
+  echo "not found"
+fi
+
+echo -n "  Media: "
+if [ -f "/mnt/dongle/Media.img" ]; then
+	mount -nr /mnt/dongle/Media.img /PlusPack/Media
+  if [ -f "/PlusPack/Media/nextpi/autoexec.sh" ]; then
+		echo " [autoexec.sh] "
+		. /PlusPack/Media/nextpi/autoexec.sh
+  fi
+  echo "done"
+else
+  echo "not found"
+fi
+
+echo -n "  Runtime: "
+if [ -f "/mnt/dongle/Runtime.img" ]; then
+	mount -nr /mnt/dongle/Runtime.img /PlusPack/Runtime
+  if [ -f "/PlusPack/Runtime/nextpi/autoexec.sh" ]; then
+		echo " [autoexec.sh] "
+		. /PlusPack/Runtime/nextpi/autoexec.sh
+  fi
+  echo "done"
+else
+  echo "not found"
+fi
+
+echo -n "  User: "
+if [ -f "/mnt/dongle/User.img" ]; then
+	mount -n /mnt/dongle/User.img /PlusPack/User
+  if [ -f "/PlusPack/User/nextpi/autoexec.sh" ]; then
+		echo " [autoexec.sh] "
+		. /PlusPack/User/nextpi/autoexec.sh
+  fi
+  echo "done"
+else
+  echo "not found"
+fi
+
+nextpi-plus_list

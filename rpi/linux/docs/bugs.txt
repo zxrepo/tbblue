@@ -1,0 +1,6 @@
+Known problems, issues, or caveats of use
+
+1) NEXTCOM doesn't handle many control keys
+2) Terminex sometimes misses characters
+3) No stable file transfer betweeen next and pi on this build (currently being rewritten)
+

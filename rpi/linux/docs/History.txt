@@ -1,0 +1,15 @@
+A rough history of the creation of NextPi
+
+Started with DietPi Stretch - wrote image
+Before booting first time mounted in host linux system, created persistent partition, disabled swap.
+Booted diet pi, manually extended filesystem.
+Manually complete dietpi-config setup.
+Forced dietpi-state to STAGE2 to stop wizard running.
+Deinstalled some package tools, network, bluetooth, etc.
+Created RAM Disks
+Created custom supervisor shell, instead of getty on ttyAMA0
+Custom CLI tools across three dirs.
+
+More details of a lot of this can be found in the /docs folder - what is critical is to understand that a lot of the procedures that went into creating this image are more about creating a stable "ROM" that fits into 800ishMB, than configuring Linux. 
+
+The specific facets of this install that make it compatible with the Next (as apposed to making it 1GB and User Hardened) are documented more thoroughly, to allow you to reproduce this runtime environment on your own raspberry pi in Developers.txt

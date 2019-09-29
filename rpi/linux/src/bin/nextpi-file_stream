@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Take a stream of data on stdin, uudecode, and eject on stdout
+#
+#   encode with:
+#		uuencode -m < AFILE.BIN ReferenceName.ext > AFILE.UUE
+#
+#   If the archive is decoded with nextpi-file_receive it will use the
+#	"ReferenceName.ext" when created on disc. 
+#
+#   nextpi-file_stream does not use the ReferenceName.ext, as it emits
+#	bytes on stdout instead
+# 
+#  Resultant AFILE.UUE is the file you would include in your nextbundle
+#   and is the file you should send over the UART.
+
+stty -echo
+uudecode -o-
+stty echo
