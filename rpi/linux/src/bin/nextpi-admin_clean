@@ -1,9 +1,6 @@
 #!/bin/bash 
 
-if [ "$1" == "--ram" ]; then
-  rm -rf /ram/*
-  mkdir /ram/nextpi
-else
+if [ "$1" == "--system" ]; then
   # Make sure we know who and what we are
   echo -n "CLEANING FOR VERSION " && cat /opt/nextpi/VERSION
 
@@ -20,7 +17,7 @@ else
   echo "Removing any Debian stale packages"
   /usr/bin/apt-get autoremove -y >> /dev/null
 
-  if [ "$1" == "--update" ] || [ "$2" == "--update" ]; then
+  if [ "$2" == "--update" ]; then
     echo "Updating System Packages in /boot"
     echo -n "NextPi System Packages - v" > /boot/system-packages.txt
     cat /opt/nextpi/VERSION >> /boot/system-packages.txt
@@ -45,6 +42,8 @@ else
     cat /opt/nextpi/VERSION >> /boot/df-h.txt
     echo >> /boot/df-h.txt
     df -h | grep -v "/run" | grep -v "/var" | grep -v "/sys" | grep -v devtmpfs | grep -v shm | grep -v "/tmp" | grep -v dongle >> /boot/df-h.txt
-
   fi
+else
+  rm -rf /ram/*
+  mkdir /ram/nextpi
 fi

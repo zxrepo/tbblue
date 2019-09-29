@@ -1,4 +1,4 @@
-NextPi System Packages - v0.96
+NextPi System Packages - v0.99D
 
 adduser						install
 alsa-oss					install
@@ -275,6 +275,7 @@ pigpio						install
 pinentry-curses					install
 procps						install
 psmisc						install
+pv						install
 python						install
 python-decorator				install
 python-minimal					install

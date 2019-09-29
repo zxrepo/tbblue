@@ -21,38 +21,8 @@ install_update() {
 
 nextpi-dongle_enable
 
-echo 
-echo "Checking for NextPi Plus Packs"
+install_update
 
-echo -n "  Developer: "
-if [ -f "/mnt/dongle/Developer.img" ]; then
-	mount -nr /mnt/dongle/Developer.img /PlusPack/Developer
-  echo "done"
-else
-  echo "not found"
-fi
-
-echo -n "  Media: "
-if [ -f "/mnt/dongle/Media.img" ]; then
-	mount -nr /mnt/dongle/Media.img /PlusPack/Media
-  echo "done"
-else
-  echo "not found"
-fi
-
-echo -n "  Runtime: "
-if [ -f "/mnt/dongle/Runtime.img" ]; then
-	mount -nr /mnt/dongle/Runtime.img /PlusPack/Runtime
-  echo "done"
-else
-  echo "not found"
-fi
-
-echo -n "  User: "
-if [ -f "/mnt/dongle/User.img" ]; then
-	mount -n /mnt/dongle/User.img /PlusPack/User
-  echo "done"
-else
-  echo "not found"
-fi
+nextpi-plus_activate
+  
 

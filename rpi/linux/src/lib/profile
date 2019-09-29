@@ -11,4 +11,8 @@ if [ "$BASH" ]; then
   fi
 fi
 
+nextpi-plus_list
+
+# always last line
 mesg n || true
+

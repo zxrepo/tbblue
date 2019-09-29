@@ -1,15 +1,30 @@
-Version 0.97 DietPi for Next - Something for the weekend 🍸
+Version 0.99D DietPi for Next - Always believe in your soul 🥇
+ * Added MD5 sums to builds assets for SMS validation
+ * Disable DietPi account -- use root account, password is still "dietpi"
+ * Fixed bug in df-h generation that was accidentally logging size of currently attached PlusPacks and mounted memory
 
-Things that DID change since Alpha 0.96
+Things that NOTDID change since Beta 0.98
+ * Removed private test files, ready for GM - these will now live in the Media PlusPack
+ * nextpi-admin_clean now defaults to RAM cleaner, all other options behind flags
+ * nextpi-play_silence for when you kill a player, and want to send NULL to the DAC (this is a hack. to be patched post GM)
+ * NextPi now writes the "last known localtime" to /boot on shutdown, allowing you to set the clock at startup by editing this file, or store the last "known time" or network time if Ethernet found
+ * Removed Terminex.nex, to prevent confusion
+ * Updated Terminex.snx, now handles "much bigger files", and uses nextpi-file_stream system method to base64 decode the results. Thanks David Saphier/emook!
 
+Things that NOTDID change since Beta 0.97
+ * PlusPack builder now does nexted zips in nexted zips, so you need less diskspace to extract and select pluspacks
+ * Docs and labeling tweaks, reading for GM
+ * Added nextpi-plus_activate, nextpi-plus_list, nextpi_plus-unlock and nextpi-plus_lock
+ * nextpi-plus_list called upon SUPervisor startup
+ * Added 'pv' cli for rate limiting output over SUPervisor
 
-Things that DIDNOT change since Alpha 0.96
+Things that DIDNOT change since Beta 0.96
  * Dongle Plus Packs support - first experimental build
  * Added pasmo
  * Changed startup scripts to use nextpi-admin_clean not inline hacks
  * Added support for autoexec.sh in "nextpi" folder on all persistant and Plus Pack storage areas
  * Added ntpdate (not ntpd)
-    _IF_ you have an Ethernet dongle on your PiZero NextPi will try to update the fingerprint on "Last known good time" GMT
+    _IF_ you have an Ethernet dongle on your PiZero NextPi will try to update the softclock on "Last known good time" GMT
 
 Things that DIDNOT change since Alpha 0.95
  * Added /opt/nextpi/EDITION for reporting size, and other features of active image (eg 1RO, 1GB, Read Only ROOT)
@@ -17,6 +32,22 @@ Things that DIDNOT change since Alpha 0.95
  * added individual filelist for custom packages to generators :-o
  * Fixed issue generator. Again.
  * Added automatic release note generator to CI
+
+-Xalior, 29 Sept 2019
+
+------------------------------------------------------------------------------------------
+
+Version 0.98 DietPi for Next - Something strange is a foot at the circle K ⏳
+
+ Not a public release
+
+-Xalior, 29 Sept 2019
+
+------------------------------------------------------------------------------------------
+
+Version 0.97 DietPi for Next - Something for the weekend 🍸
+
+ Not a public release
 
 -Xalior, 28 Sept 2019
 

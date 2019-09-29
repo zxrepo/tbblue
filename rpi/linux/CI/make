@@ -58,11 +58,6 @@ else if [[ $1 != "--resume" ]]; then
     sudo dd status=progress if=/dev/sda of=./RELEASE/NextPi_$DATE.img
     sudo chown $USER:pi ./RELEASE/NextPi_$DATE.img
     truncate --size=$[1966080*512] ./RELEASE/NextPi_$DATE.img
-    cp ./RELEASE/NextPi_$DATE.img ./images
-    cd images
-    rm NextPi_latest.img 
-    ln -s NextPi_$DATE.img NextPi_latest.img
-    cd ..
   fi
 fi
 
@@ -76,6 +71,11 @@ echo "Mounting NextPi /NextPi"
 sudo losetup -o 962592768 /dev/loop3 ./RELEASE/NextPi_$DATE.img
 sudo mount /dev/loop3 ./mnt/NextPi3
 echo
+
+if [[ ! -f "./mnt/NextPi2/opt/nextpi/VERSION" ]]; then
+    echo&&echo "ERROR need SD seed VERSION"
+    exit -1
+fi
 
 VERSION=`cat ./mnt/NextPi2/opt/nextpi/VERSION`
 
@@ -92,7 +92,7 @@ if [[ $1 != "--resume" ]]; then
 	fi
 fi
 
-cp ./mnt/NextPi2/opt/nextpi/VERSION RELEASE
+echo $VERSION > RELEASE/VERSION
 
 echo&&echo "Cleaing File System Gremlins"
 sudo find . -name '"System Volume Information"' -type f -delete
@@ -111,17 +111,18 @@ cp -rv BAS ./RELEASE/.
 echo&&echo "Copying 'getting started'"
 cp -rv FirstFiles/. ./RELEASE/.
 
-RELNOTE=`echo -n $VERSION| sed s/\\./_/g`
+RELNOTE=`echo -n $VERSION| sed s/\\\./_/g`
 
 echo&&echo "Generating 'release-notes/NextPi_$RELNOTE.txt'"
-cat ./template/release-notes.txt | sed s/\$DATE/$DATE/g > release-notes/NextPi_$RELNOTE.txt
+cat ./template/release_notes.txt | sed s/\$DATE/$DATE/g > release-notes/NextPi_$RELNOTE.txt
 cat ./docs/CHANGELOG.txt >> release-notes/NextPi_$RELNOTE.txt
 
 ###
 # CUSTOM PACKAGES
+
 ###
 
-if [[ $3 != "--keep-packages" ]]; then
+if [[ $1 == "--with-packages" ]]; then
 	if [[ $1 != "--rerelease" ]]; then
 		echo&&echo "Creating Package lists"
 		rm ./docs/custom-packages
@@ -182,9 +183,6 @@ if [[ $3 != "--keep-packages" ]]; then
 	sudo tar -zxvf updates/sjasmplus.tar.gz -C ./mnt/NextPi2/
 fi
 
-echo&&echo "Copying CLIs"
-cp -rv ./mnt/NextPi2/opt/nextpi/bin ./RELEASE/src/CLIs
-
 echo&&echo "Updating docs"
 cp -v ./mnt/NextPi1/system-packages.txt ./docs
 cp -v ./mnt/NextPi1/python-packages.txt ./docs
@@ -198,25 +196,39 @@ cp -rv ./docs ./RELEASE
 
 echo&&echo "Creating issue.txt"
 sudo rm ./mnt/NextPi1/issue.txt
-echo DietPi v$VERSION > nextpi_issue.txt
+sudo echo NextPi v$VERSION > nextpi_issue.txt
+sudo cp nextpi_issue.txt ./mnt/NextPi1/nextpi.txt
 cat ./template/issue.txt >> nextpi_issue.txt
 sudo cp nextpi_issue.txt ./mnt/NextPi1/issue.txt
+echo =======================
+cat nextpi_issue.txt
+echo =======================
+cat ./mnt/NextPi1/issue.txt
 rm nextpi_issue.txt
+echo =======================
+sync&&sync
+
 
 echo "Unmounting image file"
 sudo umount ./mnt/NextPi3
-sudo umount /dev/loop3
 sudo losetup -d /dev/loop3
 
 sudo umount ./mnt/NextPi2
-sudo umount /dev/loop2
 sudo losetup -d /dev/loop2
 
 sudo umount ./mnt/NextPi1
-sudo umount /dev/loop1
 sudo losetup -d /dev/loop1
 
 echo
+
+if [[ $1 != "--rerelease" ]] || [[ $1 != "--resume" ]]; then
+  cp ./RELEASE/NextPi_$DATE.img ./images
+  cd images
+  rm NextPi_latest.img
+  ln -s NextPi_$DATE.img NextPi_latest.img
+  cd ..
+fi
+
 if [[ $1 != "--resume" ]]; then
 	echo "Creating release bundle for $VERSION"
 	rm -rf $VERSION
@@ -227,5 +239,13 @@ else
 	cp -rv RELEASE/* $VERSION
 fi
 
+echo "Updating checksums for $VERSION"
+cd $VERSION
+md5sum  NextPi_$DATE.img >  NextPi_$DATE.img.md5
+cd ..
+
 echo&&echo "Creating release bundle NextPi_$DATE.tar.gz for $VERSION"
 tar -cvzf NextPi_$VERSION.tar.gz $VERSION
+
+echo "Updating checksums for NextPi_$VERSION.tar.gz"
+md5sum  NextPi_$VERSION.tar.gz >  NextPi_$VERSION.tar.gz.md5
