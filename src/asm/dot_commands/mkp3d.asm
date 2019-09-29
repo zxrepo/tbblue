@@ -161,9 +161,9 @@ mkp3d_init:
         ld      hl,'N'<<8+'X'
         sbc     hl,bc                   ; check NextZXOS signature
         jr      nz,bad_nextzxos
-        ld      hl,$0198
+        ld      hl,$0202
         ex      de,hl
-        sbc     hl,de                   ; check version number >= 1.98
+        sbc     hl,de                   ; check version number >= 2.02
         jr      nc,good_nextzxos
 bad_nextzxos:
         ld      hl,msg_badnextzxos
@@ -338,12 +338,12 @@ write_p3d:
         push    bc
         callesx f_write                 ; write the P3D header
         pop     hl
-        jr      c,mkp3d_failed_write
+        jp      c,mkp3d_failed_write
         and     a
         sbc     hl,bc                   ; were all bytes written?
         scf
         ld      a,esx_eio
-        jr      nz,mkp3d_failed_wrsize  ; error if not
+        jp      nz,mkp3d_failed_wrsize  ; error if not
 if MKDATA
         ld      hl,(bufferaddr)
         ld      d,h
@@ -352,6 +352,23 @@ if MKDATA
         ld      (hl),$e5
         ld      bc,4095
         ldir                            ; fill 4K buffer with $e5
+        ld      hl,label_entry
+        ld      de,(bufferaddr)
+        ld      bc,32
+        ldir                            ; copy in a label as the first entry
+        ld      b,4096/(32*4)           ; number of datestamp entries
+        ld      de,(bufferaddr)
+        addde_N 32*3                    ; starting with entry 3
+copy_datestamp_loop:
+        push    bc
+        push    de
+        ld      hl,datestamp_entry
+        ld      bc,32
+        ldir                            ; copy in a datestamp entry
+        pop     de
+        pop     bc
+        addde_N 32*4
+        djnz    copy_datestamp_loop
         ld      b,4                     ; 4x4K=16K=512 directory entries
 write_dir_loop:
         push    bc
@@ -368,7 +385,14 @@ write_dir_loop:
         scf
         ld      a,esx_eio
         jr      nz,mkp3d_failed_wrsize  ; error if not
-        ld      b,d                     ; B=loop counter
+        push    de                      ; save loop counter
+        ld      hl,(bufferaddr)
+        ld      d,h
+        ld      e,l
+        ld      bc,32
+        add     hl,bc
+        ldir                            ; overwrite label with 2nd entry ($E5s)
+        pop     bc                      ; B=loop counter
         djnz    write_dir_loop          ; back for more iterations
 endif ; MKDATA
         ld      a,(tmpfilehandle)
@@ -621,7 +645,7 @@ default_p3dsig:
 if MKDATA
 default_xdpb:
         ; XDPB (28 bytes)
-        defw    512             ; SPT: records per track
+        defw    512             ; SPT: records per track (128 sectors x 4 recs)
         defb    0               ; BSH: log2(blocksize/128)      TO FILL IN
         defb    0               ; BLM: blocksize/128-1          TO FILL IN
         defb    0               ; EXM: extent mask              TO FILL IN
@@ -667,7 +691,7 @@ endif
 
 msg_help:
 if MKDATA
-        defm    "MKDATA v1.2 by Garry Lancaster",$0d,$0d
+        defm    "MKDATA v1.3 by Garry Lancaster",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    " .MKDATA FILENAME [SIZE]",$0d,$0d
         defm    "INFO:",$0d
@@ -685,7 +709,7 @@ if MKDATA
         defm    "CPM-d files first, then DRV-d",$0d
         defm    "files",$0d,0
 else
-        defm    "MKSWAP v1.2 by Garry Lancaster",$0d,$0d
+        defm    "MKSWAP v1.3 by Garry Lancaster",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    " .MKSWAP FILENAME [SIZE]",$0d,$0d
         defm    "INFO:",$0d
@@ -746,7 +770,26 @@ msg_tmpfilename_num:
         defm    "0000$$$",0
 
 msg_badnextzxos:
-        defm    "Requires NextZXOS v1.98",'+'+$80
+        defm    "Requires NextZXOS v2.02",'+'+$80
+
+
+; ***************************************************************************
+; * Directory entry templates                                               *
+; ***************************************************************************
+
+label_entry:
+        defb    $20                     ; label type
+        ;        12345678
+        defm    "LABEL   "              ; name
+        defm    "   "                   ; extension
+        defb    %00110001               ; timestamps on create & update
+        defb    0,0,0                   ; PB,RR,RR
+        defs    8                       ; password
+        defs    8                       ; create, update stamps for label
+
+datestamp_entry:
+        defb    $21                     ; datestamp type
+        defs    31                      ; all initialised to zeros
 
 
 ; ***************************************************************************
