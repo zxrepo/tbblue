@@ -1,8 +1,8 @@
-Using the Next with the PI accelerator with Raspibian/DietPI not Bare Metal
+Using the Next with the PI accelerator with Raspibian/NextPI not Bare Metal
 ===========================================================================
 
-by Mr Tim Gilberts, Mr Darren D. Rimron-Soutter (another Barry boy... ExPat)
-major contributions from emook - Mr David Saphier
+by Mr Tim Gilberts, Mr Darran (D. Xalior) Rimron-Soutter (another Barry boy...
+ExPat) major contributions from emook - Mr David Saphier
 
 V0p3 Alpha
 
