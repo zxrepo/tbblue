@@ -269,8 +269,8 @@ ANSI compatibility mode
 =======================
 
 Some ANSI sequences clash with standard escape sequences provided with the
-Zenith Z-19. If you have a terminal that requires the ANSI meaning for these
-sequences, you can enter ANSI compatibility mode.
+Zenith Z-19. If you have an application that requires the ANSI meaning for
+these sequences, you can enter ANSI compatibility mode.
 
 The following sequences enter or leave ANSI compatibility mode:
 
