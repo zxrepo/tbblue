@@ -6,9 +6,9 @@ Current versions
 |Title |Version|RT?  	|  
 |---	|--:	|---	|  
 |*System/Next*| **1.1** |RTM|  
-|*NextZXOS*|**2.01E**|RTM|  
-|*Core*|**3.00.00**	|RC2|  
-|*Firmware*|**1.18**|  |  
+|*NextZXOS*|**2.02**|RTM|  
+|*Core*|**3.00.00**	|RTM|  
+|*Firmware*|**1.18**|RTM|  
   
   
 Contributor Requests
