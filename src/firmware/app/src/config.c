@@ -38,8 +38,6 @@ const char * settingName[eSettingMAX] =
 	"turbosound",		// eSettingTurboSound
 	"covox",		// eSettingCovox
 	"divmmc",		// eSettingDivMMC
-	"divports",		// eSettingDivPorts
-	"kmouse",		// eSettingKMouse
 	"mf",			// eSettingMF
 	"joystick1",		// eSettingJoystick1
 	"joystick2",		// eSettingJoystick2
@@ -49,6 +47,7 @@ const char * settingName[eSettingMAX] =
 	"turbokey",		// eSettingTurboKey
 	"default",		// eSettingMenuDefault
 	"timing",		// eSettingTiming
+	"keyb_issue",		// eSettingIss23
 };	
 
 const unsigned char settingMaxValue[eSettingMAX] =
@@ -62,8 +61,6 @@ const unsigned char settingMaxValue[eSettingMAX] =
 	MAX_TURBOSOUND,		// eSettingTurboSound
 	MAX_COVOX,		// eSettingCovox
 	MAX_DIVMMC,		// eSettingDivMMC
-	MAX_DIVPORTS,		// eSettingDivPorts
-	MAX_KMOUSE,		// eSettingKMouse
 	MAX_MF,			// eSettingMF
 	MAX_JOYSTICK1,		// eSettingJoystick1
 	MAX_JOYSTICK2,		// eSettingJoystick2
@@ -73,6 +70,7 @@ const unsigned char settingMaxValue[eSettingMAX] =
 	MAX_TURBOKEY,		// eSettingTurboKey
 	255,			// eSettingMenuDefault (don't clamp)
 	MAX_TIMING,		// eSettingTiming
+	MAX_ISS23,		// eSettingIss23
 };
 
 const unsigned char settingDefaults[eSettingMAX] =
@@ -86,8 +84,6 @@ const unsigned char settingDefaults[eSettingMAX] =
 	1,			// eSettingTurboSound
 	1,			// eSettingCovox
 	0,			// eSettingDivMMC
-	1,			// eSettingDivPorts
-	1,			// eSettingKMouse
 	0,			// eSettingMF
 	1,			// eSettingJoystick1
 	0,			// eSettingJoystick2
@@ -97,6 +93,7 @@ const unsigned char settingDefaults[eSettingMAX] =
 	1,			// eSettingTurboKey
 	0,			// eSettingMenuDefault
 	8,			// eSettingTiming
+	0,			// eSettingIss23
 };
 
 const unsigned char settingType[eSettingMAX] =
@@ -110,8 +107,6 @@ const unsigned char settingType[eSettingMAX] =
 	eTypeYesNo,		// eSettingTurboSound
 	eTypeYesNo,		// eSettingCovox
 	eTypeYesNo,		// eSettingDivMMC
-	eTypeYesNo,		// eSettingDivPorts
-	eTypeYesNo,		// eSettingKMouse
 	eTypeYesNo,		// eSettingMF
 	eTypeJoystickMode,	// eSettingJoystick1
 	eTypeJoystickMode,	// eSettingJoystick2
@@ -121,6 +116,7 @@ const unsigned char settingType[eSettingMAX] =
 	eTypeYesNo,		// eSettingTurboKey
 	0,			// eSettingMenuDefault (not edited)
 	0,			// eSettingTiming (not edited)
+	eTypeIss23,		// eSettingIss23
 };
 
 unsigned char settings[eSettingMAX];
@@ -178,6 +174,12 @@ void update_video_settings()
 		if (pMenu->video_timing < 8)
 		{
 			tim = pMenu->video_timing;
+		}
+
+		// VGA3..6 are blacklisted on core v3.00.00 RC2
+		if ((tim > 2) && (tim < 7))
+		{
+			tim = 2;
 		}
 
 		REG_NUM = REG_VIDEOT;

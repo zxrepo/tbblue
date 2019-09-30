@@ -34,10 +34,10 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = "1.15b";
+unsigned char * FW_version = "1.18";
 
 // minimal required for this FW
-unsigned long minimal = 0x010A2F; // 01 0A 2F = 1.10.47
+unsigned long minimal = 0x030000; // 03 00 00 = 3.00.00
 unsigned long current = 0;
 
 unsigned char t[256];
@@ -110,9 +110,6 @@ void load_and_start()
 		__asm__("ld bc, #16383\n");
 		__asm__("ld (hl), l\n");
 		__asm__("ldir\n");
-
-		// If DivMMC ROM has been loaded, force the H/W on.
-		settings[eSettingDivPorts] = 1;
 	}
 
 	filename = 0;
@@ -206,9 +203,6 @@ void load_and_start()
 
 	REG_NUM = REG_PERIPH4;
 	opc = settings[eSettingScanlines] & 3;			// bits 1-0
-	//Inhibit DivMMC or Kempston Mouse hardware if required.
-	if (settings[eSettingDivPorts] == 0)	opc |= 0x04;	// bit 2
-	if (settings[eSettingKMouse] == 0)	opc |= 0x08;	// bit 3
 	REG_VAL = opc;
 
 	REG_NUM = REG_MACHTYPE;
@@ -225,6 +219,12 @@ void get_coreids()
 	REG_NUM = REG_MACHID;
 	mach_id = REG_VAL;
 
+	if (mach_id == HWID_EMULATORS)
+	{
+		current = minimal;
+		return;
+	}
+
 	REG_NUM = REG_VERSION;
 	mach_version_major = REG_VAL;
 
@@ -234,28 +234,57 @@ void get_coreids()
 	REG_NUM = REG_VERSION_SUB;
 	mach_version_sub = REG_VAL;
 
+	// Check if the copper control can be read back from. This is only
+	// possible on later "v3.00.00" cores, unlike the early publicly-
+	// available one.
+	REG_NUM = REG_CUCTRL_LO;
+	temp_byte = REG_VAL;
+
+	REG_VAL = (temp_byte^0xAA);
+
+	if ((REG_VAL != (temp_byte^0xAA)) && (mach_version_major == 3))
+	{
+		// Claim early v3.00.00 cores are actually v2.99.00 so that
+		// they aren't mistakenly used instead of the RC or later.
+		mach_version_major = 2;
+		mach_version_minor = 99;
+	}
+
 	current = (mach_version_major*65536) + (mach_version_minor*256) + mach_version_sub;
 
 	if (current < minimal)
 	{
 
-		vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
 		vdp_cls();
+		vdp_setcolor(COLOR_BLACK, COLOR_BLUE, COLOR_WHITE);
+		vdp_prints(TITLE);
 
-		vdp_gotoxy(0, 9);
-		vdp_prints ("    Please update your core!\n\n");
+		vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_LGREEN);
+		vdp_gotoxy(4, 3);
+		vdp_prints ("Please update your core!\n\n\n");
+		vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
 
-		vdp_prints("You need TBU v. ");
+		vdp_prints(  "You need at least core  v");
 		sprintf(t, "%lu.%02lu.%02lu", (minimal >> 16) & 0xff, (minimal >> 8) & 0xff, minimal & 0xff);
 		vdp_prints(t);
-		vdp_prints(" or later\n");
 
-		vdp_prints("    The current is v.");
+		vdp_prints("\nYou currently have core v");
 		sprintf(t, "%d.%02d.%02d", mach_version_major, mach_version_minor, mach_version_sub);
 		vdp_prints(t);
 
+		vdp_prints("\n\n\nHold U to enter the updater now\n");
+		vdp_prints(      " if you have copied the latest\n");
+		vdp_prints(      "  TBBLUE.TBU to your SD card\n");
+
 		ULAPORT = COLOR_RED;
-		for(;;);
+		for(;;)
+		{
+			if ((HROW5 & 0x08) == 0)
+			{
+				REG_NUM = REG_RESET;
+				REG_VAL = 0x02;	// hard reset to loader
+			}
+		}
 	}
 }
 
@@ -332,6 +361,7 @@ void init_registers()
 	if (settings[eSettingCovox])		opc |= 0x08;	// bit 3
 	if (settings[eSettingTimex])		opc |= 0x04;	// bit 2
 	if (settings[eSettingTurboSound])	opc |= 0x02;	// bit 1
+	if (settings[eSettingIss23])		opc |= 0x01;	// bit 0
 	REG_VAL = opc;
 
 	REG_NUM = REG_PERIPH4;
