@@ -3,7 +3,7 @@ The ZX Next - The UART and Beyond.
 
 AKA The Internet Toolbox
 
-Verson 3.0 / UART.DRV / ESPAT.DRV Alpha 7
+Verson 3.2 / UART.DRV / ESPAT.DRV Alpha 10
 
 The background to this feature of the ZX Next can be found on the system
 website:
@@ -12,26 +12,64 @@ https://www.specnext.com/the-next-on-the-network/ - with a video!
 
 The ESP8266 WiFi module used in that demo is supplied in the Plus versions of
 the Next and can be added as an easy upgrade for others as a socket is provided.
+It is connected to the ZX Spectrum Next using a bit of hardware called a UART
+(universal asynchronous receiver-transmitter).
 
-That socket (or if the J15 header on the right of the board is added) gives
-access to the onboard UART (universal asynchronous receiver-transmitter) of
-the Next.  You can use this without a WiFi module for serial connections as
-as well - see later.
+--
 
-So that is the hardware now to the software.  The PlusPack adds support for
-this facility in three ways:
+Be sure to also check out NXTel the Viewdata (Prestel/Teletext) terminal that
+allows the Next to connect and get news pages from the Viewdata servers already
+online.
+
+... it does not need or use these drivers as it contains a built in ESP driver.
+https://github.com/Threetwosevensixseven/NXtel/wiki
+
+This is well worth dowloading - there is a static demo in the distribution.
+
+--
+
+If you just want to get online and none of the rest worries you then just:
+
+1) Run the program WIFI.BAS from DEMOS / ESP to connect to your wifi network!
+
+2) Then use the Browser to launch NXTEL.NEX...
+
+3) Or run TERMIAL.BAS from DEMOS / UART to connect to old style BBS systems.
+
+Thanks to Tony Hoyle, Robin Verhagen-Guest and Me you will be online...
+
+If you have added your own module and it doesn't seem to work with the above
+then it may need further configuration - see the "I just want to section.."
+which covers diagnosing a non standard speed module.
+
+
+The System in more detail
+-------------------------
+
+The WiFi socket (or if the J15 header on the right of the board is added) gives
+access to the onboard UART of the Next.  You can use this without a WiFi
+module for serial connections as as well - see later.
+
+The PlusPack adds support for this facility in three ways:
 
 1/ .UART is a simple DOT command that works in NextZXOS (and ESXDOS) to allow
-you to talk to a connected device which could be WiFi module.  Due to the
+you to talk to a connected device which could be the WiFi module.  Due to the
 limitations of the 512byte hardware buffer it can only be used for small amounts
 of data and is mainly intended to allow diagnosis.  It does include a simple
 CIPSEND mode that allows connections to be made with an ESP WiFi module.
+
+It also now allows you to send an EOT character with the Graphics Key to allow
+use with the ActiveConsult 4G module - this is needed to terminate strings
+when sending texts for example.
 
 2/ UART.DRV is an interrupt driven driver (NextZXOS only) which can provide a
 16K software buffer which means much less incoming data is lost.  There is both
 a simple demo IUDEMO and a terminal program (not a DOT command) that provides an
 alternative to .UART that can handle much more data.  This is intended for users
-of the port without the WiFi module really but can be used to setup the ESP.
+of the port without the WiFi module really but can be used to setup the ESP and
+for all the experiments below as it also supports the CIPSEND mode. This is your
+best bet to use the ActiveConsult 4G module from BASIC until it is supported
+in ESPAT.
 
 The TERMINAL provided is much better than .UART and you will have better results
 following through some of the examples below but, note that some key controls
@@ -39,18 +77,21 @@ have changed like EDIT which now changes the Edit mode and GRAPHICS the BAUD
 rate - as it uses the standard ROM keyboard driver the full PS2 is now supported
 and of course any replacement IRQ keyboard driver will work.
 
-3/ You can also begin to play with the real feature of the Internet Toolbox
-which is the ESPAT driver for BASIC (again NextZXOS only) - Alpha7 is included
-in this version with the new API.  It can be used with the BASIC ESPTERM 
-program to chat over an IP link and the ESPHTTP sample program shows how a web
-page can be retrieved from BASIC but, not rendered at the moment...
+The full source of this driver is provided so that you can use it as another
+example on how to write a system driver or add in some UART/ESP code to your
+own software.
+
+3/ ESPAT.DRV (NextZXOS only) - play with the real features of the Internet
+Toolbox which is the ESPAT driver for BASIC.  Alpha7 is included in this version
+with the new API.  It can be used with the BASIC ESPTERM.BAS program to chat
+over an IP link and the ESPHTTP.BAS sample program shows how a web page can be
+retrieved from BASIC but, not rendered at the moment...
 
 The Source code to the IRQ stub is provided to allow the ESPAT code to be used
 in games that take over the machine provding the stretch goal of a gaming API.
+Keep an eye on the news for HiScore servers and other goodies as they become
+available...
 
-Be sure to check out NXTel the Viewdata (Prestel/Teletext) terminal that if it
-isn't already, will pretty soon be using ESPAT to allow the Next to connect and
-get news pages from the Viewdata servers already online... 
 
 What is the .UART command in BIN?
 ---------------------------------
@@ -59,8 +100,8 @@ The .UART command in the distribution is a development of the one from Victor's
 video that provides more facilities to use the serial connection port either
 directly through some form of serial converter e.g. a USB to TTL serial or
 standard RS232 module (probably based on the MAX232) and of course to an ESP-01
-WiFi module plugged in to the header. This will work from NextOS and from ESXDOS
-at the moment.
+WiFi module plugged in to the header. This will work both from NextOS and from
+ESXDOS at the moment - as long as you put a copy in BIN as well as DOT.
 
 The current controls are mapped to Spectrum keys:
 
@@ -68,7 +109,7 @@ EDIT		SHIFT+1 - Cycle output mode in V3 or BAUD RATE in V2
 CAPS LOCK	SHIFT+2 - On/off toggle (on by default)
 TRUE VIDEO	SHIFT+3 - Debug mode for CIPSEND on/off (silent)
 INV VIDEO	SHIFT+4 - CIPSEND mode on/off also does an ATE0
-GRAPHICS	SHIFT+9 - Change BAUD rate in V3
+GRAPHICS	SHIFT+9 - Change BAUD rate in V3 / Emit EOT in 2.2d
 DELETE		SHIFT+0 - (PS2 KB one doesn't work in V2 use SHIFT + 0)
 Exit Program	Symbol Shift and Space together.
   
@@ -85,17 +126,16 @@ bit 2: returns the FIFO buffer status: ‘1’ if the buffer is full, or
 
 This is fine to use the serial interface as an ASCII terminal or the AT commands
 of the ESP in single connection mode.  To do proper networking with the ESP you
-will need a full suite of interrupt driven drivers - which I'm sure are being
-brewed in a lab at the moment.
+will need a full suite of interrupt driven drivers - see UART.DRV and ESPAT.DRV
 
 
 Using the UART without a WiFi module
 ------------------------------------
 
-A USB serial connection allows you to do all sorts of clever things - it is
-possible to connect up to a PC like this for transferring data.  In fact if you
-were an early purchaser you probably bought one with your ESP-01 as it is the
-one needed to program it. 
+A USB serial connection adapter (3.3v) allows you to do all sorts of clever
+things - it is possible to connect up to a PC like this for transferring data.
+In fact if you were an early purchaser you probably bought one with your ESP-01
+as it is the one needed to program it.
 
 If you use one of the easy to get TTL modules then you can communicate with PC's
 and other older machines - E.g. a real Spectrum with Interface 1... KevB is
@@ -116,6 +156,10 @@ https://elinux.org/RPi_Low-level_peripherals
 
 Be aware of the differences with a PI3.
 
+By the time you read this there may even be a second UART on the system to use
+the PI accelerator if it is running some form of Linux.  If so I will build in
+support to these tools.
+
 
 I just want to use my WiFi module
 ---------------------------------
@@ -126,8 +170,9 @@ WiFi module or have a machine with one prefitted then lets look at using that...
 Having watched the Video, to save you pausing all the time here is how to make
 it do something with a few early steps.
 
-So either type .UART (V22c) at the prompt or better LOAD "TERMINAL.BAS" (V3)
-and RUN it.
+So either type .UART at the prompt or better LOAD "TERMINAL.BAS" (from the DEMOS
+UART directory) and RUN it. It is better at 14MHz so change to that before
+loading or press F8 twice when loaded.
 
 First of all when you press ENTER you should get 'ERROR' because you didn't send
 a valid command to the ESP module...
@@ -152,27 +197,39 @@ Once you have that you should be able to type 'AT' and press ENTER.
 
 That should give OK...
 
-Probably the first thing you want to do is tell the module to use the default
-speed of the next so type:
+If not you will need to run the UART dot command with the -f option which will
+find one even if its speed has been set to an odd rate between 4800 baud to
+about 2.2Mb!
 
-AT+UART=115200,8,1,0,0 and press ENTER
+Once it is working you can then switch back to TERMINAL.BAS if you like.
 
-You now need to used EDIT (SHIFT+1) on V2 or GRAPHICS (SHIFT+9) on V3 to go back
-around to 115200 so that [ENTER] gives ERROR and AT[ENTER] gives OK again....
 
-We just used one of the AT commands...
-
-AT+UART=<baudrate>,<databits>,<stopbits>,<parity>,<flow control>
+WARNING: Be very careful using AT commands like AT+UART as you could set a speed
+on the ESP that cannot be used on the Next and would need the module reflashed
+or replaced after removal.  If you do play with the speed use UART_CUR as that
+resets on a power off.  To set it permanently to something type VERY CAREFULLY.
 
 
 Getting on the Network
 ----------------------
 
+If you just want to do this quickly Tony Hoyle has written a great little BASIC
+program to setup the WIFI called WIFI.BAS.  You will find a copy in the DEMOS
+ESP directory - just load and RUN from the Browser.
+
+https://github.com/TonyHoyle/SpecNext
+
+Thanks to Tony for letting us distribute with NextZXOS.
+
+
+...otherwise... if you want to see how it works under the hood:
+
+
 Now to do as Victor did and connect to a WIFI access point.
 
 First let's check that the system is in STAtion mode:
 
-AT+CWMODE=?  will give 1,2 or 3 (where STA=1, AP=2, Both=3)
+AT+CWMODE?    will give 1,2 or 3 (where STA=1, AP=2, Both=3)
 
 Mode 1 or 3 is fine but, more config is needed in 2!
 
@@ -192,6 +249,8 @@ AT+CIFSR will give the current IP address on the network.
 AT+GMR will tell you the current versions of the software on your module.
 
 
+
+
 Next you need to connect to something
 -------------------------------------
 
@@ -200,7 +259,7 @@ AT+CIPSTART="TCP","www.google.com",80 is the example in the video
 That is just the first stage and means there is now a pipe from the ESP to the
 Google server.
 
-Before it does anything you need to send it something.
+Before it does anything you need to send it something .
 
 If you do feel brave before you close the connection then you can send
 
@@ -229,13 +288,19 @@ does all the decoding for you.
 
 If you press INV VIDEO (SHIFT+4) then system will send an ATE0 to stop the ESP
 echoing everything and then anything you type will be sent followed by a
-Return and Newline.
+Return and LineFeed/Newline once you press Enter.  The whole line is sent so you
+can use DELETE to backspace for simple editing before sending.
 
 You can also on TERMINAL use the EDIT (SHIFT+1) to go into immediate mode where
 everything you type is sent as you do it.  In this mode to send a LF you need to
-Symbol Shift + ENTER after pressing ENTER (or SHIFT and 6 / downarrow) to send
-a  10 / LF / Newline.  This makes AT commands more complex but this mode is more
-useful to use the program as a traditional text terminal.
+press SHIFT and 6 / downarrow) to send a  10 / LineFeed after the Newline.
+This makes AT commands more complex but this mode is more useful to use the
+program as a traditional text terminal to other computers.
+
+On TERMINAL if you press EDIT (SHIFT+1) again then you will be in immediate mode
+with a LOCAL ECHO in case the other end does not send you a copy of what you
+typed.  If you see two of everything as you type then cycle around the modes
+again so ECHO is off. 
 
 Anything the other end replies with will just appear. Note that at 14MHz you
 will get more text before the system begins to lose data due to the delays in
@@ -306,7 +371,29 @@ I want the module to forget my WiFi network and password
 
 AT+CWQAP
 
-Will close it all down if you do not want it to remember for next time.
+Will close it all down if you do not want it to remember the network ID and
+password for next time.
+
+
+ESPAT.SYS using the ESP from BASIC
+----------------------------------
+
+In the DEMOS ESP directory you will find the needed software to use the WiFi
+from BASIC using ESPAT.DRV. Alpha7 is included in this version with the new API.
+There is a README for that and some example programs in the directory:
+
+ESPTERM.BAS program can be used to chat over an IP link
+
+ESPHTTP.BAS will retrieve an interesting HTML page from WOS (or any page you
+want if you change the two PROC calls).  It shows how a web page can be
+retrieved from BASIC but, not rendered at the moment...
+Due to a connect BUG in Alpha7 you may need to RUN a few times to get a
+sucessful connection.
+
+You may find it useful to use the "autoexec-pluspack.bas" as your autoexec.bas
+as it will support automatic loading of Mouse, UART and/or ESP drivers. Press
+ENTER as the sytem resets for a menu of options - or edit and resave the
+program to remove relevant REM statements so that the drivers load all the time.
 
 
 So what else can you do at the moment with such a limited system?
@@ -324,6 +411,9 @@ unlikely...
 This is nearly enough to get on an old BBS system
 -------------------------------------------------
 
+The TERMINAL.BAS/BIN program in UART will be further updated to allow the use
+of limited ANSI services until a full ANSI terminal is available for ESPAT.SYS
+
 Info about the sinclair retro BBS which has a limited number of connections
 (10 I think) run by Simone from Sinclair Software Preservation can be found at:
 
@@ -337,13 +427,22 @@ Port 23 is Telnet for those in the know.
 
 You can make a connection to this and it will stop with a prompt asking
 you for a graphics mode buried among the control codes - and then kick you off
-when you answer ASCII as ANSI is not supported.
+when you answer ASCII as ANSI is not supported well enough yet to use it.
 
 A priority is to make the ANSI support good enough for us to login to this
-server - watch the forum and fb for updates.
+server - watch the forum and fb for updates - or just try the latest TERMINAL...
 
 There are others around as well like http://www.mono.org/ many are
 listed on the telnetbbsguide.
+
+cavebbs.homeip.net
+Level 29 ( bbs.fozztexx.com )
+Black Flag ( blackflag.acid.org )
+Particles ( particlesbbs.dyndns.org:6400 )
+A80sAppleIIBBS ( a80sappleiibbs.ddns.net:6502 )
+Cottonwood BBS ( cottonwoodbbs.dyndns.org:6502 )
+Heatwave BBS ( heatwave.ddns.net:9640 )
+amstrad.simulant.uk:464
 
 
 Using the WikiPedia telnet service
@@ -387,7 +486,7 @@ http://forgetfullbrain.blogspot.co.uk/2015/08/uart-sending-and-receiving-data-us
 I need an ANSI terminal to connect to a BBS
 -------------------------------------------
 
-This is partially implemented but, diasabled in the current UART as it has
+This is partially implemented but, diasabled in the current TERMINAL as it has
 errors - it is possible that it will not be fully developed and it is more
 likely that the ANSI system from Z88DK is used with the ESPAT full networking
 support to create a terminal.
@@ -696,13 +795,14 @@ The TERMINAL program changes the BAUD setting to the GRAPHICS key (SHIFT+9) so
 that the EDIT (SHIFT+1) can more usefully be used to cycle between line edit and
 direct, with and without local echo, for Tormod.
 
-.UART(22c) Retains the old code and controls but allows the new baud rate
+.UART(22c onward) Retains the old code and controls but allows the new baud rate
 handling. This is provided for backwards compatability with the new cores and
 ESXDOS.
 
 Note that these programs will no longer be developed in favour of using the new
 ESPAT loadable NextOS drivers. They are retained in the pack though for
 use of the UART for other purposes (UART.DRV) and for use under ESXDOS (.UART).
-			
-Tim Gilberts - August 2018
 
+
+			
+Tim Gilberts - May 2019

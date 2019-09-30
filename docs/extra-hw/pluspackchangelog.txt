@@ -4,6 +4,22 @@ with the ESP8266, UART serial driver and the I2C bus needed for them.
 
 (c) Tim Gilberts / Infinite Imaginations and the ZX Next project
 
+30 Sep 2019
+-----------
+
+Updated some documents to point at the support for DietPI image on the PI now
+from xalior which utilises the second UART for communication.
+
+27 May 2019
+-----------
+
+Updated UART DOT command to allow sending EOT for use with 4G modems like one
+from ActiveConsult.  It also supports a -f command on start to 'find' an ESP
+that has an unusual serial speed set.  Source code now included
+
+ESPAT Alpha 10 should also be included which has a number of changes to support
+buffers on the network and a few bug fixes, plus a few new ones...
+
 13 Feb 2019
 -----------
 

@@ -1,15 +1,30 @@
-Using the Next with the PI accelerator with Raspibian rather than Bare Metal
-============================================================================
+Using the Next with the PI accelerator with Raspibian/DietPI not Bare Metal
+===========================================================================
 
-by Mr Tim Gilberts and Mr Darren D. Rimron-Soutter; another Barry boy... - ExPat
+by Mr Tim Gilberts, Mr Darren D. Rimron-Soutter (another Barry boy... ExPat)
+major contributions from emook - Mr David Saphier
 
-V0p2 Alpha
+V0p3 Alpha
+
+The release 3.00.00 core now adds a UART for PI communication and also uses the
+i2c bus in a different way to provide the PI with access to the DAC and EAR
+audio on the Next to allow clever playing of things like MP3 and TZX files...
+
+See the documentation in /rpi/linux now for details. There are some demo Next
+programs in DEMOS/UART and of course new DOT commands: UUENCODE and PISEND
+
+The information below is therefore historical and for interest of the journey
+to this point - or if you are using an older 2.0 core for pi2c or TK-PI for 1.0
+cores.
+
+History
+-------
 
 Since Core .49 the TK-PI bus monitoring has been dropped in favour of some
 machine to machine interfaces like SDI and i2c.
 
-If you want to use an older core then in /rpi/tkpi is the source and demo
-programs that allow you to use the PI as a HDMI second screen shadowing the
+If you want to use an older core then in /rpi/archive/tkpi is the source and
+demo programs that allow you to use the PI as a HDMI second screen shadowing the
 ULA screen.
 
 If you wish to use a full Linux on the PI then these notes and sample programs
