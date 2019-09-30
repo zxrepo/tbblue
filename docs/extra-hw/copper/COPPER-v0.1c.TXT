@@ -1,3 +1,8 @@
+IMPORTANT NOTE:
+This document applies to the previous core series v2.xx.xx and therefore
+does not accurately reflect the timings for the current core series v3.xx.xx.
+An updated document will be available in a later distribution.
+
 
  v.0.1c 31st August 2018                                      Core v.2.00.00
 

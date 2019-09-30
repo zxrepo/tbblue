@@ -98,6 +98,8 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define REG_PAL_VALUE_8		0x41
 #define REG_PAL_CTRL		0x43
 #define REG_PAL_VALUE_9		0x44
+#define REG_CUCTRL_LO		0x61
+#define REG_CUCTRL_HI		0x62
 #define REG_TILEMAP_CTRL	0x6b
 #define REG_TILEMAP_ATTR	0x6c
 #define REG_TILEMAP_BASE	0x6e

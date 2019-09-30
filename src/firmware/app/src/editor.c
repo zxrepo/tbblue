@@ -32,12 +32,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MENU_LINES 19
 
 const char YESNO[2][4] = {"NO ","YES"};
-const char AYYM[3][4]  = {"YM ","AY ","OFF"};
+const char AYYM[4][4]  = {"YM ","AY ","---","OFF"};
 const char JOYS[7][7]  = {"Sincl2","Kemps1","Cursor","Sincl1","Kemps2","MD 1  ","MD 2  "};
 const char PS_2[2][6]  = {"Keyb.","Mouse"};
 const char  DMA[2][4]  = {"ZXN","Z80"};
 const char STEREO[2][4] = {"ABC","ACB"};
-const char SCANL[4][4]  = {"OFF","75%","50%","25%"};
+const char SCANL[4][4] = {"OFF","75%","50%","25%"};
+const char ISS23[2][5] = {"Iss3","Iss2"};
 
 unsigned char * help_joy[] =
 				{ // 12345678901234567890123456789012
@@ -96,8 +97,6 @@ const char * editName[eSettingMAX] =
 	"TurboSnd",		// eSettingTurboSound
 	"Covox",		// eSettingCovox
 	"DivmmcROM",		// eSettingDivMMC
-	"DivmmcH/W",		// eSettingDivPorts
-	"K.Mouse",		// eSettingKMouse
 	"Multiface",		// eSettingMF
 	"Left joy",		// eSettingJoystick1
 	"Right joy",		// eSettingJoystick2
@@ -106,6 +105,8 @@ const char * editName[eSettingMAX] =
 	"Scanlines",		// eSettingScanlines
 	"Turbo Key",		// eSettingTurboKey
 	"Default",		// eSettingMenuDefault (not edited)
+	"Timing",		// eSettingTiming (not edited)
+	"Keyboard",		// eSettingIss23
 };	
 
 // ZX Spectrum Next
@@ -114,12 +115,11 @@ const unsigned char peripheralsNext[] =
 	eSettingJoystick1,	eSettingPSGMode,
 	eSettingJoystick2,	eSettingStereoMode,
 	eSettingPS2,		eSettingTurboSound,
-	eSettingKMouse,		eSettingCovox,
+	eSettingIss23,		eSettingCovox,
 	eSettingFreq5060,	eSettingIntSnd,
 	eSettingScanlines,	eSettingDMA,
 	eSettingScandoubler,	eSettingTimex,
 	eSettingDivMMC,		eSettingMF,
-	eSettingDivPorts,
 };
 
 const unsigned char itemsCountNext = sizeof(peripheralsNext) / sizeof(unsigned char);
@@ -132,15 +132,14 @@ static void waitforanykey()
 {
 	while(1)
 	{
-		if ((HROW0 != 0xff) ||
-			(HROW1 != 0xff) ||
-			(HROW2 != 0xff) ||
-			(HROW3 != 0xff) ||
-			(HROW4 != 0xff) ||
-			(HROW5 != 0xff) ||
-			(HROW6 != 0xff) ||
-			(HROW7 != 0xff)
-			)
+		if ( ((HROW0 & 0x1f) != 0x1f) ||
+			((HROW1 & 0x1f) != 0x1f) ||
+			((HROW2 & 0x1f) != 0x1f) ||
+			((HROW3 & 0x1f) != 0x1f) ||
+			((HROW4 & 0x1f) != 0x1f) ||
+			((HROW5 & 0x1f) != 0x1f) ||
+			((HROW6 & 0x1f) != 0x1f) ||
+			((HROW7 & 0x1f) != 0x1f) )
 		{
 			return;
 		}
@@ -188,9 +187,8 @@ static void display_about(void)
 	REG_NUM = REG_TURBO;
 	REG_VAL = 0;
 
-	for (i=0; i<1000; i++){}; // wait some time before read the keys
+	while ((HROW0 & 0x08) == 0);	// ignore still-pressed C key
 	waitforanykey();
-
 }
 
 static void printVal(unsigned char help)
@@ -224,8 +222,11 @@ static void printVal(unsigned char help)
 
 		case eTypeScanlines:
 			vdp_prints(SCANL[*value]);
-
 		break;
+
+		case eTypeIss23:
+			vdp_prints(ISS23[*value]);
+			break;
 	}
 
 	if (help)

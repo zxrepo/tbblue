@@ -1,9 +1,66 @@
+v2.02 (2019-09-29)
+==================
+* Added CP/M Plus (with Next BIOS v0.9), accessible from the main menu
+* Fixes for multiface stopping/restarting copper
+* Fix for crashes when multiface exits to DivMMC RAM due to layer2 port
+  being written with random data
+* Updated multiface for the properly ordered indices when reading NextReg 0x1c
+* Fixed IDE_SNAPLOAD to not apply any timings changes for .SNX files
+* Added support for multiface exit to CP/M page zero
+* Added support for the last-record-byte-count on +3DOS drives, allowing
+  exact filesizes to now be maintained
+* Fixed up timestamp handling in +3DOS: the existing routine operated under
+  a complete misapprehension over the location of directory data, and failed
+  to achieve anything. The new routine now sets timestamps to zeros for all
+  updated files on +3DOS drives [support for timestamps from the RTC to be
+  added in a later version]
+* .MKDATA now creates .P3D images primed with timestamp entries
+
+
+v2.01f (2019-09-25)
+===================
+* Updated AUTOEXEC welcome program to describe SYM+ENTER option in the
+  Browser, and added missing filetype descriptions for .WAV & .MD
+* Fixed issue where under specific circumstances the Browser could fail to
+  obtain an LFN, leading it to repeat the last LFN in every on-screen slot
+* Improved validation of Browser's persistent filter using a checksum, to
+  ensure an invalid filter isn't accidently used after a power cycle
+* Fixed IDE_SNAPLOAD to set 48K machine timings for 48K snapshots (previously
+  128K timings were used for all snapshots)
+* Fix for MF Settings->Sound menu failing to remove its RTC menu line on exit
+* Fixed CP/M menu entry to clear screen, ensuring copyright message removed
+* DivMMC RAM3 is now left unused by NextZXOS, allowing it to be allocated for
+  potential use as user NMI bank
+* Core v3.00.00+ is now required to start NextZXOS (unless machine id=EMULATOR)
+* Updates for working with core v3.00.00+ :
+   + LAYER BANK command now allows any available banks to be specified
+   + Initialise new NextReg 0x06 bit 5 to 1 at reset/NEW/ (F3 key enable)
+   + Simplified PSG init at reset/NEW using new %11 audiochip mode
+   + Added NextRegs 0x61, 0x62, 0xA0, 0xA2 to MF debugger status display
+   + Added new Issue2/3 keyboard option to MF settings
+   + Updated MF setting names to reflect revised audichip modes in NextReg 0x06
+   + Updated MF to use new NextReg 0x28 to obtain first written byte of 9-bit
+     palette data, rather than reading from memory
+   + Updated MF to only save/restore current PSG and freeze other PSGs using
+     new %11 audiochip mode. This avoids losing state regarding current PSG
+     and channel disables
+   + MF now reads border colour from new port 0xfe3f, instead of guessing
+   + MF now restarts copper on exit if appropriate
+   + Fixed MF to repage DivMMC RAM and return there if it was active, as it is
+     now possible to enter MF when executing from DivMMC.
+   + Fixed NMI entry points, as now MF is paged in immediately on NMI, not
+     after 1 machine cycle
+   + Fixed MF to use only the "set speed" in NextReg 0x07, ignoring high bits
+   + Removed MF workaround for broken 7ffd paging override in core 1.10.31
+
+
 v2.01e (2019-09-02)
 ===================
 * Fixed a flaw in v2.01d's revised snapshot executor: the final RAM
   configuration was not set until after the PC had been pushed to the stack,
   so a snapshot could crash if SP>$c000 and current RAM page <> last RAM page
   in the snapshot file.
+
 
 v2.01d (2019-09-01)
 ===================
