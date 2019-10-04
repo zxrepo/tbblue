@@ -24,3 +24,16 @@ There will also be support for passing an initial command line into CP/M.
 These features will all CP/M commands (such as language compilers) to be
 run under control of a NextBASIC or machine-code program.
 
+
+3. Keyboard remapping
+---------------------
+A command will be provided allowing the keyboard to be remapped (including the
+currently unused control characters CTRL-0..9). The main expected use case is
+for remapping the special keys (cursors, delete, inv/true video etc) to suit
+particular applications. However, it could also be used to change the standard
+key layout (to AZERTY, for example).
+
+
+4. GSX
+------
+Support for GSX applications is also under consideration.

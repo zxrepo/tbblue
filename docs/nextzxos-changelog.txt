@@ -1,3 +1,17 @@
+v2.02a (2019-10-04)
+===================
+* Improved appearance of CP/M's TERMINFO.COM utility, making use of colour
+* Fixed CP/M's COLOUR utility to always set the default colour scheme ([set
+  option is now removed)
+* Fixed .CPM loader to prevent font corruption that could sometimes occur,
+  depending on the size of the currently-loaded BASIC program
+* Fixed editor keys so that EXTEND,CAPS LOCK goes to start of program and
+  EXTEND,GRAPH goes to program end. This makes more sense on the final Next
+  keyboard layout
+* Prevent multiface re-entrancy when button pressed from View screen option
+* Prevent instant exit to Debug menu after exiting View screen with SPACE
+
+
 v2.02 (2019-09-29)
 ==================
 * Added CP/M Plus (with Next BIOS v0.9), accessible from the main menu

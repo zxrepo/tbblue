@@ -22,12 +22,17 @@ macro print_char
         rst     $10
 endm
 
+macro romcall,address
+        rst     $18
+        defw    address
+endm
+
 
 ; ***************************************************************************
 ; * Definitions                                                             *
 ; ***************************************************************************
 
-LOADER_VERSION          equ     $0130           ; v1.2
+LOADER_VERSION          equ     $0140           ; v1.4
 LOADER_HI               equ     '0'+((LOADER_VERSION/$100)&$0f)
 LOADER_MID              equ     '0'+((LOADER_VERSION/$10)&$0f)
 LOADER_LOW              equ     '0'+((LOADER_VERSION)&$0f)
@@ -52,6 +57,8 @@ f_rename                equ     $b0             ; rename file
 
 ; ROM 3 routines
 BC_SPACES_r3            equ     $0030           ; allocate workspace
+CHAR_SET_r3             equ     $3d00           ; address of charset
+LDIR_RET_r3             equ     $33c3           ; address of LDIR, RET
 
 ; +3DOS calls
 IDE_DOS_MAP             equ     $00f1           ; map drive
@@ -164,7 +171,7 @@ main_program:
         ld      hl,msg_nocpma
         ld      de,msg_badcpma
         jr      z,cpm_abort             ; error if no A: (system) drive
-        call    load_support_files      ; load font files and BIOS extension
+        call    load_init_biosext       ; load and initialise BIOS extension
         ld      b,16                    ; 16 files to close
 close_file_loop:
         push    bc
@@ -184,24 +191,14 @@ close_file_loop:
         djnz    close_file_loop         ; back for remaining files
 
         ; This is now the point of no return. The BIOS extension has been
-        ; loaded, and the CPM3 system file has been opened ready to load.
-        ; It is therefore time to initialise the BIOS extension and switch
-        ; to using its terminal for output.
-        nxtregn nxr_mmu0,MMU0_DEFAULT   ; ensure standard memory layout in force
-        nxtregn nxr_mmu1,MMU1_DEFAULT
-        nxtregn nxr_mmu2,MMU2_DEFAULT
-        nxtregn nxr_mmu3,MMU3_DEFAULT
-        nxtregn nxr_mmu4,MMU4_DEFAULT
-        nxtregn nxr_mmu5,MMU5_DEFAULT
-        nxtregn nxr_mmu6,MMU6_DEFAULT
-        nxtregn nxr_mmu7,MMU7_DEFAULT
+        ; loaded and initialised.
         ld      hl,$8000
         ld      (bufferaddr),hl         ; relocate buffer away from BIOS extension
-        call    init_biosext            ; initialise BIOS extension & vterm
         call    init_cpmdrives          ; initialise DPBs, drive & XDPB tables
 
         ld      hl,msg_vthelp
         call    printmsg                ; re-show loader info
+        call    load_font_files         ; load the real font files
         ld      de,msg_biosfile
         ld      b,0                     ; BIOS is file 0
         call    open_relfile
@@ -644,10 +641,10 @@ check3_loop:
 
 
 ; ***************************************************************************
-; * Load font files and BIOS extension from C:/NEXTZXOS                     *
+; * Load and initialise BIOS extension                                      *
 ; ***************************************************************************
 
-load_support_files:
+load_init_biosext:
         ld      hl,msg_biosext_file
         ld      de,bios_hdr
         ld      bc,BIOSHDR_LENGTH+MAX_BIOS_EXT_SIZE
@@ -675,11 +672,63 @@ biosext_size_okay:
         ld      hl,LOADER_VERSION
         ld      bc,(bios_hdr+BIOSHDR_LOADERVER)
         sbc     hl,bc                   ; NOTE: Fc=0 from previous CP
-        jr      nc,loader_ver_okay
+        jr      nc,init_biosext
         ld      hl,msg_oldloader
         ld      de,msg_badloader
         jp      cpm_abort
-loader_ver_okay:
+
+load_support_failure:
+        ld      hl,msg_fail
+load_support_fail_hl:
+        ld      de,msg_unabletoload
+        jp      cpm_abort
+
+init_biosext:
+        halt                            ; wait for an interrupt to avoid flicker
+        di                              ; disable interrupts
+        pop     hl                      ; HL=return address
+        nxtregn nxr_mmu0,MMU0_DEFAULT   ; ensure standard memory layout in force
+        nxtregn nxr_mmu1,MMU1_DEFAULT
+        nxtregn nxr_mmu2,MMU2_DEFAULT
+        nxtregn nxr_mmu3,MMU3_DEFAULT
+        nxtregn nxr_mmu4,MMU4_DEFAULT
+        nxtregn nxr_mmu5,MMU5_DEFAULT
+        nxtregn nxr_mmu6,MMU6_DEFAULT
+        nxtregn nxr_mmu7,MMU7_DEFAULT
+        ld      sp,(bios_hdr+BIOSHDR_SP); relocate stack to within BIOS ext
+        push    hl                      ; restack return address
+        xor     a
+        out     (ula_port),a            ; set border to black
+        nxtrega nxr_transp_fallback     ; set fallback to black
+        ld      bc,nxp_layer2
+        out     (c),a                   ; disable layer2
+        out     (timex_port),a          ; disable Timex modes
+        nxtrega nxr_sprites             ; disable sprites and lo-res
+        nxtrega nxr_tilemap_ctrl        ; disable tilemap output
+        ld      a,%10000000
+        nxtrega nxr_ula_ctrl            ; disable ULA output
+        ld      a,15
+        nxtrega nxr_palette_format      ; set standard palette format
+        ld      hl,bios_data
+        ld      de,(bios_hdr+BIOSHDR_ORG)
+        ld      bc,(bios_hdr+BIOSHDR_SIZE)
+        ldir                            ; copy BIOS extension in place
+        ld      hl,0                    ; to overwrite JR with NOPs
+        ld      (printmsg),hl           ; printmsg now executes vterm_printmsg
+        ld      hl,CHAR_SET_r3
+        ld      de,(bios_hdr+BIOSHDR_FONTADDR_NORM)
+        ld      bc,768
+        romcall LDIR_RET_r3             ; copy in standard font for now
+        ld      ix,(bios_hdr+BIOSHDR_VTERM_INIT)        ; vterm initialisation
+jpix:
+        jp      (ix)                    ; execute routine and return
+
+
+; ***************************************************************************
+; * Load the font files                                                     *
+; ***************************************************************************
+
+load_font_files:
         ld      hl,msg_font1norm_file
         ld      de,(bios_hdr+BIOSHDR_FONTADDR_NORM)
         call    load_font_file
@@ -702,17 +751,18 @@ loader_ver_okay:
 load_font_file:
         ld      bc,768
         push    bc
-        call    load_file_via_workspace ; load ASCII 32..127 in normal font
-        jr      nc,load_support_failure
+        call    load_file               ; load font file
+        jr      nc,load_font_failure
         pop     hl
         and     a
         sbc     hl,bc
-        ret     z                       ; okay if 768 bytes were loaded
-load_support_failure:
+        jr      nz,load_font_failure    ; bad if 768 bytes not loaded
+        ld      hl,msg_ok_crlf
+        jp      printmsg                ; print OK and exit
+
+load_font_failure:
         ld      hl,msg_fail
-load_support_fail_hl:
-        ld      de,msg_unabletoload
-        jp      cpm_abort
+        jp      cpm_halt
 
 
 ; ***************************************************************************
@@ -994,39 +1044,6 @@ reloc_done:
 
 
 ; ***************************************************************************
-; * Initialise the BIOS extension and the vterm                             *
-; ***************************************************************************
-
-init_biosext:
-        halt                            ; wait for an interrupt to avoid flicker
-        di                              ; disable interrupts
-        xor     a
-        out     (ula_port),a            ; set border to black
-        nxtrega nxr_transp_fallback     ; set fallback to black
-        ld      bc,nxp_layer2
-        out     (c),a                   ; disable layer2
-        out     (timex_port),a          ; disable Timex modes
-        nxtrega nxr_sprites             ; disable sprites and lo-res
-        nxtrega nxr_tilemap_ctrl        ; disable tilemap output
-        ld      a,%10000000
-        nxtrega nxr_ula_ctrl            ; disable ULA output
-        ld      a,15
-        nxtrega nxr_palette_format      ; set standard palette format
-        ld      hl,bios_data
-        ld      de,(bios_hdr+BIOSHDR_ORG)
-        ld      bc,(bios_hdr+BIOSHDR_SIZE)
-        ldir                            ; copy BIOS extension in place
-        pop     hl                      ; HL=return address
-        ld      sp,(bios_hdr+BIOSHDR_SP); relocate stack to within BIOS ext
-        push    hl                      ; restack return address
-        ld      hl,0                    ; to overwrite JR with NOPs
-        ld      (printmsg),hl           ; printmsg now executes vterm_printmsg
-        ld      ix,(bios_hdr+BIOSHDR_VTERM_INIT)        ; vterm initialisation
-jpix:
-        jp      (ix)                    ; execute routine and return
-
-
-; ***************************************************************************
 ; * Print a message                                                         *
 ; ***************************************************************************
 ; Entry: HL=message
@@ -1183,7 +1200,7 @@ msg_help:       ;12345678901234567890123456789012
 
 msg_vthelp:     ;12345678901234567890123456789012345678901234567890
         defm    "NextZXOS CP/M Loader v",LOADER_HI,".",LOADER_MID
-        defm    " by Garry Lancaster",$0d,$0a,0
+        defm    " by Garry Lancaster",$0d,$0a,$0a,0
 
 msg_cpmfail:    ;01234567890123456789012345678901
         defm    $0d
@@ -1217,6 +1234,10 @@ msg_crlf:
 
 msg_ok:
         defm    " - OK",$0d,0
+
+msg_ok_crlf:
+        defm    " - OK",$0d,$0a,0
+
 
 msg_fail:
         defm    " - fail",$0d,0
