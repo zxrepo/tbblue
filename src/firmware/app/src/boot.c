@@ -34,7 +34,7 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = "1.18";
+unsigned char * FW_version = "1.19";
 
 // minimal required for this FW
 unsigned long minimal = 0x030000; // 03 00 00 = 3.00.00
@@ -219,12 +219,6 @@ void get_coreids()
 	REG_NUM = REG_MACHID;
 	mach_id = REG_VAL;
 
-	if (mach_id == HWID_EMULATORS)
-	{
-		current = minimal;
-		return;
-	}
-
 	REG_NUM = REG_VERSION;
 	mach_version_major = REG_VAL;
 
@@ -251,6 +245,11 @@ void get_coreids()
 	}
 
 	current = (mach_version_major*65536) + (mach_version_minor*256) + mach_version_sub;
+
+	if (mach_id == HWID_EMULATORS)
+	{
+		return;
+	}
 
 	if (current < minimal)
 	{
