@@ -10,6 +10,8 @@ v2.02a (2019-10-04)
   keyboard layout
 * Prevent multiface re-entrancy when button pressed from View screen option
 * Prevent instant exit to Debug menu after exiting View screen with SPACE
+* Fixed TAP loader, mounter and welcome program so they don't lock up if run
+  at 7/14MHz (due to change in NextReg 7 read bits in cores 3.x).
 
 
 v2.02 (2019-09-29)
