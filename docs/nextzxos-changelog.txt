@@ -1,3 +1,14 @@
+v2.02b (2019-10-06)
+===================
+* Fix for Browser not properly respecting editor colours (set by SPECTRUM
+  INK/PAPER/ATTR commands)
+* Fix for flashing background seen when entering NextBASIC editor after an
+  error message generated in the Browser
+* Fix for crash when invalid I/O device report generated in 32-column command-
+  line mode (eg LLIST with a valid program but no valid printer device)
+* Updated multiface About screen
+
+
 v2.02a (2019-10-04)
 ===================
 * Improved appearance of CP/M's TERMINFO.COM utility, making use of colour
