@@ -176,12 +176,6 @@ void update_video_settings()
 			tim = pMenu->video_timing;
 		}
 
-		// VGA3..6 are blacklisted on core v3.00.00 RC2
-		if ((tim > 2) && (tim < 7))
-		{
-			tim = 2;
-		}
-
 		REG_NUM = REG_VIDEOT;
 		REG_VAL = (tim & 0x07) | 0x80;
 	}

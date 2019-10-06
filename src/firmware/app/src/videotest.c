@@ -70,15 +70,14 @@ const testmodeitem modesVGA[] =
 	{ 1, 1, 1 },
 	{ 2, 0, 1 },
 	{ 2, 1, 1 },
-// VGA3..6 are blacklisted on core v3.00.00 RC2
-//	{ 3, 0, 1 },
-//	{ 3, 1, 1 },
-//	{ 4, 0, 1 },
-//	{ 4, 1, 1 },
-//	{ 5, 0, 1 },
-//	{ 5, 1, 1 },
-//	{ 6, 0, 1 },
-//	{ 6, 1, 1 },
+	{ 3, 0, 1 },
+	{ 3, 1, 1 },
+	{ 4, 0, 1 },
+	{ 4, 1, 1 },
+	{ 5, 0, 1 },
+	{ 5, 1, 1 },
+	{ 6, 0, 1 },
+	{ 6, 1, 1 },
 
 	// End marker
 	{ 255, 255, 255 }
@@ -101,15 +100,14 @@ const testmodeitem modesAll[] =
 	{ 1, 1, 1 },
 	{ 2, 0, 1 },
 	{ 2, 1, 1 },
-// VGA3..6 are blacklisted on core v3.00.00 RC2
-//	{ 3, 0, 1 },
-//	{ 3, 1, 1 },
-//	{ 4, 0, 1 },
-//	{ 4, 1, 1 },
-//	{ 5, 0, 1 },
-//	{ 5, 1, 1 },
-//	{ 6, 0, 1 },
-//	{ 6, 1, 1 },
+	{ 3, 0, 1 },
+	{ 3, 1, 1 },
+	{ 4, 0, 1 },
+	{ 4, 1, 1 },
+	{ 5, 0, 1 },
+	{ 5, 1, 1 },
+	{ 6, 0, 1 },
+	{ 6, 1, 1 },
 
 	// End marker
 	{ 255, 255, 255 }
@@ -384,6 +382,9 @@ unsigned char videoTestMode()
 
 	// Show border around the outside.
 	ULAPORT = 0x04;
+
+	// If "N" is still being held from previous mode, wait until released.
+	while ((HROW7 & 0x08) == 0);
 
 	for (l = 0; l < 0x17fff; l++)
 	{
