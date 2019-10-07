@@ -1,3 +1,10 @@
+v2.03 (2019-10-07)
+===================
+* Fix for crash sometimes seen when loading a new BASIC program from the
+  Browser and re-entering the editor when it is in 64/85 column mode, and
+  a previous program has been edited
+
+
 v2.02b (2019-10-06)
 ===================
 * Fix for Browser not properly respecting editor colours (set by SPECTRUM
