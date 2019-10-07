@@ -262,8 +262,8 @@ COMTAB:
         defw    no_op           ; 1
         defw    no_op           ; 2
         defw    no_op           ; 3
-        defw    chgink          ; TRUE VIDEO
-        defw    chgpaper        ; INV VIDEO
+        defw    chgpaper        ; TRUE VIDEO
+        defw    chgink          ; INV VIDEO
         defw    capslock        ; CAPS LOCK
         defw    del2eol         ; EDIT
         defw    movlt           ; cursor left
