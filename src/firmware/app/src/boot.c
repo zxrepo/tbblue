@@ -34,7 +34,7 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = "1.19b";
+unsigned char * FW_version = "1.20";
 
 // minimal required for this FW
 unsigned long minimal = 0x030000; // 03 00 00 = 3.00.00
@@ -232,22 +232,17 @@ void get_coreids()
 	{
 		return;
 	}
- 
-	// Check if the copper control can be read back from. This is only
-	// possible on later "v3.00.00" cores, unlike the early publicly-
-	// available one.
-	REG_NUM = REG_CUCTRL_LO;
-	temp_byte = REG_VAL;
 
-	REG_VAL = (temp_byte^0xAA);
-
-	if ((REG_VAL != (temp_byte^0xAA)) && (mach_version_major == 3))
+	REG_NUM = 0x7f;
+	if (REG_VAL != 0xff)
 	{
-		// Claim early v3.00.00 cores are actually v2.99.00 so that
+		// Claim pre-RC3 v3.00.00 cores are actually v2.99.99 so that
 		// they aren't mistakenly used instead of the RC or later.
 		mach_version_major = 2;
 		mach_version_minor = 99;
+		mach_version_sub = 99;
 	}
+
 
 	current = (mach_version_major*65536) + (mach_version_minor*256) + mach_version_sub;
 
