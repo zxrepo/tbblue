@@ -157,6 +157,16 @@ does not claim compliance with it, because it does not implement Unicode
 support.
 
 
+Bug fixes in v1.15b
+===================
+* [NX] Swapped INV/TRUE VID key actions to match the help text.
+
+
+Bug fixes in v1.15a
+===================
+* [NX] Ensure tilemap transparency index is set to the correct (default) value.
+
+
 Bug fixes and enhancements in v1.15
 ===================================
 
