@@ -24,8 +24,8 @@ create additional files with .MKDATA using the same naming scheme.
 
 eg. at the NextZXOS command line, type the following:
 
-        .mkdata c:/nextzxos/cpm-b.p3d
-        .mkdata c:/nextzxos/cpm-e.p3d
+        .mkdata "c:/nextzxos/cpm-b.p3d"
+        .mkdata "c:/nextzxos/cpm-e.p3d"
 
 When you next use CP/M, you will have drives A: B: and E: available.
 
