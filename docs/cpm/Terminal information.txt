@@ -14,8 +14,8 @@ You can also hold down CAPS SHIFT and SYMBOL SHIFT together, instead of EXTEND.
 
 A few keys have special meanings to this program:
 
-CTRL-S (TRUE VIDEO)    Reset the terminal and show the previous screen
-CTRL-I (INV. VIDEO)    Reset the terminal and show the next screen
+CTRL-A (Cursor left)   Reset the terminal and show the previous screen
+CTRL-F (Cursor right)  Reset the terminal and show the next screen
 CTRL-C                 Exit the program
 
 Any other key pressed whilst this program is active will be sent directly to the
@@ -47,8 +47,8 @@ For example, to try the sequence
 
         ESC E 
 
-(clear & home) press the BREAK key followed by a capital E. Pressing INV. VIDEO
-or TRUE VIDEO will always reset the terminal and change to the next/previous
+(clear & home) press the BREAK key followed by a capital E. Pressing cursor left
+or cursor right will always reset the terminal and change to the next/previous
 screen.
 
 
@@ -67,7 +67,7 @@ TRUE VIDEO     CTRL-S          stop screen scrolling (CTRL-Q resumes scrolling)
 INV. VIDEO     CTRL-I          TAB
 CAPS LOCK                      Turns on/off caps lock (not passed to software)
 GRAPH          CTRL-G          delete character under cursor
-DELETE         DEL (ASCII 127) delete previous character
+DELETE         CTRL-H          delete previous character
 EXTEND         CTRL key
 Cursor left    CTRL-A          left
 Cursor right   CTRL-F          right
@@ -94,15 +94,16 @@ fonts if you wish. The files are:
 The terminal responds to the following ASCII control characters, all of which
 can be typed directly with the keyboard:
 
-CTRL-G                 BEL (ASCII 7), alert/bell
+CTRL-G (GRAPH)         BEL (ASCII 7), alert/bell
 CTRL-H (DELETE)        BS  (ASCII 8), backspace
+CTRL-I (INV. VIDEO)    TAB (ASCII 9), tab
 CTRL-J                 LF  (ASCII 10), line feed
 CTRL-M (ENTER)         CR  (ASCII 13), carriage return
+CTRL-X                 CAN (ASCII 24), cancel current escape sequence
        (BREAK)         ESC (ASCII 27), used to start escape sequences
-       (GRAPH)         DEL (ASCII 127), delete forwards
+       (CTRL-DELETE)   DEL (ASCII 127), delete forwards
 
-Most terminal facilities are accessed using ESCape sequences, described
-on the following screens.
+Most terminal facilities are accessed using ESCape sequences.
 
 
 Zenith Z-19 escape sequences
