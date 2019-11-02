@@ -5,6 +5,8 @@
 ; Assembles with sjasmplus - https://github.com/z00m128/sjasmplus
 ; 
 ; Changelist:
+; v13 02/11/2019 RVG   DMA mode was originally being set to ZXN. Undid previous
+;                      DMA change in v12.
 ; v12 02/11/2019 RVG   Now sets Turbo mode to 28MHz instead of 14MHz.
 ;                      Now preserves whether F3 and F8 were previously enabled
 ;                      or disabled.
@@ -292,7 +294,7 @@ loadbig
 ;	11001000
 	ld a,PERIPHERAL_2_REGISTER:ld bc,TBBLUE_REGISTER_SELECT:out (c),a:inc b:in a,(c)
     ;set 7,a			; preserve F8 enabled/disabled setting
-    set 6,a				; set SMA to ZXN mode
+    res 6,a				; set DMA to ZXN mode
 	;res 5,a    		; preserve F3 enabled/disabled setting
    	res 4,a				; DivMMC automatic paging off
     set 3,a				; mulitface - add to build options so can be selected
