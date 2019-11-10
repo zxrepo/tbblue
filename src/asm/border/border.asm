@@ -255,6 +255,7 @@ driver_init:
 ; Each call is optional - just return with carry set and A=0
 ; for any calls that you don't want to provide.
 ;
+; B=$f6: copy screen (usually for printer drivers)
 ; B=$f7: return output status
 ; B=$f8: return input status
 ; B=$f9: open channel

@@ -1,3 +1,75 @@
+v2.03a (2019-11-10)
+===================
+* CP/M BIOS v0.91:
+    + Added missing CAN (ASCII 24) and TAB (ASCII 9) control code support to
+      terminal emulator.
+    + Remapped keys: DELETE is now CTRL-H and CTRL-DELETE is now DEL.
+* Hardware support (requires experimental core v3.00.03+):
+    + Expansion bus disabled on reset/NEW, saved/restored in multiface
+    + Added default 'P' device driver supporting ZXPrinter/Alphacom32/Timex2040
+    + Implemented COPY support through 'P' device driver
+    + LPRINT/LLIST/COPY now work in 48K BASIC mode as well as NextZXOS mode
+    + Added 'Print' option to multiface "Screenshots" menu
+    + Added menu options to boot IF2-type cartridges (inc Dandanator, ZXC4 etc)
+* Fixed random error messages when exiting from Tape Loader option
+* Fixed crash in COPY..TO SCREEN$/LPRINT command (didn't affect COPY..TO #n)
+* Fixed ERASE command to prevent silently erasing all files eg with ERASE "M:"
+* Fixed crash when protected .DSK files with sector sizes <> 512 bytes were
+  mounted
+* Fixed mounter helper to overwrite "Filter" text in banner
+* When loading .TAP files and legacy snapshots (.SNA, .Z80), set the global
+  transparency colour to black, matching the default fallback colour. This
+  fixes issues in "Nixy and the Seeds of Doom" and similarly-enhanced games
+  which use a colour matching the default transparency colour.
+* Optimisations to the parser and the integer expression evaluator.
+* Added new functions and operators to the integer expression evaluator:
+   IN n                 - read value from hardware port
+   REG n                - read value from Next Register
+   PEEK a               - read byte from memory
+   DPEEK a              - read word from memory (double-peek)
+   USR a                - execute m/c routine and return value left in BC
+   BIN n                - synonym for @n, specifying binary values
+   NOT n                - logical not (zero -> 1, non-zero -> 0)
+   x AND y              - logical and (gives 0 if y is zero, x if y is non-zero)
+   x OR y               - logical or (gives x if y is zero, 1 if y is non-zero)
+   RND n                - generate pseudo-random value in range 0..n-1
+                          (equivalent to floating-point INT (RND*n) )
+   BANK b PEEK o        - read byte from bank
+   BANK b DPEEK o       - read word from bank (double-peek)
+   BANK b USR o         - execute m/c routine in bank & return value left in BC
+   INT {fp-expr}        - embed a floating-point expression into an integer
+                          expression (eg, INT{INKEY$="N" OR INKEY$="n"} )
+* Integer expression relational operators (<,<=,=,<>,>=,>) now return 1 for
+  true instead of $ffff, to match the floating-point expression evaluator
+* Integer arrays may now be used in a more flexible way, depending on the needs
+  of the programmer.
+  The standard way to access arrays remains:
+    A(x)        where A is an array name A..Z and x is an element number 0..63
+  If a 1-dimensional array with more than 64 elements is required, use:
+    A[x]        where A is the base array name A..Z and x is an element number. 
+                If the element number is 64, then the first element of the next
+                array is used and so on. So if you need up to 128 elements,
+                and use E[x] with x=0..127, you should not use array F() since
+                it is being used by E[64]..E[127].
+                The maximum 1D array size usable with this method is 26*64=1664
+                elements, if using A[0]..A[1663], with no other arrays available.
+  If a 2-dimensional array is required, use:
+    A[x][y]     where A is the base array name, x is the array number and
+                y is the element number 0..63.
+                eg using C[x][y] with x=0..4 will use arrays C,D,E,F,G.
+* Added new command to set a Next Register:
+   REG n,v
+* Added new commands to store a word in memory or a bank (double-poke):
+   DPOKE a,v
+   BANK b DPOKE a,v
+* Deprecated the following commands, whose functionality is now provided within
+  the integer expression evaluator:
+   BANK b PEEK o
+   BANK b USR o
+* Fixed "Tape loader" -> "Tape Loader" menu entry to match 128K/+2 grey models
+* Added missing .AKY association to browser.cfg
+
+
 v2.03 (2019-10-07)
 ===================
 * Fix for crash sometimes seen when loading a new BASIC program from the

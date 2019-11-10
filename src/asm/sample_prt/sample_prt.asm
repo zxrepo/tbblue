@@ -15,6 +15,10 @@
 ; to install whatever printer driver is appropriate for them, and for
 ; software to use it in a standardised way.
 ;
+; NextZXOS contains a built-in "P" driver suitable for the ZX Printer,
+; Alphacom 32 and Timex 2040. This will be overridden by any user-installed
+; "P" driver for alternative printers.
+;
 ; In particular, NextBASIC will automatically send data LPRINT/LLISTed
 ; (or PRINTed to #3, or any other stream that has been opened to
 ; BASIC channel "P") to any installed driver with id "P".
@@ -25,7 +29,20 @@
 ;
 ; In order to support NextBASIC and CP/M, a printer driver only needs to
 ; support the standard calls $f7 (return output status) and $fb (output
-; character). You may of course support any other standard calls that
+; character).
+;
+; Optionally, you can support the COPY command which uses call $f6. The
+; built-in ZX printer driver always copies the standard Spectrum screen
+; in this case, even if other modes such as layer 2 are active. Drivers for
+; more capable printers may want to support colour copies, layer2, hi-res,
+; lo-res, tilemaps etc. Note that if you are doing this, you should use the
+; state of the appropriate Next ports and registers to determine which screen
+; is currently active (eg the Layer2 and Timex ports, and the Sprites/Layers
+; and Tilemap next registers). Don't rely on system variable information,
+; since this call may be made when system variables are not valid (eg from
+; the Multiface).
+;
+; You may of course support any other standard calls that
 ; you like (or additional driver-specific calls, for example to set the
 ; communications parameters for a serial printer).
 ;
