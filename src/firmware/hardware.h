@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 __sfr __at 0xE7 SD_CONTROL;
 __sfr __at 0xE7 SD_STATUS;
 __sfr __at 0xEB SD_DATA;
+__sfr __at 0xFB ZXPRINTERPORT;
 __sfr __at 0xFE ULAPORT;
 __sfr __banked __at 0x243B REG_NUM;
 __sfr __banked __at 0x253B REG_VAL;
@@ -98,12 +99,22 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define REG_PAL_VALUE_8		0x41
 #define REG_PAL_CTRL		0x43
 #define REG_PAL_VALUE_9		0x44
+#define REG_FALLBACK		0x4a
 #define REG_CUCTRL_LO		0x61
 #define REG_CUCTRL_HI		0x62
 #define REG_TILEMAP_CTRL	0x6b
 #define REG_TILEMAP_ATTR	0x6c
 #define REG_TILEMAP_BASE	0x6e
 #define REG_TILEDEF_BASE	0x6f
+#define REG_EXPBUS_CTRL		0x80
+#define REG_DECODE_INT0		0x82
+#define REG_DECODE_INT1		0x83
+#define REG_DECODE_INT2		0x84
+#define REG_DECODE_INT3		0x85
+#define REG_DECODE_EXP0		0x86
+#define REG_DECODE_EXP1		0x87
+#define REG_DECODE_EXP2		0x88
+#define REG_DECODE_EXP3		0x89
 #define REG_DEBUG		0xFF
 
 /* AY register numbers */

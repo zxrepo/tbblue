@@ -87,7 +87,7 @@ int wait_ready (void)	/* 1:OK, 0:Timeout */
 	BYTE d;
 	UINT tmr;
 
-	for (tmr = 5000; tmr; tmr--) {	/* Wait for ready in timeout of 500ms */
+	for (tmr = 25000; tmr; tmr--) {	/* Wait for ready */
 		rcvr_mmc(&d, 1);
 		if (d == 0xFF) break;
 	}
@@ -106,7 +106,7 @@ BYTE wait_response (void)
 	UINT tmr;
 	BYTE d;
 
-	for (tmr = 50; tmr; tmr--)	/* 50 re-tries */
+	for (tmr = 250; tmr; tmr--)	/* Wait for response */
 	{
 		rcvr_mmc(&d,1);
 		if (d != 0xFF) return d;
@@ -158,7 +158,7 @@ int rcvr_datablock (	/* 1:OK, 0:Failed */
 	UINT tmr;
 
 
-	for (tmr = 1000; tmr; tmr--) {	/* Wait for data packet in timeout of 100ms */
+	for (tmr = 5000; tmr; tmr--) {	/* Wait for data packet */
 		rcvr_mmc(d, 1);
 		if (d[0] != 0xFF) break;
 	}
@@ -291,7 +291,7 @@ DSTATUS disk_initialize (
 		if (send_cmd(CMD8, 0x1AA) == 1) {	/* SDv2? */
 			rcvr_mmc(buf, 4);							/* Get trailing return value of R7 resp */
 			if (buf[2] == 0x01 && buf[3] == 0xAA) {		/* The card can work at vdd range of 2.7-3.6V */
-				for (tmr = 1000; tmr; tmr--) {			/* Wait for leaving idle state (ACMD41 with HCS bit) */
+				for (tmr = 5000; tmr; tmr--) {			/* Wait for leaving idle state (ACMD41 with HCS bit) */
 					if (send_cmd(ACMD41, 1UL << 30) == 0) break;
 				}
 				if (tmr && send_cmd(CMD58, 0) == 0) {	/* Check CCS bit in the OCR */
@@ -305,7 +305,7 @@ DSTATUS disk_initialize (
 			} else {
 				ty = CT_MMC; cmd = CMD1;	/* MMCv3 */
 			}
-			for (tmr = 1000; tmr; tmr--) {			/* Wait for leaving idle state */
+			for (tmr = 5000; tmr; tmr--) {			/* Wait for leaving idle state */
 				if (send_cmd(cmd, 0) == 0) break;
 			}
 			if (!tmr || send_cmd(CMD16, 512) != 0)	/* Set R/W block length to 512 */

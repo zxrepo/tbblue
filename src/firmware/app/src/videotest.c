@@ -373,8 +373,10 @@ unsigned char videoTestMode()
 	REG_NUM = REG_TILEMAP_CTRL;
 	REG_VAL = 0xa1;		// enable, no attribs, no ULA
 
-	// Set transparency to black so that the magentas show up.
+	// Set transparency and fallback to black so that the magentas show up.
 	REG_NUM = REG_TRANSPARENCY;
+	REG_VAL = 0;
+	REG_NUM = REG_FALLBACK;
 	REG_VAL = 0;
 
 	// Make layer 2 visible.

@@ -41,6 +41,17 @@ void vdp_init()
 	unsigned char v;
 	unsigned int c;
 
+	// Turn off ZX Printer motor first
+	REG_NUM = REG_DECODE_EXP2;
+	REG_VAL = 0xDB;
+	REG_NUM = REG_EXPBUS_CTRL;
+	REG_VAL = 0xD0;
+	ZXPRINTERPORT = 0x04;
+	REG_NUM = REG_EXPBUS_CTRL;
+	REG_VAL = 0x90;
+	REG_NUM = REG_DECODE_EXP2;
+	REG_VAL = 0xFF;
+
 	cx = cy = 0;
 	fg = COLOR_GRAY;
 	bg = COLOR_BLACK;
