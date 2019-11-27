@@ -33,9 +33,9 @@ next_reg_SPRITES_BORDER                 equ     %00000010
 next_reg_SPRITES_SLU                    equ     %00011100
 next_reg_SPRITES_LORES                  equ     %10000000
 
-; Max 14MHz currently supported
+; Max 28MHz.
 turbo_mask                              equ     3
-turbo_max                               equ     2
+turbo_max                               equ     3
 
 nxr_corever                             equ     $01
 nxr_reset                               equ     $02

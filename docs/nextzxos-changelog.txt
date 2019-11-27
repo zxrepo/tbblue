@@ -1,3 +1,52 @@
+v2.03b 2019-11-27
+=================
+* Increased maximum selectable speed to 28MHz (requires core v3.00.04+).
+* Reinstated the BANK 1346 USR command, accidentally disabled in v2.03a.
+* Added signed integer sub-expressions. These can be embedded within any
+  integer expression with:
+    SGN {signed-expr}
+  Signed integer expressions use all the same operators and functions as
+  standard unsigned ones, but the arithmetic operators (+ - * / MOD) and the
+  relational operators (< <= > >= = <>) treat their operands as signed values
+  in the range -32768..32767. The other operators and functions can be used
+  within a signed integer expression, but still treat their operands as unsigned.
+* A fully-signed integer expression (eg %SGN{expr} ) returns a value in the
+  range -32768..32767.
+* Added unary minus (-) operator to the integer expression evaluator.
+* Added function to read string from memory. Currently can only be used in the
+  special-case commands:
+    LET stringdest=PEEK$(addr,len)      [reads memory region to string]
+    LET stringdest=PEEK$(addr,~)        [reads string terminated with bit7 from memory]
+    LET stringdest=PEEK$(addr,~c)       [reads string terminated with character code c from memory]
+    LET stringdest=BANK n PEEK$(addr,len)      [reads banked memory to string]
+    LET stringdest=BANK n PEEK$(addr,~)        [reads string terminated with bit7 from bank]
+    LET stringdest=BANK n PEEK$(addr,~c)       [reads string terminated with character code c from bank]
+  eg:
+    LET a$=PEEK$(22528,768)
+    LET a$(10 TO 19)=PEEK$(30000,10)
+    LET a$=PEEK$(31000,~)
+    LET a$=PEEK$(32000,~0)
+    LET a$=PEEK$(33000,~13)
+    LET a$=BANK 10 PEEK$(1024, 16)
+* Enhanced the POKE, DPOKE, BANK..POKE and BANK..DPOKE commands.
+  Each command can now optionally take a list of values to poke into memory, separated
+  by commas, instead of just a single value.
+  Each value in the list may be any of:
+    numeric value       [for POKE, pokes a byte]
+                        [for DPOKE, pokes a word (16 bits)]
+    numeric value~      [for POKE, pokes a word (16 bits)]
+                        [for DPOKE, pokes a byte]
+    string value        [pokes the entire contents of the string]
+    string value~       [pokes the string, setting bit 7 on the final byte]
+  Examples:
+    POKE 32768,200                      (pokes 1 byte)
+    POKE 32768,8,9,10,a$,30000~,55      (pokes 3 bytes, a string, a word, a byte)
+    DPOKE 32768,1000,2000,3000,100~,2   (pokes 3 words, a byte, a word)
+    BANK 10 POKE 0,a$~,45               (pokes string with bit 7 set on last char, a byte)
+    BANK 10 DPOKE 32,1000               (pokes 1 word)
+    POKE USR "A",1,3,7,15,31,63,127,255 (redefine UDG A)
+
+
 v2.03a (2019-11-10)
 ===================
 * CP/M BIOS v0.91:
