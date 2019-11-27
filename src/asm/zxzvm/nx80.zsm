@@ -768,6 +768,7 @@ mode_okay:
         nxtregn nxr_clip_tilemap,159
         nxtregn nxr_clip_tilemap,0
         nxtregn nxr_clip_tilemap,255
+        nxtregn nxr_transp_tilemap,$0f  ; set default transparency colour index
         call    enable_tilemap          ; set palette and enable tilemap
         ld      a,(mainwin_h)           ; initialise scrset5 screen defs
         ld      (win_hc),a

@@ -87,7 +87,7 @@ esbp_addr:
 
 signon:
                 include in_ver.inc
-                defb    'b'     ; TODO remove when main version updated
+                defb    'c'     ; TODO remove when main version updated
                 defb    cr,127,'1998-9,2006,2016'
                 defb    ' by John Elliott'
                 defb    cr,'ZX Spectrum Next module by Garry Lancaster, 2019'
@@ -526,7 +526,7 @@ init_coreokay:
         exx
         ld      (saved_althl),hl; save H'L' for return to BASIC
         exx
-        nxtregn nxr_turbo,turbo_max     ; 14MHz
+        nxtregn nxr_turbo,turbo_max     ; 28MHz
         call    sel48           ; ensure RAM0 is paged
         call    init80          ; initialise the 80-column screen driver
         call    erall           ; clear the screen

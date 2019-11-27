@@ -26,9 +26,9 @@
 next_reg_select                         equ     $243b
 next_reg_access                         equ     $253b
 
-; Max 14MHz currently supported
+; Max 28MHz.
 turbo_mask                              equ     3
-turbo_max                               equ     2
+turbo_max                               equ     3
 
 nxr_corever                             equ     $01
 nxr_reset                               equ     $02

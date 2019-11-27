@@ -21,4 +21,5 @@
 ; 2019-05-17, Garry Lancaster: Updated version to v1.15
 
 	defb	'ZXZVM v1.15'	; << v1.15 >>
-
+        ; TODO After updating this to v1.16, remove the temporary "a"
+        ;      sub-version from nxdep.zsm (line 90)
