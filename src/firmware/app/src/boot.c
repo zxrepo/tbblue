@@ -34,7 +34,7 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = "1.20b";
+unsigned char * FW_version = "1.20c";
 
 // minimal required for this FW
 unsigned long minimal = 0x030000; // 03 00 00 = 3.00.00
@@ -43,7 +43,7 @@ unsigned long current = 0;
 unsigned char t[256];
 
 const char *filename;
-static unsigned char	mach_id, mach_version_major, mach_version_minor, mach_version_sub, l;
+static unsigned char	mach_id, l;
 static unsigned char	opc = 0;
 static unsigned int	bl = 0, cont;
 static unsigned char	temp_byte = 0;
@@ -214,37 +214,17 @@ void load_and_start()
 	for(;;);
 }
 
-void get_coreids()
+void check_coreversion()
 {
 	REG_NUM = REG_MACHID;
 	mach_id = REG_VAL;
-
-	REG_NUM = REG_VERSION;
-	mach_version_major = REG_VAL;
-
-	mach_version_minor = mach_version_major & 0x0F;
-	mach_version_major = (mach_version_major >> 4) & 0x0F;
-
-	REG_NUM = REG_VERSION_SUB;
-	mach_version_sub = REG_VAL;
 
 	if (mach_id == HWID_EMULATORS)
 	{
 		return;
 	}
 
-	REG_NUM = 0x7f;
-	if (REG_VAL != 0xff)
-	{
-		// Claim pre-RC3 v3.00.00 cores are actually v2.99.99 so that
-		// they aren't mistakenly used instead of the RC or later.
-		mach_version_major = 2;
-		mach_version_minor = 99;
-		mach_version_sub = 99;
-	}
-
-
-	current = (mach_version_major*65536) + (mach_version_minor*256) + mach_version_sub;
+        current = get_core_ver();
 
 	if (current < minimal)
 	{
@@ -263,7 +243,7 @@ void get_coreids()
 		vdp_prints(t);
 
 		vdp_prints("\nYou currently have core v");
-		sprintf(t, "%d.%02d.%02d", mach_version_major, mach_version_minor, mach_version_sub);
+		sprintf(t, "%d.%02d.%02d", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
 		vdp_prints(t);
 
 		vdp_prints("\n\n\nHold U to enter the updater now\n");
@@ -315,7 +295,7 @@ void display_bootscreen()
 
 	vdp_gotoxy(19, 22);
 	vdp_prints("Core v");
-	sprintf(t, "%d.%02d.%02d", mach_version_major, mach_version_minor, mach_version_sub);
+	sprintf(t, "%d.%02d.%02d", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
 	vdp_prints(t);
 
 	// Revert to standard 3.5MHz
@@ -421,7 +401,7 @@ void main()
 	}
 
 	// Show the boot screen
-	get_coreids();
+	check_coreversion();
 	display_bootscreen();
 
 	for(cont=0;cont<0x1fff;cont++)

@@ -26,6 +26,7 @@ extern const char TITLE[];
 
 void display_error(const unsigned char *msg);
 void disable_bootrom();
+unsigned long get_core_ver();
 unsigned long get_fattime();
 
 #endif // _MISC_H

@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include "hardware.h"
 #include "vdp.h"
+#include "misc.h"
 #include "font.h"
 
 unsigned char cx, cy, _flash, _bright, fg, bg;
@@ -30,10 +31,12 @@ unsigned int vaddr;
 unsigned int caddr;
 unsigned char vpdc, vpdf, vpdv;
 
+
 /* Private functions */
 
 
 /* Public functions */
+
 
 /*******************************************************************************/
 void vdp_init()
@@ -41,16 +44,21 @@ void vdp_init()
 	unsigned char v;
 	unsigned int c;
 
-	// Turn off ZX Printer motor first
-	REG_NUM = REG_DECODE_EXP2;
-	REG_VAL = 0xDB;
-	REG_NUM = REG_EXPBUS_CTRL;
-	REG_VAL = 0xD0;
-	ZXPRINTERPORT = 0x04;
-	REG_NUM = REG_EXPBUS_CTRL;
-	REG_VAL = 0x90;
-	REG_NUM = REG_DECODE_EXP2;
-	REG_VAL = 0xFF;
+	// Turn off ZX Printer motor first, since early AB cores leave it
+	// running at startup. This must not be done on cores < 3.00.04 which
+	// don't properly support the expansion bus registers.
+	// if (get_core_ver() >= (unsigned long)0x030004)
+	{
+		REG_NUM = REG_DECODE_EXP2;
+		REG_VAL = 0xDB;
+		REG_NUM = REG_EXPBUS_CTRL;
+		REG_VAL = 0x80;
+		ZXPRINTERPORT = 0x04;
+		REG_NUM = REG_EXPBUS_CTRL;
+		REG_VAL = 0x00;
+		REG_NUM = REG_DECODE_EXP2;
+		REG_VAL = 0xFF;
+	}
 
 	cx = cy = 0;
 	fg = COLOR_GRAY;

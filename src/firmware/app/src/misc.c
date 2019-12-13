@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //                    12345678901234567890123456789012
 const char TITLE[] = " ZX Spectrum Next Configuration ";
+static unsigned char mach_version_major, mach_version_minor, mach_version_sub;
 
 void display_error(const unsigned char *msg)
 {
@@ -49,6 +50,32 @@ void disable_bootrom()
 	REG_NUM = REG_MACHTYPE;
 	REG_VAL = 0;
 }
+
+unsigned long get_core_ver()
+{
+	REG_NUM = REG_VERSION;
+	mach_version_major = REG_VAL;
+
+	mach_version_minor = mach_version_major & 0x0F;
+	mach_version_major = (mach_version_major >> 4) & 0x0F;
+
+	REG_NUM = REG_VERSION_SUB;
+	mach_version_sub = REG_VAL;
+
+	REG_NUM = 0x7f;
+	if (REG_VAL != 0xff)
+	{
+		// Claim pre-RC3 v3.00.00 cores are actually v2.99.99 so that
+		// they aren't mistakenly used instead of the RC or later.
+		mach_version_major = 2;
+		mach_version_minor = 99;
+		mach_version_sub = 99;
+	}
+
+        return  (mach_version_major*65536) + (mach_version_minor*256) + mach_version_sub;
+}
+
+
 
 unsigned long get_fattime()
 {
