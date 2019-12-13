@@ -34,7 +34,7 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = "1.20c";
+unsigned char * FW_version = "1.20d";
 
 // minimal required for this FW
 unsigned long minimal = 0x030000; // 03 00 00 = 3.00.00
@@ -243,7 +243,7 @@ void check_coreversion()
 		vdp_prints(t);
 
 		vdp_prints("\nYou currently have core v");
-		sprintf(t, "%d.%02d.%02d", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
+		sprintf(t, "%lu.%02lu.%02lu", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
 		vdp_prints(t);
 
 		vdp_prints("\n\n\nHold U to enter the updater now\n");
@@ -282,6 +282,8 @@ void display_bootscreen()
 	fwRead((unsigned char *)0x4000, 6912);
 	fwClose();
 
+	current = get_core_ver();
+
 	vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
 
 	vdp_gotoxy(1, 16);
@@ -295,7 +297,7 @@ void display_bootscreen()
 
 	vdp_gotoxy(19, 22);
 	vdp_prints("Core v");
-	sprintf(t, "%d.%02d.%02d", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
+	sprintf(t, "%lu.%02lu.%02lu", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
 	vdp_prints(t);
 
 	// Revert to standard 3.5MHz
