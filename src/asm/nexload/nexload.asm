@@ -5,6 +5,15 @@
 ; Assembles with sjasmplus - https://github.com/z00m128/sjasmplus
 ; 
 ; Changelist:
+; v14 15/12/2019 RVG   New V1.3 feature: if the byte at HEADER_EXPBUSDISABLE 
+;                      (offset 0x8e) is zero (default) and the core is 3.00.05 
+;                      or newer, disable the expansion bus by writing 0 to the 
+;                      top four bits of nextreg 0x80, otherwise do nothing.                    
+;                      Running without any arguments shows more expansive help,
+;                      including the dot command and format versions.
+;                      Messages are now printed with interrupts enabled, and 
+;                      saying no to the Scroll? message, or any esxDOS errors,
+;                      now exits safely with a D BREAK - CONT repeats error.
 ; v13 02/11/2019 RVG   DMA mode was originally being set to ZXN. Undid previous
 ;                      DMA change in v12.
 ; v12 02/11/2019 RVG   Now sets Turbo mode to 28MHz instead of 14MHz.
@@ -48,7 +57,6 @@
 ;-------------------------------
 	device zxspectrum48
 ;-------------------------------
-
 ;	DEFINE testing
 ;	DEFINE testing8000	; define this to test just loading images
 	
@@ -77,6 +85,7 @@ HEADER_HIRESCOL				= 138	;1 // if non zero is to be
 HEADER_ENTRYBANK			= 139	;1 // V1.2, 16K bank to page into $C000 at exit
 HEADER_FILEHANDLEADDR		= 140   ;2 // V1.2, if address is nonzero then file will be left open, and the handle written into a single byte at this address.
 									;     Should be between $4000-FFFF in banks 5/2/0, or banks 5/2/N if HEADER_ENTRYBANK is non-zero.
+HEADER_EXPBUSDISABLE        = 142	;1 // V1.3, if zero (default) will disable the expansion bus by writing 0 to the top four bits of nextreg 0x80. If non-zero do nothing.								
 
 LAYER_2_PAGE				= 9
 LAYER_2_PAGE_0				= 9
@@ -133,6 +142,8 @@ PERIPHERAL_2_REGISTER			equ $06		;Enables Acceleration, Lightpen, DivMMC, Multif
 PERIPHERAL_3_REGISTER			equ $08		;Enables Stereo, Internal Speaker, SpecDrum, Timex Video Modes, Turbo Sound Next and NTSC/PAL selection.
 TBBLUE_REGISTER_SELECT			equ $243B
 
+	MACRO DOT_VERSION:db "v14":ENDM
+	MACRO FMT_VERSION:db "V1.3":ENDM
 	MACRO SetSpriteControlRegister:NEXTREG_A SPRITE_CONTROL_REGISTER:ENDM
 	MACRO Set14mhz:NEXTREG_nn TURBO_CONTROL_REGISTER,%10:ENDM
 	MACRO BREAK:dw $01DD:ENDM
@@ -144,6 +155,9 @@ TBBLUE_REGISTER_SELECT			equ $243B
 	MACRO BORDER colour:ld a,colour:out ($FE),a:ld a,colour*8:ld (23624),a:ENDM
 	MACRO FREEZE:BORDER 1:BORDER 2:jr$-18:ENDM
 	MACRO PRINT_CHAN chan:ld a,chan:rst $18:dw 5981:ENDM
+	MACRO CSBREAK:push bc:db $DD,$01:nop:nop:pop bc:ENDM ; Does a safe breakpoint in CSpect. Should not crash if accidentally run on the Next board
+	MACRO CPHLDE:or a:sbc hl,de:add hl,de:ENDM
+	MACRO CPHLBC:or a:sbc hl,bc:add hl,bc:ENDM
 
 ;-------------------------------
 
@@ -174,7 +188,7 @@ start
 	ld (oldStack),sp	
 
 	ld	a,h:or l:jr nz,.gl
-	ld	hl,emptyline:call print_rst16:jr finish
+	ld	hl,help:call print_rst16:jr finish
 .gl	ld	de,filename:ld b,127
 .bl	ld	a,(hl):cp ":":jr z,.dn:or a:jr z,.dn:cp 13:jr z,.dn:bit 7,a:jr nz,.dn
 	ld	(de),a:inc hl:inc de:djnz .bl
@@ -203,11 +217,13 @@ getCurrentCore
     ld a,NEXT_VERSION_REGISTER
     ld bc,TBBLUE_REGISTER_SELECT
     out (c),a:inc b:in a,(c)		; major and minor
+	ld (CoreFull+1),a  				; Full version MSB
     ld d,a
     and %1111:ld (CoreMinor),a
     ld a,d:SWAPNIB:and %1111:ld (CoreMajor),a
     ld a,CORE_VERSION_REGISTER:dec b
     out (c),a:inc b:in a,(c):ld (CoreSub),a		; sub minor
+	ld (CoreFull),a							; Full version LSB
 	ret
 	
 ;-------------------------------
@@ -228,7 +244,8 @@ loadbig
 	ELSE
 	ld	sp,$3fff
 	ENDIF	
-	Set14mhz	
+	Set14mhz
+	ld hl, esxDOSerrorHandler:rst 8:db $95 ; install M_ERRH error handler	
 	push ix:call fopen:pop ix
 	call getCurrentCore
 	
@@ -252,13 +269,21 @@ loadbig
 	ld a,2*2:NEXTREG_A MMU_REGISTER_4
 	inc a:NEXTREG_A MMU_REGISTER_5
 	xor a:NEXTREG_A MMU_REGISTER_6:inc a:NEXTREG_A MMU_REGISTER_7
-
+	
 ;	pop ix
 ;	push ix:call setdrv:pop ix:call fopen
 	ld	ix,$c000:ld bc,$200:call fread
 	
 	ld a,($c000+HEADER_VERSION_MAJOR):sub '0':and %1111:SWAPNIB:ld b,a:ld a,($c000+HEADER_VERSION_MINOR):and %1111:or b:ld b,a
 	ld a,(LoaderVersion):cp b:jp c,loaderUpdate
+	
+;	The default value 0 should disable the expansion bus by writing 0 to the top four bits of nextreg 0x80. If non-zero do nothing	
+	ld a,($c000+HEADER_EXPBUSDISABLE):or a:jp nz,.noDisableBus
+;	But if core < 3.00.05, do nothing either
+	ld hl,(CoreFull):ld de,$3005:CPHLDE:jr c,.noDisableBus
+;	Disable bus
+	NEXTREG_RD 0x80:and %00001111:NEXTREG_A 0x80
+.noDisableBus	
 		
 	ld	hl,$c000+HEADER_BANKS:ld de,LocalBanks:ld bc,48+64:ldir
 	ld	hl,($c000+HEADER_PC):ld (PCReg),hl
@@ -633,7 +658,10 @@ returnError2
 	xor a
 	scf
 	ei
-	ret
+	ret	
+esxDOSerrorHandler
+	 ld hl, breakerrortext
+     jr returnError
 
 dec8
 	ld de,100
@@ -659,7 +687,9 @@ coretext2
 coreerrortext
     db  "Update cor",'e'|128
 fileversionerrortext
-    db  "Update .nexloa",'d'|128	
+    db  "Update .nexloa",'d'|128
+breakerrortext
+	db	"D BREAK - CONT repeat",'s'|128
 loadervertext
     db  "This is a V"
 loadervertextMajor
@@ -675,6 +705,7 @@ DefaultPalette
 CoreMajor	db 	0
 CoreMinor	db	0
 CoreSub		db 	0
+CoreFull	dw	0
 
 oldStack	dw	0
 IsLoadingScr db 0
@@ -691,11 +722,19 @@ LocalBanks	db	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 LoaderVersion db $12 ; V1.2 in bcd
 HandleAddr  dw 0
 
-print_rst16	ld a,(hl):inc hl:or a:ret z:rst 16:jr print_rst16
+print_rst16	ei:ld a,(hl):inc hl:or a:jr z,print_ret:rst 16:jr print_rst16
+print_ret	di:ret
 
 filename	db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 			db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-emptyline	db		".nexload <filename> to load nex file.",13,0
+help		db		"NEXLOAD "
+			DOT_VERSION
+			db 		13, "Loads and runs .NEX files",13,13,"nexload",13,"Show help",13,13,"nexload FILENAME",13,"Load a .NEX file",13,13
+			db		"FILENAME",13,"File to load, which can include an optional drive or path",13,13,"NEXLOAD "
+			DOT_VERSION
+			db 		" can load .NEX files up to and including format "
+			FMT_VERSION
+			db 		13,13,"Copyright ",127," 2018-2019 Jim Bagley",13,0
 esxError	ds 		34,128
 
 header		equ		$
