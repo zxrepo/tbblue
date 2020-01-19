@@ -48,6 +48,7 @@
 ; v3.3 added ability to write registers but plan to seperate debug code to seperate DS1307 program?
 ; v3.4 support HL return from RTC API with seconds in H and 100ths in L or 255
 ;      if not supported.
+; v3.5 fix bug where colon is not valid as terminator.
 
 ;	DEVICE   ZXSPECTRUM48
 
@@ -211,6 +212,8 @@ LOOP_READ_BYTES:
 	INC HL
 	LD A,(HL)
 	CP 13
+	JR Z,DONE_READ_BYTES
+	CP 58				; colon is also valid end of statement
 	JR Z,DONE_READ_BYTES
 	
 	CALL CONVERT_HEX_DEC
@@ -1136,7 +1139,7 @@ NoRTCmessage:	DEFM "No valid RTC signature found.",13
 NoACKmessage:	DEFM "No ACK on address/reg select.",13
 		DEFM "Probably no RTC clock at 0x68.",13,13,0
 
-MsgUsage: defm "TIME V3.4 usage: ",13
+MsgUsage: defm "TIME V3.5 usage: ",13
 	  defm "time <ENTER>"
 	  defb 13
 	  defm "show current time"
