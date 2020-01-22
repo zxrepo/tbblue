@@ -11,7 +11,7 @@ DO THIS EVERY TIME YOU WANT TO BUILD:
 =====================================
 Browse to the "build" directory.
 Doubleclick on "zeus.exe".
-Do File >> Open, then browse to the "arc\asm" directory.
+Do File >> Open, then browse to the "src\asm" directory.
 Select "main.asm" and click the Open button.
 In Zeus, on the "Zeus (assembler)" tab, click the Assemble button.
 The dot command will be build in the "dot" folder as "NXTP".
