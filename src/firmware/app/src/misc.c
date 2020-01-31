@@ -62,16 +62,6 @@ unsigned long get_core_ver()
 	REG_NUM = REG_VERSION_SUB;
 	mach_version_sub = REG_VAL;
 
-	REG_NUM = 0x7f;
-	if (REG_VAL != 0xff)
-	{
-		// Claim pre-RC3 v3.00.00 cores are actually v2.99.99 so that
-		// they aren't mistakenly used instead of the RC or later.
-		mach_version_major = 2;
-		mach_version_minor = 99;
-		mach_version_sub = 99;
-	}
-
         return  (mach_version_major*65536) + (mach_version_minor*256) + mach_version_sub;
 }
 

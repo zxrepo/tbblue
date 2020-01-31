@@ -34,10 +34,10 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = "1.20d";
+unsigned char * FW_version = "1.21";
 
 // minimal required for this FW
-unsigned long minimal = 0x030000; // 03 00 00 = 3.00.00
+unsigned long minimal = 0x030100; // 03 01 00 = 3.01.00
 unsigned long current = 0;
 
 unsigned char t[256];
@@ -234,6 +234,18 @@ void check_coreversion()
 		vdp_prints(TITLE);
 
 		vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_LGREEN);
+
+		if (current == 0)
+		{
+			vdp_gotoxy(11, 3);
+			vdp_prints("Anti-Brick\n\n\n");
+
+			vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
+			vdp_prints("No " NEXT_UPDATE_FILE2 " update file found!");
+
+			for (;;);
+		}
+
 		vdp_gotoxy(4, 3);
 		vdp_prints ("Please update your core!\n\n\n");
 		vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
