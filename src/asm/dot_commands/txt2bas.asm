@@ -648,7 +648,8 @@ get_line_foundcr:
         ld      de,(bufin_addr)         ; DE=start of current line
         ld      (bufin_addr),hl         ; update to start of next line
         ex      de,hl                   ; HL=start of current line
-        and     a                       ; Fz=0
+        xor     a                       ; Fz=1
+        inc     a                       ; Fz=0
         ret
 
 ; At this point, a refill failed but we know there are fewer than 8192 chars
@@ -661,6 +662,7 @@ get_line_nocr:
         ret     z                       ; and exit
         ld      (hl),$0d                ; else append the CR
         inc     hl
+        ld      (bufin_end),hl          ; and update buffer_end to include it
         jr      get_line_foundcr
 
 
@@ -1444,7 +1446,7 @@ option_verbose:
 ; TAB 32 used within help message so it is formatted wide in 64/85 column mode.
 msg_help:
 ;                01234567890123456789012345678901
-        defm    "TXT2BAS v1.2 by Garry Lancaster",$0d
+        defm    "TXT2BAS v1.3 by Garry Lancaster",$0d
         defm    "Convert text file to BASIC",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    ".TXT2BAS [OPT] TXTFILE [BASFILE]",$0d,$0d

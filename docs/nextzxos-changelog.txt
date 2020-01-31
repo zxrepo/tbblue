@@ -1,3 +1,66 @@
+v2.04 2020-01-31
+================
+* Fixed CAT ASN command for SD cards with no MBR (volume spans entire card);
+  previously this would halt with an "Invalid Partition" error.
+* Fixed non-reentrancy of dot command syntax parsing: this would cause
+  .TXT2BAS to loop infinitely if the input text file contained a dot command.
+* Fix for .TXT2BAS ignoring the final line of the input text file if it
+  didn't have an end-of-line terminator byte (CR or LF).
+* Fixed a typo in windowing demo.
+* Updated minimum required core version to 3.01.00.
+
+
+v2.03e 2019-12-23
+=================
+* 48K/128K compatibility mode improvements:
+   + AY disabled by default in 48K mode (fixes Outrun in 48K mode)
+   + DACs disabled by default (fixes Outrun in 128K mode)
+   + Timex disabled by default (fixes Strange Loop)
+   + DMA disabled by default
+   + Port dffd additionally disabled by default in 128K mode
+* Revamped TAP/TZX loaders to with new advanced hardware settings page
+* Pi communication improvements in TZX/TAP loaders
+
+
+v2.03d 2019-12-18
+=================
+* 128K/48K compatibility modes now have paging ports 1ffd (128K/48K) and
+  7ffd/dffd (48K only) and +3 floating bus disabled for improved software
+  compatibility.
+* Fixed loading of SNX snapshots to not use the 128/48 compatibility modes.
+* Updated use of AltROM register to match revised core 3.00.06.
+* Added new option to TAP loader to allow loading via the Pi (needed for
+  some custom loaders which are circulating in TAP format rather than TZX).
+* Minor improvements to TZX loader (added note about Pi requirement, run at
+  28MHz until Pi transfer and loading begins).
+
+
+v2.03c 2019-12-14
+=================
+* Compatibility improvements with legacy software, by using the new AltROM
+  feature (requires core v3.00.06+). This is used by:
+   + the Tape Loader, ROM Cartridge & 48K BASIC menu options
+   + the SPECTRUM f$ command (& IDE_SNAPLOAD call) for snapshot loading
+   + revamped TAP & TZX loaders, which provide additional loading modes
+   + the SPECTRUM command for switching to USR0 mode
+* Added two new variants of the SPECTRUM command (mainly for use by the TAP &
+  TZX loaders):
+   + SPECTRUM LOAD
+     Starts the Tape Loader option in 128K compatibility mode
+   + SPECTRUM 48
+     Switches to 48K compatibility mode, retaining the current program
+* ZX80 & ZX81 games can now be interrupted by the NMI button.
+* Fixed the ZX printer driver to preserve the state of the expansion bus
+  registers, allowing it to be potentially used together with other hardware.
+* Fixed all main menu & NMI menu options to use the same case conventions.
+* Fixed DMA mode being set incorrectly to Next rather than Z80 during snapshot
+  loading.
+* Fixed a crash sometimes seen when entering a line in low-memory situations
+  (now correctly generates "G No room for line" error).
+* Minor BASIC error message changes.
+* Removed RUN.BAS facility.
+
+
 v2.03b 2019-11-27
 =================
 * Increased maximum selectable speed to 28MHz (requires core v3.00.04+).
