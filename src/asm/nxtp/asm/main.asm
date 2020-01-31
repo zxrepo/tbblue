@@ -1,4 +1,18 @@
- ; main.asm
+; main.asm
+
+;  Copyright 2019-2020 Robin Verhagen-Guest
+;
+; Licensed under the Apache License, Version 2.0 (the "License");
+; you may not use this file except in compliance with the License.
+; You may obtain a copy of the License at
+;
+;     http://www.apache.org/licenses/LICENSE-2.0
+;
+; Unless required by applicable law or agreed to in writing, software
+; distributed under the License is distributed on an "AS IS" BASIS,
+; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+; See the License for the specific language governing permissions and
+; limitations under the License.
                                                         ; Assembles with regular version of Zeus (not Next version),
 zeusemulate             "48K", "RAW", "NOROM"           ; because that makes it easier to assemble dot commands
 zoSupportStringEscapes  = true;                         ; Download Zeus.exe from http://www.desdes.com/products/oldfiles/
@@ -21,6 +35,7 @@ Main                    proc
                         ld (SavedArgs), hl              ; Save args for later
 
                         call InstallErrorHandler        ; Handle esxDOS and scroll errors
+                        PrintMsg(Msg.Startup)           ; "NXTP v1.x"
 
                         ld a, %0000 0001                ; Test for Next courtesy of Simon N Goodwin , thanks :)
                         MirrorA()                       ; Z80N-only opcode. If standard Z80 or successors, this
@@ -150,10 +165,13 @@ InitialiseESP:
                         ld a, CR
                         rst 16*/
 
+                        ESPSend("ATE0")                 ; * Until we have absolute frame-based timeouts, send first AT
+                        call ESPReceiveWaitOK           ; * cmd twice to give it longer to respond to one of them.
                         ESPSend("ATE0")
                         ErrorIfCarry(Err.ESPComms1)     ; Raise ESP error if no response
                         call ESPReceiveWaitOK
                         ErrorIfCarry(Err.ESPComms2)     ; Raise ESP error if no response
+                                                        ; * However... the UART buffer probably needs flushing here now!
                         ESPSend("AT+CIPCLOSE")          ; Don't raise error on CIPCLOSE
                         call ESPReceiveWaitOK           ; Because it might not be open
                         //ErrorIfCarry(Err.ESPComms)    ; We never normally want to raise an error after CLOSE
@@ -360,7 +378,16 @@ CallDotTime:
                         ; to handle after they return. We can assume they printed info about success or failure for
                         ; the user, so if we got to this point we can return to the next BASIC line or the OK prompt.
 
-                        jp Return.ToBasic
+                        if (ErrDebug)
+                          ; This is a temporary testing point that indicates we have have reached
+                          ; The "success" point, and does a red/blue border effect instead of
+                          ; actually exiting cleanly to BASIC.
+                          Freeze(1,2)
+                        else
+                          ; This is the official "success" exit point of the program which restores
+                          ; all the settings and exits to BASIC cleanly.
+                          jp Return.ToBasic
+                        endif
 NoZone:
                         ld hl, 0
                         ld (ZoneStart), hl

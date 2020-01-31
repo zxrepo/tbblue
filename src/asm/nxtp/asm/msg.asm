@@ -1,6 +1,23 @@
 ; msg.asm
 
+;  Copyright 2019-2020 Robin Verhagen-Guest
+;
+; Licensed under the Apache License, Version 2.0 (the "License");
+; you may not use this file except in compliance with the License.
+; You may obtain a copy of the License at
+;
+;     http://www.apache.org/licenses/LICENSE-2.0
+;
+; Unless required by applicable law or agreed to in writing, software
+; distributed under the License is distributed on an "AS IS" BASIS,
+; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+; See the License for the specific language governing permissions and
+; limitations under the License.
+
 Msg                     proc
+  Startup:              db "NXTP v1."
+                        BuildNo()
+                        db CR, Copyright, " 2019-2020 Robin Verhagen-Guest", CR, CR, 0
   InitESP:              db "Initialising WiFi...", CR, 0
   //TestVer:              db "Test v", TestVersion, CR, 0
   InitDone:             db "Initialised", CR, 0
