@@ -55,7 +55,7 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define NEXT_DIRECTORY      "/machines/next/"
 #define CONFIG_FILE         NEXT_DIRECTORY "config.ini"
 #define TIMING_FILE         NEXT_DIRECTORY "timing.ini"
-#define ESXMMC_FILE         "esxmmc.rom"
+#define ESXMMC_FILE         "esxmmc.bin"
 #define MF1_FILE            "mf1.rom"
 #define MF3_FILE            "mf3.rom"
 #define MF128_FILE          "mf128.rom"
