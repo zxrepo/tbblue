@@ -1,3 +1,13 @@
 /src/asm/nxtp/build
 /src/asm/nxtp/asm/ZeusBak
 /src/asm/dot
+/src/asm/NXtel/build/*.exe
+/src/asm/NXtel/tools/*.exe
+/src/asm/NXtel/bin
+/src/asm/NXtel/sd
+/src/asm/NXtel/build/get-tools.ps1
+/src/asm/NXtel/build/zeustest.*
+/src/asm/NXtel/build/*.exe
+/src/asm/NXtel/src/ZeusBak
+/src/asm/NXtel/build/keymap.dat
+/src/asm/NXtel/pages/zx7/*.zx7
