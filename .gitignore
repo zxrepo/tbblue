@@ -11,3 +11,8 @@
 /src/asm/NXtel/src/ZeusBak
 /src/asm/NXtel/build/keymap.dat
 /src/asm/NXtel/pages/zx7/*.zx7
+/src/asm/espreset/build/*.exe
+/src/asm/espreset/src/asm/ZeusBak
+/src/asm/espreset/build/*.ps1
+/src/asm/espreset/build/zeustest.*
+/src/asm/espreset/build/keymap.dat
