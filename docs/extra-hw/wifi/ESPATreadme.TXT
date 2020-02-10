@@ -1,16 +1,16 @@
 IRQ Driven ESP AT command ZX Next driver
 ----------------------------------------
 
-V0p7 Alpha
+V0p10 Alpha
 
 (c) Tim Gilberts, Infinite Imaginations, 2018
 
-This is the third public release of an Interrupt driven ESP driver using
+This is the sixth public release of an Interrupt driven ESP driver using
 the loadable device drivers of NextZXOS.  It uses a 24K buffer in the given
 memory BANK(s) or in main memory at $A000/40960 if none is specified.
 
 Only a single command channel and a single outbound channel are supported
-you can open extra channels but, they will be reported as invalid handles.
+you cannot open extra channels they will be reported as invalid.
 
 IPD packets may use border colour changes for diagnostics this may or may not
 be kept and or able to be be disabled...  CMD channel ones do not.
@@ -32,8 +32,10 @@ It can also be removed with
 
 .uninstall /NextZXOS/espat.drv
 
-As thos commands from 1.99H support loading BETA 1 or RC1 will use that 
-loading method.  Until that release you MUST manually load the ESPAT.SYS into
+As those commands from 1.99H support loading BETA 1 or RC1 will use that 
+loading method.  
+
+(*****Until that release you MUST manually load the ESPAT.SYS into
 a suitable memory page ESPINS.BAS and ESPINMM.BAS do that.  This 16K BANK uses
 the top 8K as a command receive buffer.  You can either use the default
 main memory of the Next or supply a 16K bank using the ASM API or from BASIC
@@ -76,15 +78,21 @@ OPEN #n,"D>N>string"  ; open with string: HL=address, DE=length
                        ; NOTE: be sure to check for zero-length strings
 OPEN #n,"D>N,p1,p2"   ; open with numbers: DE=p1, HL=p2 (zeros if not prov.)
 The last form will open the command channel with no numbers/0's, or p2 is a
-pointer to a string of length p1 which MUST be somewhere below the 40K mark.
+pointer to a string of length p1 which MUST be somewhere visible below the 40K
+mark or an error will result either directly or as a syntax error likely.
+
+The safest thing to do in BASIC is to create a string variable with the connect
+string and pass that to the Open - this can be done then even from BASIC in
+other pages as string variables are always in workspace.  In ASM and C you can
+use the ROM call MakeSPACE to do a similar thing.
 
 For the network driver you DO NOT NEED to open a stream to the command channel
-first that can be done when you want. It can also be closed independently as
+first, that can be done when you want. It can also be closed independently as
 well.  Note that many commands like printing characters will empty the command
 channel.  If you start reading it and get messages like CLOSED or 
-WIFI DISCONNECT which you do nothing with then the state of the system may be
+WIFI DISCONNECT which you do nothing with, then the state of the system may be
 unknown - it will usually recover or just give errors but, you have been warned.
-There will hopefully be an DRIVER/API call (11) to do this for you soon.
+There will hopefully be an DRIVER/API call (12?) to do this for you soon.
 
 OPEN #n, "D>N"
   Opens the ESP AT command channel so that you can see the rolling
@@ -96,7 +104,7 @@ OPEN #n, "D>N"
   This channel is'cooked' and adds an LF after CR and changes it to another
   CR on receive so that BASIC just sees an extra blank Line.
   
-OPEN #n, "D>N>CTCP/UDP/SSL,address or ip,port" 
+OPEN #n, "D>N>TCP/UDP/SSL,address or ip,port" 
   This is effectively getaddrinfo() (was gethostbyname) + socket() + bind()
   and then connect()!
   Issues an ESP  AT+CIPSTART=x,"TCP","address",port and deals with any error
@@ -104,6 +112,7 @@ OPEN #n, "D>N>CTCP/UDP/SSL,address or ip,port"
   
   If a connection cannot be made you will get an "Invalid File Name" error,
   that could arise as a result of a syntax error OR the connect has failed.
+  Only C and ASM has access to the detailed error return code at the moment.
 
 ***TODO - Highly likely to be used method
 ; OPEN #n, "D>N>LXXXX" - 
@@ -120,7 +129,7 @@ OPEN #n, "D>N>CTCP/UDP/SSL,address or ip,port"
 ;   to deal with that as OPEN does not return a value.
 ;
 ; OPEN #n, "D>N>X"
-;   If D is added then IPD debug data is returned. Along with x,CONNECT etc to
+;   If X is added then IPD debug data is returned. Along with x,CONNECT etc to
 ;   responses received back rather than suppressing them. i.e. DEBUG
 ;   any IPD packets are written to the buffer if received before you have
 ;   provided any other buffers - this is unlikely to happen unless you
@@ -139,16 +148,31 @@ OPEN #n, "D>N>CTCP/UDP/SSL,address or ip,port"
 ; Note that closing ESP id 5 will close all channels except if in server mode so
 ; we do not allow that from the streams API at the moment.
 ;
-; You must have added at least a single 16K memory bank for buffers via the API
-; to allow an open to succeed. If you do not then all IPD data will just be in
-; the command stream and the buffer will exhaust quickly. 
+You must have added at least a single 16K memory bank for buffers via the API
+to allow an open to succeed. If you do not then all IPD data will just be in
+the command stream and the buffer will exhaust quickly. 
 
 Channel handle is returned in A - this cannot be accessed in BASIC so see
 B=$fd / RETURN #n TO var 
 
+As of Alpha 8 C is also a copy of the handle so it can be used in C (the
+language) with the esx_m_drvapi call which cannot access A
+
 If it returns with any error (carry set), "Invalid filename" will be reported
 and no stream will be opened.
- 
+
+If there is an error Carry = 1 then A is one of (usable in ASM and C):
+
+$81 - max channels of this type open
+$82 - invalid parameter - e.g. 0 length strings
+$83 - invalid connect type must be TCP, UDP or SSL
+$84 - syntax error in string - missing comma?
+$85 - parse error on connect address
+$86 - parse error at end of connect address
+$87 - error sending connect, timeout on tx probably
+$88 - failed to connect to destination
+$89 - connect string address is a 'far call' - must be below $9F00
+
 ;-------
 ; B=$fa: close channel
 ;-------
@@ -189,6 +213,9 @@ This will cause INPUT # or NEXT # to continue calling until a character
 is available.
 This will clear any SW buffer full flags so make sure you have checked for
 data loss by reading the flags first.
+
+Note that as of Alpha 8 it is a documented feature that the character is
+also returned in E (not C like Open) for use from Z88DK
 
 ;-------
 ; B=$fd: get current stream pointer
@@ -251,6 +278,11 @@ DRIVER command options
 *** Note - this function is deprecated as from BETA1 / RC1 the initialise will
 be done from .install and you will no longer be able to put it in main memory.
 
+*** This is likely to only become an Enable/Disable to allow better BASIC
+performance when not using the driver.  So a value of 65535 disables while 0
+enables. 0 also means at the moment use main memory but, actually means use
+default memory which is main memory...
+
 Set available memory pages to use for SYS and CMD buffer - ignores upper values
 of MSB
 
@@ -286,6 +318,7 @@ Get values including buffer full flag and ESP internal stream number /flags in C
 
 For IPD channel
 
+
 BIT 4 = internal (buffer max marker)
 BIT 5 = Embedded IPD seen - stream restarted
 BIT 6 = Timeout in last period
@@ -318,7 +351,7 @@ DE and HL are input and output positions on the ESP CMD read buffer respectively
 This also has the effect of starting the IPD receive by resetting bit 6
 
 ;-----
-; B=4: Set IPD values
+; B=4: Set CMD or IPD values
 ;-----
 You must have set the current channel number with API B=2 first. Due to a lack
 of registers in the API and the need for atomic update - this will not change.
@@ -357,37 +390,50 @@ HL=send (2nd parameter)
 ;-----
 Global - does not need a channel handle.
 
-***TODO Temp until pooling implemented will add bank DE to channel no1 directly
-so only one BANK can be added to the pool at the moment as only one
-stream is available and double banking is not implemented in the API 
+This allows a restricted function from Alpha 8 onwards where as long as you add
+at least one more memory bank to the pool you can do a remove to get the
+current receive page in whatever state it was in.
 
 Add memory pages to available buffer pool  ignores upper values of MSB, needs a
 full 16K BASIC BANK as that is the size of the IPD receive buffers.
 
+Returns an error if the maximum 10 pages are in the pool - that is 160K
+of memory by the way!
+
+In Alpha 9 or RC1 the IRQ will autochange to the next available bank so you
+could arrange for upto 160K of file (i.e. a 128K SNA) to be loaded direct
+to memory in one go.
+
 ;-----
-; B=7: ***TODO Remove 16K BANK from channel
+; B=7: Remove 16K BANK from channel IPD only does not apply to CMD
 ;-----
 This is intended to allow you get get the current BANK from the current channel
 
-Entry: ***TODO handy again if DE could be channel handle default if 0?
+Entry: DE is channel handle, default if 0
 
-Returns: Likely BC is the BANK number, DE and HL are the current IN and OUT
+Returns: BC is the BANK number, DE and HL are the current IN and OUT
 
-The channel will switch to the next available BANK or try and add one from the
-pool. If none are available then IPD on the associated LinkID will be lost.
+The channel will switch to the next available BANK by fetching one from the
+pool. If none are available then as an IPD on the associated LinkID would
+be lost the call will return an error.
 
 ;-----
-; B=8: ***TODO Get ESP Link ID from handle
+; B=8: Get ESP Link ID from handle
 ;-----
 Entry: DE is the handle
 
-Returns: HL is the LinkID associated with that channel (if connected to the ESP)
-currently associated LinkID or -1 (65536) if there isn't one.
+Returns: BC is the LinkID associated with that channel (if connected to the ESP)
+currently associated LinkID
+
+***TODO or -1 (65536) if there isn't one because it has disconnected.
 
 So in BASIC it is two steps to get to the ESP LinkID 
 
 RETURN #7 TO handle
 DRIVER 78,7,handle TO LinkID
+
+Note this will generate an API error if you try to get the LinkID for the CMD
+channel as it will never have one.
 
 ;----
 ;B=9: Specific UART BAUD rate to be set from lookup table.
@@ -426,30 +472,45 @@ again if you forget what speed - use UART_CUR if you MUST fiddle - at least
 a power off will put it back to default usually 0/115200
 
 ;----
-;B=10: Set buffer mode for channel
+;B=10: Set output buffer mode for channel
 ;----
 Entry:	DE is channel, 0 for default - IPD only will not work on CMD channel.
       	HL is mode 2-255 characters 1=immediate send, 0=wait for CR or 256 chars. 
 
 Channel defaults to mode 1 when opened.
 
+;-----
+;B=11: enable/disable embedded IPD detect
+Entry: DE is channel, 0 for default - IPD only will not work on CMD channel.
+       HL is mode 0x08 disable (default), 0x00 enable
+
+Channel defaults to mode 8 when opened.
+
 ***TODO 
 -------
 
+a)
+
 ;----
-;B=11: Process and Empty CMD Buffer
+;B=xx: Process and Empty CMD Buffer
 ;----
 This will go through the command buffer and deal with any system messages - this
 is useful if you plan to use the command channel for comms with the ESP
 at the moment it would just wipe it... so use B=4 0,0...
 
+b)
+
 Find optimum UART prescaler that matches ESP one actually set for
 increased reliability...
 
+c)
+
 Use the DRIVER command to pass in / get packets of data rather than single
-bytes - especially useful for UDP datagrams to a stream.
+bytes / buffering - especially useful for UDP datagrams to a stream.
 so like sendto() and recvfrom()
 This will likely be provided as a 256/512 byte block in the BASIC workspace.
+
+d)
 
 It will also support getting a 16K BANK back as a whole buffer from a channel.
 The channel system allows swapping between two sets of 16K for double buffering.
@@ -502,6 +563,12 @@ we were expecting - they are just lost on the Command stream as we have no idea
 how many we lost.
 
 
+Using from C
+============
+
+Please take a look at the "term.c" file for an example of how to use the API
+on the next from Z88DK and its libraries - there is also an example of calling
+the RTC in there. 
 
 NextZXOS API's
 ==============
@@ -594,6 +661,7 @@ See NxTel as it is Awesome....
 
 http://teastop.plus.com:8080/
 
+
 4) BASIC
 
 Installer for the moment
@@ -614,9 +682,132 @@ with none.  There are some REM's in front of lines to auto load what you want
 just resave as AUTOEXEC.BAS LINE 10 when it is set how you want.
 
 
+Using DRIVER 78,3,128 allows a direct read of the status of the Command channel
+without having a valid handle - the documentation says use 255, but it is any
+value >127 in real terms.  If it is less than 128 then it must be a valid
+internal handle (to get at that from BASIC you need a RETURN #x TO handle - this
+is so you can see where the buffers are and if there has been an overflow.
+
+The DIM #7 TO %s is a quick way to get a count of the number of characters in
+the buffer for the stream (no need to get the internal handle, to get the
+values for buffers and subtract etc...)
+
+The NEXT #7 TO c will block until a character has been received on that channel.
+To avoid the block all the examples use the previous DIM to see if there are any
+there first!
+
+The first line flag reading is only needed if you want to check for receive
+errors on an actual channel (rather than the stream associated with it) and more
+detailed diagnostics - it can usually be ignored in real terms.
+
+If you want to suspend the IRQ scanning to bare minimum and stop emptying the
+UART etc (this could speed BASIC back up for example but, will start to lose
+data on the network...)
+
+DRIVER 78,1,65535
+
+then to restart just say to start using current memory (this will honour main
+memory or whatever pages you allocated).  If you have overwritten those pages
+then you will need to reload the SYS file and reallocate a buffer bank before
+receiving data or the system will crash!
+
+DRIVER 78,1,0 
+
+
+Other things
+------------
+
+It would be nice to get as far as this project has done with Spectranet and the
+plato service as well.
+
+https://github.com/tschak909/platotermzx
+
+https://www.irata.online/
+
+%mount 0,"irata.online"
+%load ""
+
+This can also connect to cyberserv! "cyber1.org"
+bigjump is a menu of the popular games and files...
+
+This is basically a very powerful 8080 based terminal that can access an old
+mainframe hosted system.  Useful documents here:
+
+http://www.control-data.info/CybisRelease.html
 
 Change Log
 ==========
+
+
+TODO
+----
+
+Auto switch of 16K
+
+Enable multiple channels
+
+Enable Listener mode
+
+
+
+BUGS to fix:
+------------
+
+embedded IPD crash on malformed number
+
+timeout on Busy... tracking, RTOS uses CONNECT not OK as well -? Related
+
+Initial connect bug - maybe the Busy thing will help - see RTOS issue
+
+Failure of close occasionaly
+
+Mess seen on Send/Receive with AT commands appearing in IPD???
+
+- TODO for BETA 1 / RC1
+
+Modify TERMINAL.BAS/BIN to use this driver... 
+
+provide ANSI - actually will be new C application based on Z88DK classic library
+although there are rumours the Text Tile mode may eventually be supported...
+
+Change to new .install for loading SYS
+
+
+
+;Alpha 10 10 February 2020
+;-------------------------
+
+Fixed crash on Far Call error handling
+
+Added better API exercise code for main memory use
+
+Allows B=1 API call to use 65535 to disable IRQ again if needed.
+use 0 to restart and retain existing memory page arrangements. 
+
+Added sample term.c code
+
+;Alpha 9 16 October 2018
+;-----------------------
+
+Build with debug code but no border colours for RVG
+
+;Alpha 8 2 September 2018
+-------------------------
+
+Several corrections to API docs like BC as return and clarify copies of
+A register returns in register BC/DE etc for use from C in Z88DK
+
+Fixed up Open to prevent more than one IPD channel, some API fuctions like "get
+handle" implemented in a limited fashion.
+
+Re-enabled embedded IPD handling - causes crash on malformed number BUG!!!! TODO
+so added enable / disable option.
+
+OPEN from ASM / C returns useful errors in A - BASIC only has two options.
+
+Implemented simple BANK switching to allow better handling of 16K data lumps.
+
+Border debugging now resets to system border setting not just BLACK.
 
 ;Alpha 7 18 August 2018
 -----------------------
@@ -647,10 +838,6 @@ Fixed paging issue to run fully paged out.
 OPEN IPD now supports the actual string provided with some error checking so
 needs to be trapped with ON ERROR if you want to provide a nice user
 experience.
-
-- TODO for BETA 1 / RC1
-
-Modify TERMINAL.BAS/BIN to use this driver... and provide ANSI
 
 ;Alpha 6 1 August 2018
 ------------------------
