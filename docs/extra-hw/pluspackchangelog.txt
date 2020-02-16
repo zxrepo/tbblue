@@ -4,6 +4,15 @@ with the ESP8266, UART serial driver and the I2C bus needed for them.
 
 (c) Tim Gilberts / Infinite Imaginations and the ZX Next project
 
+10 Feb 2020
+-----------
+
+Pushed Alpha 10 to repro - missed somehow last year was still Alpha 7 (the
+DRV and SYS for Alpha7 are still here in case of an issue - copy over the ones
+in NextZXOS directory).  Alpha 10 actuall updated to allow enable/disable IRQ
+
+Updated version of Tony Hoyle WIFI.BAS included called WIFI2.BAS!
+
 30 Sep 2019
 -----------
 
