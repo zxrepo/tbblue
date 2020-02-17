@@ -62,17 +62,18 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define KEYMAP_FILE         "keymap.bin"
 
 /* Hardware IDs */
-#define HWID_DE1A		1		/* DE-1 */
-#define HWID_DE2A		2		/* DE-2  */
-//#define HWID_DE2N		3		/* DE-2 (new) */
-//#define HWID_DE1N		4		/* DE-1 (new) */
-#define HWID_FBLABS		5		/* FBLabs */
-#define HWID_VTRUCCO	6		/* VTrucco */
-#define HWID_WXEDA		7		/* WXEDA */
-#define HWID_EMULATORS	8		/* Emulators */
-#define HWID_ZXNEXT		10		/* ZX Spectrum Next */
-#define HWID_MC			11		/* Multicore */
-#define HWID_ZXNEXT_AB	250		/* ZX Spectrum Next Anti-brick */
+#define HWID_DE1A		0x01		/* DE-1 */
+#define HWID_DE2A		0x02		/* DE-2  */
+//#define HWID_DE2N		0x03		/* DE-2 (new) */
+//#define HWID_DE1N		0x04		/* DE-1 (new) */
+#define HWID_FBLABS		0x05		/* FBLabs */
+#define HWID_VTRUCCO		0x06		/* VTrucco */
+#define HWID_WXEDA		0x07		/* WXEDA */
+#define HWID_EMULATORS		0x08		/* Emulators */
+#define HWID_MC		0x0b		/* Multicore */
+#define HWID_ZXNEXT		0x0a		/* ZX Spectrum Next */
+#define HWID_ZXDOS		0xea		/* ZX DOS (Next clone mode) */
+#define HWID_ZXNEXT_AB		0xfa		/* ZX Spectrum Next Anti-brick */
 
 /* Register numbers */
 #define REG_MACHID		0x00
@@ -164,12 +165,13 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define FW_BLK_BOOT		0
 #define FW_BLK_EDITOR		1
 #define FW_BLK_UPDATER		2
-#define	FW_BLK_CORES		3
-#define	FW_BLK_TBBLUE_SCR	4
-#define	FW_BLK_NEXT_SCR		5
-#define	FW_BLK_TESTCARD_SCR	6
-#define FW_BLK_TESTCARD_L2PAL	7
-#define FW_BLK_TESTCARD_TMPAL	8
-#define FW_BLK_TESTCARD_TMDATA	9
+#define FW_BLK_CORES		3
+#define FW_BLK_TBBLUE_SCR	4
+#define FW_BLK_NEXT_SCR	5
+#define FW_BLK_ZXDOS_SCR	6
+#define FW_BLK_TESTCARD_SCR	7
+#define FW_BLK_TESTCARD_L2PAL	8
+#define FW_BLK_TESTCARD_TMPAL	9
+#define FW_BLK_TESTCARD_TMDATA	10
 
 #endif /* _HARDWARE_H */

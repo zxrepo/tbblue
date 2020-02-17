@@ -177,7 +177,7 @@ static void display_about(void)
 	vdp_setcolor(COLOR_BLUE, COLOR_BLACK, COLOR_LYELLOW);
 	vdp_gotoxy(2, 16); vdp_prints("The Super Backers");
 	vdp_setcolor(COLOR_BLUE, COLOR_BLACK, COLOR_GRAY);
-	vdp_gotoxy(2, 17); vdp_prints("Paul Edward Howes");
+	vdp_gotoxy(2, 17); vdp_prints("Paul Howes");
 	vdp_gotoxy(2, 18); vdp_prints("Jake Warren");
 	vdp_gotoxy(2, 19); vdp_prints("Steve Brown (aka Gilby)");
 	vdp_gotoxy(2, 20); vdp_prints("Dan Birch");
