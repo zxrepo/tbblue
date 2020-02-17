@@ -1,4 +1,4 @@
-;  Copyright 2019-2020 Robin Verhagen-Guest
+;  Copyright 2020 Robin Verhagen-Guest
 ;
 ; Licensed under the Apache License, Version 2.0 (the "License");
 ; you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ DO THIS ONCE:
 =============
 Browse to the "build" directory.
 Doubleclick on "get-tools.bat".
-Wait while seeral tools and binaries are downloaded. The last, "zeustest.exe" is large, so be patient.
+Wait while several tools and binaries are downloaded.
 When prompted "Press any key to continue", press a key.
 
 DO THIS EVERY TIME YOU WANT TO BUILD:
