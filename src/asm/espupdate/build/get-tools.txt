@@ -1,0 +1,37 @@
+if (([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    Write-Output 'Running as administrator'
+} else {
+    Write-Output 'Running limited'
+}
+
+function download-tool {
+	Param (
+		[string]$fn, 
+		[string]$url = "https://github.com/Threetwosevensixseven/espupdate/raw/master/build/",
+		[string]$dest = ""
+    )
+	$force = $true;
+	if ((-not $force) -and (Test-Path $fn)) {
+		Write-Output "$fn already exists, not downloading"
+	} else {
+		Write-Output "Downloading $fn..."
+		[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12	
+		wget "$url$fn" -outfile "$dest$fn"
+		Write-Output "Downloaded $fn"
+	}
+}
+
+download-tool AppendFW.exe
+download-tool PackageFW.exe
+download-tool CombineFW.exe
+download-tool NormalizeESPLogs.exe
+download-tool zlibnet.dll
+download-tool zlib32.dll
+download-tool zlib64.dll
+download-tool hdfmonkey.exe
+download-tool pskill.exe
+download-tool ZXVersion.exe
+download-tool ESP8266_stub_data.bin https://github.com/Threetwosevensixseven/espupdate/raw/master/fw/ESP8266_FULL_V3.3_SPUGS/ ..\fw\ESP8266_FULL_V3.3_SPUGS\
+download-tool ESP8266_stub_text.bin https://github.com/Threetwosevensixseven/espupdate/raw/master/fw/ESP8266_FULL_V3.3_SPUGS/ ..\fw\ESP8266_FULL_V3.3_SPUGS\
+download-tool esptool.py https://github.com/Threetwosevensixseven/espupdate/raw/master/fw/ESP8266_FULL_V3.3_SPUGS/ ..\fw\ESP8266_FULL_V3.3_SPUGS\
+download-tool zeustest.exe http://www.desdes.com/products/oldfiles/
