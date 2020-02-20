@@ -1,3 +1,47 @@
+v2.05 2020-02-20
+================
+* Major internal reorganisation to free up space for fixes and new features.
+* Enhanced Multiface keymap option:
+   + This now detects if a ZX80, ZX81 or Next session is running, and displays
+     the appropriate keymap
+   + For ZX80 & ZX81 keymaps, "X" can be pressed to toggle between the "original"
+     and "remapped" layouts that are provided by Paul Farrow's emulators.
+   + New keymap screen graphics kindly provided by Richard Hallas.
+* Menus navigation improved: EDIT, BREAK or SPACE can now be used to exit the
+  current menu (or return to the previous menu).
+* Joystick buttons 3 & 4 (A & START on MD controllers) now map to EDIT in the
+  menus/Browser/NextBASIC editor etc.
+* BREAK can now be used to abort selecting a location to save a file from
+  within the NMI menu (saving snapshots, screenshots, palettes, banks etc).
+* BREAK can now be used to abort applying a .POK file.
+* Tape Loader option now allows you to select the appropriate mode for loading
+  cassettes with (previously this always switched to 128K mode).
+* Added "C"ode loading mode to TZX loader, for early games that required you
+  to type LOAD""CODE (the TAP loader already auto-detects this type of game).
+* Added Tape Tester option (a bug-fixed version of the utility found on the
+  original 128K Spectrum and the grey +2).
+* Fixed pixels sometimes left behind at right side of editor when switching
+  between 32/64/85 modes.
+* Fixed crash bug with "T"empo parameter in PLAY command.
+* Fixed TAP loading of games with important data immediately below stack
+  (eg 3D StarStrike).
+* Fixed detection of 48K/128K mode when saving snapshots from the Multiface
+  (since v2.03c this had been failing to detect 48K mode correctly).
+* Fixed TAP games loaded in 48K/USR0 mode to start in BASIC cursor "L" mode
+  rather than "K" mode (prevented some games from detecting keys, eg Knights).
+* Fixed border colour reverting to white after screensaver had run in Multiface
+  keymap screen.
+* Fixed "loop error" sometimes seen with nested REPEAT loops following a WHILE.
+* Improved presentation of TZX/TAP loaders.
+* Fixed problem in the Browser's mount helper trying to defragment .DSK files
+  with spaces in the filename.
+* Fixed bug where editing a large (> approx 24K) BASIC program could lead to
+  corrupted lines being added.
+* Fixed a typo in the welcome program.
+* Re-enabled the optional user-provided browser replacement (.FM).
+* Updated About screen credits.
+
+
 v2.04 2020-01-31
 ================
 * Fixed CAT ASN command for SD cards with no MBR (volume spans entire card);
@@ -8,6 +52,15 @@ v2.04 2020-01-31
   didn't have an end-of-line terminator byte (CR or LF).
 * Fixed a typo in windowing demo.
 * Updated minimum required core version to 3.01.00.
+* Updated welcome program with 28MHz and TZX info.
+* Improvements to TZX/TAP loaders:
+   + Clear printer buffer and main memory & reset sysvars when loading in
+     48K/USR0/Pentagon modes
+   + Disable contention in Pentagon mode
+   + Ensure SEED is zero for all modes
+   + Allow loading/running speed to be altered
+   + Updated for latest .pisend command
+* Updated browser.cfg for .ESP, .SND, .SDH, .SID files.
 
 
 v2.03e 2019-12-23
