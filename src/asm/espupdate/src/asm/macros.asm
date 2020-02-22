@@ -278,7 +278,7 @@ ESPSendDataBlockSeq     macro(Opcode, DataAddr, ErrAddr); As ESPSendDataBlock(),
 mend
 
 SetReadTimeout          macro(FramesToWait)             ; Parameterised wrapper for the ESP SLIP buffer read timeout
-                        ld a, FramesToWait              ; changing routine. Invoke RestoreReadTimeout() afterwards.
+                        ld hl, FramesToWait             ; changing routine. Invoke RestoreReadTimeout() afterwards.
                         call SaveReadTimeoutProc
 mend
 
@@ -291,7 +291,7 @@ DisableReadValidate     macro()
                         ld (ESPSendCmdWithDataProc.ValidateProcSMC), hl ; disabling routine. Invoke
 mend                                                                    ; DisableReadValidate() afterwards.
 
-EnableReadValidate     macro()
+EnableReadValidate      macro()
                         ld hl, ESPValidateCmdProc       ; Parameterised wrapper for the ESP SLIP buffer read validate
                         ld (ESPSendCmdWithDataProc.ValidateProcSMC), hl ; re-enabling routine. Invoke after
 mend                                                                    ; EnableReadValidate().
