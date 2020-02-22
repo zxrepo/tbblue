@@ -122,6 +122,8 @@ void main() {
 	if (mach_ab == 0)
 	{
 		// Read config.ini and honour the video settings.
+		// Can't be done for AB cores on KS1 machines, since they do
+		// not include video mode setting registers.
 		load_config();
 		update_video_settings();
 	}

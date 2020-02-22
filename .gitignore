@@ -16,3 +16,11 @@
 /src/asm/espreset/build/*.ps1
 /src/asm/espreset/build/zeustest.*
 /src/asm/espreset/build/keymap.dat
+/src/asm/espupdate/build/*.exe
+/src/asm/espupdate/src/asm/ZeusBak
+/src/asm/espupdate/build/*.ps1
+/src/asm/espupdate/build/zeustest.*
+/src/asm/espupdate/build/keymap.dat
+/src/asm/espupdate/fw/ESP8266_FULL_V3.3_SPUGS/*.*
+/src/asm/espupdate/build/*.dll
+/src/asm/espupdate/dot

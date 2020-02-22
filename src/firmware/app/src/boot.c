@@ -34,7 +34,7 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = "1.21";
+unsigned char * FW_version = "1.23";
 
 // minimal required for this FW
 unsigned long minimal = 0x030100; // 03 01 00 = 3.01.00
@@ -281,13 +281,17 @@ void display_bootscreen()
 	REG_VAL = 2;
 
 	// Load the boot screen.
-	if (mach_id == HWID_ZXNEXT)
+	switch (mach_id)
 	{
-		l = FW_BLK_NEXT_SCR;
-	}
-	else
-	{
-		l = FW_BLK_TBBLUE_SCR;
+		case HWID_ZXNEXT:
+			l = FW_BLK_NEXT_SCR;
+			break;
+		case HWID_ZXDOS:
+			l = FW_BLK_ZXDOS_SCR;
+			break;
+		default:
+			l = FW_BLK_TBBLUE_SCR;
+			break;
 	}
 
 	fwOpenAndSeek(l);

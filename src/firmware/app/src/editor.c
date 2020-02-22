@@ -177,7 +177,7 @@ static void display_about(void)
 	vdp_setcolor(COLOR_BLUE, COLOR_BLACK, COLOR_LYELLOW);
 	vdp_gotoxy(2, 16); vdp_prints("The Super Backers");
 	vdp_setcolor(COLOR_BLUE, COLOR_BLACK, COLOR_GRAY);
-	vdp_gotoxy(2, 17); vdp_prints("Paul Edward Howes");
+	vdp_gotoxy(2, 17); vdp_prints("Paul Howes");
 	vdp_gotoxy(2, 18); vdp_prints("Jake Warren");
 	vdp_gotoxy(2, 19); vdp_prints("Steve Brown (aka Gilby)");
 	vdp_gotoxy(2, 20); vdp_prints("Dan Birch");
@@ -563,7 +563,7 @@ void main()
 	// Honour the current scandoubler, 50/60Hz and scanline settings.
 	update_video_settings();
 
-	if ((mach_id == HWID_ZXNEXT) || (mach_id == HWID_EMULATORS))
+	if ((mach_id & 0x0f) == (HWID_ZXNEXT & 0x0f))
 	{
 		peripherals = peripheralsNext;
 		itemsCount = itemsCountNext;
