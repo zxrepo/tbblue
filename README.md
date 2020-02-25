@@ -3,12 +3,12 @@ Official System Distribution repository for the ZX Spectrum Next computer
 Current versions  
 ================  
 
-|Title |Version|RT?  	|  
-|---	|--:	|---	|  
-|*System/Next*| **1.3** |RTM|  
-|*NextZXOS*|**2.05**|Day 0|  
-|*Core*|**3.01.00**	|Day 0|  
-|*Firmware*|**1.23**|Day 0|  
+|Title |Version|  
+|---	|--:	|  
+|*System/Next*| **1.3** |  
+|*NextZXOS*|**2.05**|  
+|*Core*|**3.01.00**	|  
+|*Firmware*|**1.23**|  
   
   
 Contributor Requests
