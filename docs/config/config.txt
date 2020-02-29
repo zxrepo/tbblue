@@ -26,8 +26,8 @@ The second method provides access to some settings not found on the regular ZX
 Spectrum Next Editor Module, adding a machine personality, changing the machine
 type for said personality, provide alternate ROM images and even more 
 importantly setting your monitor if it doesn't work out of the box.
-Config.ini is a regular text file, located in the c:/tbblue/ folder of your boot
-SD Card and it's read upon first boot after an F1 reset or cold boot.
+Config.ini is a regular text file, located in the c:/machines/nezt/ folder of 
+your boot SD Card and it's read upon first boot after an F1 reset or cold boot.
 
 Config.ini groups
 =================
@@ -116,7 +116,7 @@ This enables (1) or disables (0) the onboard divMMC. This won't affect boot but
 will make the divMMC hardware unavailable to the selected personality. If this 
 is enabled, then *if* the setting is *NOT* overriden by the per-personality 
 settings as outlined in the following section, then a ROM image file named 
-esxmmc.rom is expected to be located in c:/tbblue/.
+esxmmc.bin is expected to be located in c:/machines/next/.
 
 Default setting:
 divmmc=0
@@ -129,7 +129,7 @@ can be one of the following according to selected machine type. If machine type
 is 0 (48K) then the rom filename expected is mf.rom, if machine type is 1 (128K)
 then the rom filename expected is mf128.rom and if it's 2 (+2/+3) then the 
 expected rom filename is mf3.rom. These rom image files must be user provided 
-and then placed in the c:/tbblue/ folder.
+and then placed in the c:/machines/next/ folder.
 
 Default setting:
 mf=0
@@ -268,4 +268,3 @@ will add a boot menu entry that's enabling the 128K toastrack type with a bug
 fixed rom named 128Kal.rom and HDMI display type. If divMMC is enabled in global
 settings this will require the presence of an esxDOS rom and if MF is enabled 
 then it will require the presence of MF128.ROM
-
