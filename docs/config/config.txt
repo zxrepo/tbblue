@@ -164,8 +164,8 @@ first PS/2 device(1) rather than the default which is keyboard(0). This
 facilitates plugging in a PS/2 mouse without a Y-splitter cable if you already 
 have a membrane keyboard attached or a regular cased Next.
 
-Default setting:
-ps2=0
+Default setting (board-only edition):
+ps2=1
 
 14. scanlines
 This setting produces a cosmetic scanline-like effect of variable intensity from
