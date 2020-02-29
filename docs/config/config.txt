@@ -2,14 +2,17 @@ The config.ini file
 -------------------
 Author:  Phoebus R. Dokos (based on documentation by: Garry Lancaster &
                            Allen Allbright)
-Date:	 2019-06-24
+Date:	 2020-02-29
 License: CC BY-NC-SA
-Version: 1.1
+Version: 1.2
 
 Changelog
 ---------
 2018-09-24: 1.0 Initial version
 2019-06-24: 1.1 Major update due to FW changes
+2020-02-29: 1.2 Update to reflect new folder
+                locations and esxDOS ROM file
+                name
 
 Introduction
 ============
@@ -249,15 +252,15 @@ to the user's input during boot (See timing setting above)
 
 Main_ROM_Image_File is a ROM image file that's appropriate for the machine type
 you've selected in the previous setting e.g. 48.rom for a standard 48K ZX 
-Spectrum and which MUST be located in c:/tbblue/.
+Spectrum and which MUST be located in c:/machines/next/.
 
 divMMC_ROM_Image_File. If this is set, then the global divMMC setting is 
-overriden and the filename defined is used in lieu of the default esxmmc.rom. 
-This rom image file is also expected to be found in c:/tbblue/ and lastly,
+overriden and the filename defined is used in lieu of the default esxmmc.bin. 
+This rom image file is also expected to be found in c:/machines/next/ and lastly,
 
 MF_ROM_Image_File, if this is set then the Global configuration for MF hardware 
 is overriden, the hardware is enabled and the rom image file used is the one you
-specify. This file should also be located in c:/tbblue/
+specify. This file should also be located in c:/machines/next/
 
 
 e.g. menu=ZX Spectrum 128K,1,7,128Kalt.rom 
