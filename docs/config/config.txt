@@ -2,9 +2,9 @@ The config.ini file
 -------------------
 Author:  Phoebus R. Dokos (based on documentation by: Garry Lancaster &
                            Allen Allbright)
-Date:	 2020-02-29
+Date:	 2020-03-05
 License: CC BY-NC-SA
-Version: 1.2
+Version: 1.3
 
 Changelog
 ---------
