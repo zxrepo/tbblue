@@ -13,6 +13,7 @@ Changelog
 2020-02-29: 1.2 Update to reflect new folder
                 locations and esxDOS ROM file
                 name
+2020-03-05: 1.3 Minor update
 
 Introduction
 ============
@@ -237,16 +238,16 @@ The type affects both the available memory, paging mechanism as well as ULA type
 and timings of the machine personality. This setting can also be further 
 modified after boot by modifying the appropriate Next hardware registers
 
-Display can be a number from 0 to 6 for VGA or 7 for HDMI. This takes as a 
+Display can be a number from 0 to 6 for VGA or 7 for Digital. This takes as a 
 base the 50_60hz setting in the Global settings group and modifies the sync 
 frequency in steps of approximately 1Hz to facilitate screen "lock" according to
 your monitor. The higher the number the more the machine will speed-up although 
 timings of all peripherals stay constant relative to one another. Setting 7 
-(HDMI) completely modifies the timings to make the display compatible with 
-modern HDMI monitors as well as changing the aspect ratio and border size 
-(Especially for the 60Hz HDMI setting 7). 
-Many HDMI monitors will work with a setting of 0 to 6 however ALL HDMI monitors 
-will work with a setting of 7.
+(Digital) completely modifies the timings to make the display compatible with 
+modern HDMI/DVI monitors as well as changing the aspect ratio and border size 
+(Especially for the 60Hz Digital setting 7). 
+Many HDMI/DVI monitors will work with a setting of 0 to 6 however ALL HDMI/DVI
+monitors will work with a setting of 7.
 A setting of 8 allows the video testing boot module to set the screen according
 to the user's input during boot (See timing setting above)
 
@@ -265,6 +266,6 @@ specify. This file should also be located in c:/machines/next/
 
 e.g. menu=ZX Spectrum 128K,1,7,128Kalt.rom 
 will add a boot menu entry that's enabling the 128K toastrack type with a bug 
-fixed rom named 128Kal.rom and HDMI display type. If divMMC is enabled in global
-settings this will require the presence of an esxDOS rom and if MF is enabled 
-then it will require the presence of MF128.ROM
+fixed rom named 128Kal.rom and Digital display type. If divMMC is enabled in 
+global settings this will require the presence of an esxDOS rom and if MF is 
+enabled then it will require the presence of MF128.ROM
