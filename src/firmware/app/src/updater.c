@@ -149,6 +149,12 @@ void main() {
 
 	vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
 
+	if (mach_id != HWID_ZXNEXT)
+	{
+		vdp_prints("Not supported on this hardware!");
+		for (;;) ;
+	}
+
 	//          12345678901234567890123456789012
 	vdp_prints("Update file 'TBBLUE.TBU' found!\n\n");
 

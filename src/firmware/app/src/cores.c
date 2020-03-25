@@ -131,13 +131,17 @@ void main() {
 	vdp_setcolor(COLOR_BLACK, COLOR_BLUE, COLOR_WHITE);
 	vdp_prints(TITLE);
 
-
-		vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_LGREEN);
-		vdp_gotoxy(7, 2);
-		vdp_prints("Extra Cores Updater\n\n");
-
+	vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_LGREEN);
+	vdp_gotoxy(7, 2);
+	vdp_prints("Extra Cores Updater\n\n");
 
 	vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
+
+	if (mach_id != HWID_ZXNEXT)
+	{
+		vdp_prints("Not supported on this hardware!");
+		for (;;) ;
+	}
 
 
 	memset(buffer, 0, 512);

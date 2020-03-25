@@ -34,10 +34,10 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = "1.23";
+unsigned char * FW_version = "1.25";
 
 // minimal required for this FW
-unsigned long minimal = 0x030100; // 03 01 00 = 3.01.00
+unsigned long minimal = 0x030103; // 03 01 03 = 3.01.03
 unsigned long current = 0;
 
 unsigned char t[256];
@@ -68,7 +68,7 @@ void error_loading(char e)
 	for(;;);
 }
 
-void load_and_start()
+void load_roms()
 {
 	//turn off the debug led
 	LED = 1;
@@ -200,18 +200,6 @@ void load_and_start()
 	}
 	f_close(&Fil);
 	vdp_prints("OK!\n");
-
-	REG_NUM = REG_PERIPH4;
-	opc = settings[eSettingScanlines] & 3;			// bits 1-0
-	REG_VAL = opc;
-
-	REG_NUM = REG_MACHTYPE;
-	REG_VAL = (pMenu->mode + 1);
-
-	REG_NUM = REG_RESET;
-	REG_VAL = RESET_SOFT;				// Soft-reset
-
-	for(;;);
 }
 
 void check_coreversion()
@@ -257,6 +245,11 @@ void check_coreversion()
 		vdp_prints("\nYou currently have core v");
 		sprintf(t, "%lu.%02lu.%02lu", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
 		vdp_prints(t);
+
+		if (mach_id != HWID_ZXNEXT)
+		{
+			for (;;) ;
+		}
 
 		vdp_prints("\n\n\nHold U to enter the updater now\n");
 		vdp_prints(      " if you have copied the latest\n");
@@ -323,9 +316,8 @@ void display_bootscreen()
 
 void init_registers()
 {
-	// Set machine type
-	REG_NUM = REG_MACHTYPE;
-	REG_VAL = (pMenu->mode + 1) << 4 | 0x80;
+	unsigned char hwenables[4];
+	unsigned int i;
 
 	// Set peripheral config.
 	REG_NUM = REG_PERIPH1;
@@ -340,7 +332,7 @@ void init_registers()
 	REG_NUM = REG_PERIPH2;
 	opc = settings[eSettingPSGMode]; 			// bits 1-0
 	if (settings[eSettingTurboKey])		opc |= 0x80;	// bit 7
-	if (settings[eSettingDMA])		opc |= 0x40;	// bit 6
+	if (settings[eSettingBEEPMode])		opc |= 0x40;	// bit 6
 	if (settings[eSettingDivMMC])		opc |= 0x10;	// bit 4
 	if (settings[eSettingMF])		opc |= 0x08;	// bit 3
 	if (settings[eSettingPS2])		opc |= 0x04;	// bit 2
@@ -349,7 +341,7 @@ void init_registers()
 	REG_NUM = REG_PERIPH3;
 	opc = 0;
 	if (settings[eSettingStereoMode])	opc |= 0x20;	// bit 5
-	if (settings[eSettingIntSnd])		opc |= 0x10;	// bit 4
+	if (settings[eSettingSpeakerMode])	opc |= 0x10;	// bit 4
 	if (settings[eSettingCovox])		opc |= 0x08;	// bit 3
 	if (settings[eSettingTimex])		opc |= 0x04;	// bit 2
 	if (settings[eSettingTurboSound])	opc |= 0x02;	// bit 1
@@ -358,7 +350,89 @@ void init_registers()
 
 	REG_NUM = REG_PERIPH4;
 	opc = settings[eSettingScanlines] & 3;			// bits 1-0
+	if (settings[eSettingHDMISound] == 0)	opc |= 0x04;	// bit 2
 	REG_VAL = opc;
+	
+	// NOTE: With bit 31 of hwenables[3] set to 0, the internal port
+	//       hw disables won't be reinitialised on a soft reset.
+	hwenables[3] = 0x00;
+	if (settings[eSettingULAplus] != 0)
+	{
+		hwenables[3] |= 0x01;
+	}
+	if (settings[eSettingDMA] != 0)
+	{
+		hwenables[3] |= 0x02;
+	}
+
+	if (settings[eSettingDAC] != 0)
+	{
+		// If DACs requested, enable AY and all DACs.
+		hwenables[2] = 0xff;
+	}
+	else
+	{
+		// Otherwise just enable AY.
+		hwenables[2] = 0x01;
+	}
+
+	hwenables[1] = 0x00;
+	if (settings[eSettingDivPorts] != 0)
+	{
+		hwenables[1] |= 0x09;
+	}
+	if (settings[eSettingMF] != 0)
+	{
+		hwenables[1] |= 0x02;
+	}
+	if (settings[eSettingUARTI2C] != 0)
+	{
+		hwenables[1] |= 0x14;
+	}
+	if (settings[eSettingKMouse] != 0)
+	{
+		hwenables[1] |= 0x20;
+	}
+
+	// Disable main hardware ports according to machine type.
+	switch (pMenu->mode)
+	{
+		// 48K
+		case 0:
+			// Disable: ff/7ffd/dffd/1ffd/+3 FB/6b
+			hwenables[0] = 0xc0;
+
+			if (settings[eSettingAY48] == 0)
+			{
+				// Disable AY if not requested for 48K mode.
+				hwenables[2] &= 0xfe;
+			}
+		break;
+
+		// 128K
+		case 1:
+			// Disable: ff/dffd/1ffd/+3 FB/6b
+			hwenables[0] = 0xc2;
+		break;
+
+		// +3
+		case 2:
+			// Disable: ff/dffd/6b
+			hwenables[0] = 0xda;
+		break;
+
+		// Pentagon
+		case 3:
+			// Disable: ff/1ffd/+3 FB/6b
+			hwenables[0] = 0xc6;
+		break;
+	}
+
+	for (i = 0; i < 4; i++)
+	{
+		REG_NUM = REG_DECODE_INT0 + i;
+		REG_VAL = hwenables[i];
+	}
 }
 
 void load_keymap()
@@ -505,7 +579,16 @@ void main()
 		}
 	}
 
-	init_registers();
 	load_keymap();
-	load_and_start();
+	load_roms();
+	init_registers();
+	
+	// Set machine type
+	REG_NUM = REG_MACHTYPE;
+	REG_VAL = 0x80 | (pMenu->mode + 1) << 4 | (pMenu->mode + 1);
+
+	REG_NUM = REG_RESET;
+	REG_VAL = RESET_SOFT;				// Soft-reset
+
+	for(;;);
 }

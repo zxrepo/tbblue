@@ -35,10 +35,10 @@ const char YESNO[2][4] = {"NO ","YES"};
 const char AYYM[4][4]  = {"YM ","AY ","---","OFF"};
 const char JOYS[7][7]  = {"Sincl2","Kemps1","Cursor","Sincl1","Kemps2","MD 1  ","MD 2  "};
 const char PS_2[2][6]  = {"Keyb.","Mouse"};
-const char  DMA[2][4]  = {"ZXN","Z80"};
 const char STEREO[2][4] = {"ABC","ACB"};
 const char SCANL[4][4] = {"OFF","75%","50%","25%"};
 const char ISS23[2][5] = {"Iss3","Iss2"};
+const char BEEPMODE[3][4] = {"All","Int"};
 
 unsigned char * help_joy[] =
 				{ // 12345678901234567890123456789012
@@ -92,7 +92,7 @@ const char * editName[eSettingMAX] =
 	"60 Hz",		// eSettingFreq5060
 	"Timex",		// eSettingTimex
 	"PSG Mode",		// eSettingPsgMode
-	"Int. Beep",		// eSettingIntSnd
+	"IntSpeak",		// eSettingSpeakerMode
 	"Stereo M.",		// eSettingStereoMode
 	"TurboSnd",		// eSettingTurboSound
 	"Covox",		// eSettingCovox
@@ -107,6 +107,14 @@ const char * editName[eSettingMAX] =
 	"Default",		// eSettingMenuDefault (not edited)
 	"Timing",		// eSettingTiming (not edited)
 	"Keyboard",		// eSettingIss23
+	"Divmmc HW",		// eSettingDivPorts
+	"DACs",			// eSettingDAC,
+	"AY in 48K",		// eSettingAY48
+	"UART/I2C",		// eSettingUARTI2C
+	"KMouse",		// eSettingKMouse
+	"ULAplus",		// eSettingULAplus
+	"HDMISound",		// eSettingHDMISound
+	"BEEPer",		// eSettingBEEPMode
 };	
 
 // ZX Spectrum Next
@@ -115,11 +123,15 @@ const unsigned char peripheralsNext[] =
 	eSettingJoystick1,	eSettingPSGMode,
 	eSettingJoystick2,	eSettingStereoMode,
 	eSettingPS2,		eSettingTurboSound,
-	eSettingIss23,		eSettingCovox,
-	eSettingFreq5060,	eSettingIntSnd,
-	eSettingScanlines,	eSettingDMA,
-	eSettingScandoubler,	eSettingTimex,
-	eSettingDivMMC,		eSettingMF,
+	eSettingKMouse,		eSettingCovox,
+	eSettingIss23,		eSettingAY48,
+	eSettingFreq5060,	eSettingSpeakerMode,
+	eSettingScanlines,	eSettingBEEPMode,
+	eSettingScandoubler,	eSettingHDMISound,
+	eSettingDivMMC,		eSettingDAC,
+	eSettingDivPorts,	eSettingDMA,
+	eSettingMF,		eSettingTimex,
+	eSettingUARTI2C,	eSettingULAplus,
 };
 
 const unsigned char itemsCountNext = sizeof(peripheralsNext) / sizeof(unsigned char);
@@ -148,8 +160,6 @@ static void waitforanykey()
 
 static void display_about(void)
 {
-	int i;
-
 	// Update display at 14MHz
 	REG_NUM = REG_TURBO;
 	REG_VAL = 2;
@@ -212,10 +222,6 @@ static void printVal(unsigned char help)
 			vdp_prints(PS_2[*value]);
 		break;
 
-		case eTypeDMAMode:
-			vdp_prints(DMA[*value]);
-		break;
-
 		case eTypeStereoMode:
 			vdp_prints(STEREO[*value]);
 		break;
@@ -226,7 +232,11 @@ static void printVal(unsigned char help)
 
 		case eTypeIss23:
 			vdp_prints(ISS23[*value]);
-			break;
+		break;
+
+		case eTypeBEEPMode:
+			vdp_prints(BEEPMODE[*value]);
+		break;
 	}
 
 	if (help)

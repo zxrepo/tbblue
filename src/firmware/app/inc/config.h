@@ -47,18 +47,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define	MAX_TURBOKEY	1
 #define	MAX_TIMING	8
 #define	MAX_ISS23	1
+#define	MAX_DIVPORTS	1
+#define	MAX_DAC		1
+#define	MAX_AY48	1
+#define	MAX_UARTI2C	1
+#define	MAX_KMOUSE	1
+#define	MAX_ULAPLUS	1
+#define	MAX_HDMISOUND	1
+#define	MAX_BEEPMODE	1
 
 #define MAX_TITLE 	31	// inc null; 2 spaces get printed to left
 #define MAX_ROMNAME	15
 
-#define MAX_MENU_ITEMS	32
+#define MAX_MENU_ITEMS	24
 
 enum {
 	eSettingScandoubler = 0,
 	eSettingFreq5060,
 	eSettingTimex,
 	eSettingPSGMode,
-	eSettingIntSnd,
+	eSettingSpeakerMode,
 	eSettingStereoMode,
 	eSettingTurboSound,
 	eSettingCovox,
@@ -73,6 +81,14 @@ enum {
 	eSettingMenuDefault,
 	eSettingTiming,
 	eSettingIss23,
+	eSettingDivPorts,
+	eSettingDAC,
+	eSettingAY48,
+	eSettingUARTI2C,
+	eSettingKMouse,
+	eSettingULAplus,
+	eSettingHDMISound,
+	eSettingBEEPMode,
 
 	eSettingMAX
 };
@@ -82,10 +98,10 @@ enum {
 	eTypePSGMode,
 	eTypeJoystickMode,
 	eTypePS2Mode,
-	eTypeDMAMode,
 	eTypeStereoMode,
 	eTypeScanlines,
 	eTypeIss23,
+	eTypeBEEPMode,
 };
 
 typedef struct {

@@ -48,6 +48,14 @@ const char * settingName[eSettingMAX] =
 	"default",		// eSettingMenuDefault
 	"timing",		// eSettingTiming
 	"keyb_issue",		// eSettingIss23
+	"divports",		// eSettingDivPorts
+	"dac",			// eSettingDAC
+	"ay48",			// eSettingAY48
+	"uart_i2c",		// eSettingUARTI2C
+	"kmouse",		// eSettingKMouse
+	"ulaplus",		// eSettingULAplus
+	"hdmisound",		// eSettingHDMISound
+	"beepmode",		// eSettingBEEPMode
 };	
 
 const unsigned char settingMaxValue[eSettingMAX] =
@@ -71,6 +79,14 @@ const unsigned char settingMaxValue[eSettingMAX] =
 	255,			// eSettingMenuDefault (don't clamp)
 	MAX_TIMING,		// eSettingTiming
 	MAX_ISS23,		// eSettingIss23
+	MAX_DIVPORTS,		// eSettingDivPorts
+	MAX_DAC,		// eSettingDAC
+	MAX_AY48,		// eSettingAY48
+	MAX_UARTI2C,		// eSettingUARTI2C
+	MAX_KMOUSE,		// eSettingKMouse
+	MAX_ULAPLUS,		// eSettingULAplus
+	MAX_HDMISOUND,		// eSettingHDMISound
+	MAX_BEEPMODE,		// eSettingBEEPMode
 };
 
 const unsigned char settingDefaults[eSettingMAX] =
@@ -86,14 +102,22 @@ const unsigned char settingDefaults[eSettingMAX] =
 	0,			// eSettingDivMMC
 	0,			// eSettingMF
 	1,			// eSettingJoystick1
-	0,			// eSettingJoystick2
+	3,			// eSettingJoystick2
 	1,			// eSettingPS2
-	1,			// eSettingDMA
+	0,			// eSettingDMA
 	0,			// eSettingScanlines
 	1,			// eSettingTurboKey
 	0,			// eSettingMenuDefault
 	8,			// eSettingTiming
 	0,			// eSettingIss23
+	1,			// eSettingDivPorts
+	0,			// eSettingDAC
+	0,			// eSettingAY48
+	1,			// eSettingUARTI2C
+	1,			// eSettingKMouse
+	1,			// eSettingULAplus
+	1,			// eSettingHDMISound
+	0,			// eSettingBEEPMode
 };
 
 const unsigned char settingType[eSettingMAX] =
@@ -111,12 +135,20 @@ const unsigned char settingType[eSettingMAX] =
 	eTypeJoystickMode,	// eSettingJoystick1
 	eTypeJoystickMode,	// eSettingJoystick2
 	eTypePS2Mode,		// eSettingPS2
-	eTypeDMAMode,		// eSettingDMA
+	eTypeYesNo,		// eSettingDMA
 	eTypeScanlines,		// eSettingScanlines
 	eTypeYesNo,		// eSettingTurboKey
 	0,			// eSettingMenuDefault (not edited)
 	0,			// eSettingTiming (not edited)
 	eTypeIss23,		// eSettingIss23
+	eTypeYesNo,		// eSettingDivPorts
+	eTypeYesNo,		// eSettingDAC
+	eTypeYesNo,		// eSettingAY48
+	eTypeYesNo,		// eSettingUARTI2C
+	eTypeYesNo,		// eSettingKMouse
+	eTypeYesNo,		// eSettingULAplus
+	eTypeYesNo,		// eSettingHDMISound
+	eTypeBEEPMode,		// eSettingBEEPMode
 };
 
 unsigned char settings[eSettingMAX];
