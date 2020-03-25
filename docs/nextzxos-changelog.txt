@@ -1,3 +1,205 @@
+v2.06 2020-03-25
+================
+* Improvements to sprite handling (with example usage programs found in
+    c:/demos/NextBASIC/basicSprites/ and c:/games/Next/NextBASIC Invaders/):
+
+    * All sprite attributes (plus additional data) are now cached in RAM8 to
+      allow new commands to be added.
+    * 128 sprites may now be used (up from 64)
+    * Relative sprites are now supported, specified in the main SPRITE
+      command with a negative sprite number (other sprites, specifed with
+      positive sprite numbers, are "anchor" sprites). All relative sprites are
+      attached to the previous anchor sprite, and their x/y coordinates are
+      relative offsets (-127..+127) from the coordinates of the anchor.
+    * Extended main SPRITE command with 3 new parameters (r, mx, my):
+        + r is a 3-bit value for anchor/relative sprite flags:
+            bit 0: (anchor sprites only): 0=composite type, 1=unified type
+            bit 1: (relative sprites only): 1=pattern number is relative to
+                                            the anchor sprite's pattern number
+            bit 2: (relative sprites only): 1=palette offset is relative to
+                                            the anchor sprite's palette offset
+        + mx: scaling factor in x-direction (0=1x, 1=2x, 2=4x, 3=8x)
+        + my: scaling factor in y-direction (0=1x, 1=2x, 2=4x, 3=8x)
+        For unified relative sprites, the scaling factors (plus the main rotation
+        and mirror flags) are applied relative to the anchor sprite.
+        For composite relative sprites, the scaling factors (plus the main rotation
+        and mirror flags) are individually specified for each sprite.
+    * All parameters in main SPRITE command are now optional; if not specified,
+      the previous settings are retained.
+    * Added support for batching changes to sprites, and sending them all to
+      the hardware at once:
+        SPRITE STOP         enables batching mode
+        SPRITE RUN          disables batching mode (default)
+        SPRITE MOVE         send all currently-batched sprite changes to the hardware
+        SPRITE MOVE INT     as SPRITE MOVE, but first waits for the 50/60Hz
+                            interrupt so that updates are synced to the framerate
+        SPRITE MOVE INT y   as SPRITE MOVE INT, but waits until specified
+                            sprite y coord to allow sprite flicker prevention
+    * Added support for automatic updates to the position and pattern of a
+      sprite, according to predefined rules. After defining a sprite with
+      the usual SPRITE command, use SPRITE CONTINUE to define its automatic
+      movement rules (which are applied on every SPRITE MOVE command). Each
+      clause is optional; if not specified, the previous settings are retained.
+        SPRITE CONTINUE s, [x1 [TO x2]] [STEP xs] [RUN or STOP],
+                           [y1 [TO y2]] [STEP ys] [RUN or STOP],
+                           [p1 [TO p2]],
+                           [f], [r], [d]
+
+        where: x1 is minimum value for x-coordinate
+               x2 is maximum value for x-coordinate (=x1 if not provided)
+               xs is signed x-step in pixels for every move (=1 if not provided)
+
+               y1 is minimum value for y-coordinate
+               y2 is maximum value for y-coordinate (=y1 if not provided)
+               ys is signed y-step in pixels for every move (=1 if not provided)
+
+               If the STOP keyword is present, the sprite is initially stopped in
+               the direction specified (otherwise, it is initially moving)
+
+               p1 is minimum value for sprite pattern
+               p2 is maximum value for sprite pattern
+
+               f is an 8-bit flag value:
+                 bits 1..0: behaviour when x,y limits are reached:
+                            00 = reflect this direction
+                            01 = stop this direction, start other direction
+                            10 = stop this direction
+                            11 = stop completely and make sprite invisible
+                 bit 2: flip the Y-mirror flag when y limits are reached
+                 bit 3: flip the X-mirror flag when x limits are reached
+                 bit 4: behaviour of pattern change:
+                            0 = cycle upwards, wrapping back to lower limit
+                            1 = bounce between lower and upper limits
+                 bit 5: if set, sprite is disabled when pattern reaches limits
+                 bit 6: if set, update pattern even when sprite is stationary
+                 bit 7: if set, X-mirror/Y-mirror/rotation flag are set
+                        according to direction of travel (overrides bits 2 & 3)
+
+               r  is the movement rate (0..255)
+                         (0=moves on every SPRITE MOVE command,
+                          1=skips one SPRITE MOVE after moving etc)
+
+               d  is the initial delay (0..255)
+                         (0=no delay, 1=wait one SPRITE MOVE etc)
+
+        SPRITE PAUSE s1 [TO s2]
+            turns off automatic movement for a single sprite or range of sprites
+
+        SPRITE CONTINUE s1 [TO s2]
+            turns automatic movement back on for a single sprite or range of sprites
+
+    * Added new functions (available in the integer expression evaluator only):
+        SPRITE s            returns 1 if sprite is visible, 0 if not visible
+
+        SPRITE CONTINUE s   returns mask of current movement for this sprite:
+                bit 2: set if moving in X
+                bit 1: set if moving in Y
+                bit 0: set if automatically moving
+        (If bit 0 is set but not bit 1/2, then only image movement is enabled)
+
+        SPRITE AT(s,0)      returns x coordinate of sprite
+        SPRITE AT(s,1)      returns y coordinate of sprite
+        SPRITE AT(s,2)      returns pattern of sprite
+        SPRITE AT(s,3)      returns signed automatic x step
+        SPRITE AT(s,4)      returns signed automatic y step
+        SPRITE AT(s,5)      returns delay until next sprite automatic movement
+
+        SPRITE OVER(s1, s2 [TO s3] [,overlapX [,overlapY] ])
+
+          Performs bounding-box collision detection between sprite s1, and a
+          single other sprite s2 or range of sprites s2..s3.
+
+          Returns 0 if no collision, or the number of the colliding sprite (s2..s3)
+          (NOTE: if the colliding sprite is 0, 128 is returned)
+          (NOTE: any relative sprites following s2 or s3 will also be checked)
+
+          Optional acceptable overlaps (in pixels) can be provided in overlapX
+          and/or overlapY. If overlapX is not present, 0 (no overlap) is used.
+          If overlapY is not present, the value of overlapX is used.
+
+* Improvements to .DSK file processing for improved game compatibility:
+    + Implemented low-level call support (DD_L_READ, DD_READ_SECTOR, DD_ENCODE)
+      with support for sector sizes between 256 bytes and 16K (makes many games
+      from ACE, CRL, Zigurat, Dinamic & other Spanish software houses work)
+    + Re-worked .DSK processing to avoid using any RAM7 data other than that
+      used on original +3 in low-level calls (other data moved to RAM8)
+    + Fix for crashes caused by DOS_BOOT leaving BANKM system variable in
+      incorrect state
+    + Fix for errors caused by some loaders modifying BANK678 from BASIC and
+      causing NextBASIC calls to ROM3 to instead call ROM1 (eg Wrestling
+      Superstars, Darius+, Tetris)
+    + Fixed regression with Magnetic Scrolls games by adding CLS to
+      mounter.bas helper
+    + Turn off Timex mode when booting a disk (fixes After The War)
+    + Attempt to detect loaders directly accessing FDC and halt with a message
+      (successfully detects many games from Ocean, Virgin, Rainbird, Elite,
+      Image Works, Electronic Arts, Mindscape, Palace etc)
+    + Added stub patch to ROM3 to allow +3 ZXZVM-based disks to detect the Next
+      as a +3 and run correctly (such games are, however, better run directly
+      in the Next's native ZXZVM)
+
+* Improvements to Multiface keymap option (screens by Richard Hallas):
+    + In NextZXOS mode, a help screen for the editor keys is available by
+      pressing EXTEND
+    + Different keymap screens are shown depending on the current mode
+      (NextZXOS, 48K/128K standard ROM, 48K LG ROM)
+
+* ROM3 (providing 48K BASIC functionality within NextZXOS mode) is now no longer
+  required to retain full compatibility with 48K/128K Spectrums, since older
+  software is run with the original 48K/128K ROMs. The following changes
+  to it have therefore been possible:
+    + Removed initialisation/NEW, cassette-handling and "ZX81 name" routines
+      to free up space
+    + Fixed SCREEN$ bug (x$=SCREEN$(x,y) always evaluated to 1)
+    + Fixed STR$ bug (x$+STR$ n (where -1<=n<=1) returned STR$ n only)
+    + Fixed GOTO bug with line numbers > 9999 (returned incorrect errors)
+    + Fixed "scroll?" prompt bugs (last command displayed when CAPS LOCK, GRAPH
+      or EXTEND pressed; nonsense can be printed after pressing GRAPH & ENTER)
+    + Fixed division rounding bug (eg PRINT 1/2-0.5 gave non-zero results)
+    + Fixed evaluation of INT -65536 (previously evaluated to -1)
+    + Fixed evaluation of -65535-1 (previously evaluated to -1E-38)
+    + Fixed CHR$ 8 to correctly backspace from screen pos 1,0 and correctly
+      do nothing from screen pos 0,0
+    + Fixed CHR$ 9 to correctly update print position
+    + Fixed decimal integer parsing to ignore spaces and control characters
+    + Fixed USR n to no longer require H'L' to be preserved on return
+    + Various optimisations to the standard expression evaluator
+
+* Updated initialisation to enable all internal hardware, since FW v1.24+ now
+  disables certain hardware.
+* Added settings in the Multiface for HDMI Sound output and BEEPer redirection.
+* Removed obsoleted DMA mode setting.
+* Fixed the SPECTRUM command to work with core 3.01.02+ (where port 1ffd is
+  decoded as 7ffd if timings have been changed to 128K machine and the port
+  is disabled).
+* Added new ABS function to the integer expression evaluator (returns the
+  ABSolute value of a signed 16-bit argument).
+* Made DPEEK function atomic, to aid in reading FRAMES system variable.
+* Added CONT and RAND as synonyms for CONTINUE and RANDOMIZE to reduce typing.
+* Fixed SAVE..DATA to prevent simple strings being incorrectly saved as if they
+  were arrays (such files could not be reloaded and used).
+* Fixed POKE (and DPOKE) to accept signed values (as with original 48K BASIC).
+* Fixed filename printing if a system file could not be read on startup
+  (broken in v2.05).
+* Fix for NEW being slower than a soft reset (speed was not set to maximum).
+* Fix for keypress at OK report after loading a .BAS program from the Browser
+  not being sent to the editor.
+* Fix for a crash if an out-of-range x coordinate was provided to PRINT POINT.
+* Fix to allow READ and INPUT to assign negative values to integer variables.
+* Fixed .DSK mounter helper to prevent entering an infinite loop if the .DSK
+  was fragmented and not enough space was available to defragment it.
+* Fix for renumber incorrectly amending INPUT LINE statements.
+* Reworked all inter-ROM paging routines to use the new memmap register (0x8e).
+  This brings considerable space-saving and some performance improvements. For
+  example, printing 5-bit characters to windows or full-screen mode windows
+  via RST $10 is now ~9% faster.
+* Updated welcome program to reflect the recent changes to the TAP/TZX loaders.
+* Updated About screen credits.
+* Improved TZX/TAP loading reliability via Pi at high speeds on different
+  video modes (fix from David Saphier).
+* Require core v3.01.03+.
+
+
 v2.05 2020-02-20
 ================
 * Major internal reorganisation to free up space for fixes and new features.

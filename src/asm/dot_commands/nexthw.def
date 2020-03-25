@@ -93,7 +93,6 @@ transparency_default                    equ     $e3
 
 ; Sprite ports
 nxp_sprite      equ     $303b
-nxp_spr_pal     equ     $53
 nxp_spr_attr    equ     $57
 nxp_spr_data    equ     $5b
 
