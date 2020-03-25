@@ -6,9 +6,9 @@ Current versions
 |Title |Version|  
 |---	|--:	|  
 |*System/Next*| **1.3.1** |  
-|*NextZXOS*|**2.05**|  
-|*Core*|**3.01.00**	|  
-|*Firmware*|**1.23**|  
+|*NextZXOS*|**2.06**|  
+|*Core*|**3.01.03**	|  
+|*Firmware*|**1.25**|  
   
   
 Contributor Requests
