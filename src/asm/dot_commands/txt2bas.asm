@@ -299,11 +299,13 @@ done_autostart:
         callesx m_p3dos                 ; call IDE_TOKENISER
         jr      nc,tokenise_error
         ld      (tokline_len),bc        ; save tokenised line length
+        ld      (outline_len),bc        ; and as output line length
+        ld      (outline_start),hl      ; and start
         pop     bc                      ; BC=addr of untokenised line
         pop     hl                      ; HL=addr of line start (pre-number)
         call    z,show_syntax_error     ; show any syntax error
         push    hl
-        ld      hl,(tokline_len)        ; HL=tokenised line length, inc ENTER
+        ld      hl,(outline_len)        ; HL=output line length, inc ENTER
         ld      (numlen_buf+2),hl       ; store length in 4-byte line header
         ld      bc,256-4+1              ; max length 256 including line number
         and     a                       ; & length fields (for banked sections)
@@ -328,8 +330,8 @@ linelenokay:
         ld      hl,numlen_buf
         ld      bc,4
         call    output_append           ; write line & length to output buffer
-        ld      hl,(E_LINE)
-        ld      bc,(tokline_len)
+        ld      hl,(outline_start)
+        ld      bc,(outline_len)
         call    output_append           ; write tokenised line to output buf
         call    unbind_io_bank
         call    reclaim_line            ; reclaim the tokenised line
@@ -1217,11 +1219,14 @@ show_line_number_loop:
         and     a
         sbc     hl,bc
         pop     hl
-        jr      z,show_syntax_error_loop; on when untokenised start reached
+        jr      z,show_syntax_error_start; on when untokenised start reached
         ld      a,(hl)
         inc     hl
         print_char()
         jr      show_line_number_loop
+show_syntax_error_start:
+        push    bc                      ; save untokenised text start
+        ld      bc,0                    ; total length so far
 show_syntax_error_loop:
         ld      a,d
         or      e                       ; Fz=1 if that char is the failure
@@ -1234,13 +1239,35 @@ show_syntax_error_loop:
         print_char()
         ld      a,(hl)                  ; fetch char again
         inc     hl
+        inc     bc
         cp      $0d                     ; keep going until ENTER processed
         jr      nz,show_syntax_error_loop
-        ld      hl,(syntax_fails)
+        ld      a,(always_output)       ; always generate output files?
+        and     a
+        jr      nz,insert_rem_error
+        ld      hl,(syntax_fails)       ; if not,
         inc     hl                      ; increment lines that failed syntax
         ld      (syntax_fails),hl
+show_syntax_end:
+        pop     hl                      ; HL=untokenised text, after line
         call    unbind_io_bank
         ret
+
+insert_rem_error:
+        ld      hl,msg_syntax_rem_text-msg_syntax_rem
+        add     hl,bc
+        ld      (outline_len),hl        ; store length to write to output
+        ld      hl,msg_syntax_rem
+        ld      (outline_start),hl      ; store address to write from
+        ld      hl,msg_syntax_rem_text_end-msg_syntax_rem_text
+        and     a
+        sbc     hl,bc
+        jp      c,out_of_memory         ; if line too long, just say OOM
+        pop     hl
+        push    hl
+        ld      de,msg_syntax_rem_text
+        ldir                            ; copy text into DivMMC RAM
+        jr      show_syntax_end
 
 
 ; ***************************************************************************
@@ -1425,6 +1452,14 @@ opt2_a: defw    option_verbose
 opt3:   defm    "--verbose"
 opt3_a: defw    option_verbose
 
+        defb    opt4_a-opt4
+opt4:   defm    "-a"
+opt4_a: defw    option_always_write
+
+        defb    opt5_a-opt5
+opt5:   defm    "--always-write"
+opt5_a: defw    option_always_write
+
         ; End of table
         defb    0
 
@@ -1440,19 +1475,31 @@ option_verbose:
 
 
 ; ***************************************************************************
+; * -a, --always-write                                                      *
+; ***************************************************************************
+
+option_always_write:
+        ld      a,1
+        ld      (always_output),a
+        ret
+
+
+; ***************************************************************************
 ; * Messages                                                                *
 ; ***************************************************************************
 
 ; TAB 32 used within help message so it is formatted wide in 64/85 column mode.
 msg_help:
 ;                01234567890123456789012345678901
-        defm    "TXT2BAS v1.3 by Garry Lancaster",$0d
+        defm    "TXT2BAS v1.4 by Garry Lancaster",$0d
         defm    "Convert text file to BASIC",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    ".TXT2BAS [OPT] TXTFILE [BASFILE]",$0d,$0d
         defm    "OPTIONS:",$0d
         defm    " -v, --verbose",23,32,0
         defm    "   Show lines during processing",$0d
+        defm    " -a, --always-write",23,32,0
+        defm    "   Write even if syntax errors",$0d
         defm    " -h, --help",23,32,0
         defm    "   Display this help",$0d,$0d
         defm    "Supported directives in text:",$0d,$0d
@@ -1547,6 +1594,12 @@ msg_bnkheader:
 
 msg_bnkterminator:
         defb    $80
+
+msg_syntax_rem:
+        defm    "; Syntax error: "
+msg_syntax_rem_text:
+        defs    1024
+msg_syntax_rem_text_end:
 
 
 ; ***************************************************************************
@@ -1650,6 +1703,9 @@ autostart_set:
 verbose_output:
         defb    0
 
+always_output:
+        defb    0
+
 syntax_fails:
         defw    0
 
@@ -1657,6 +1713,15 @@ last_linenum:
         defw    0
 
 tokline_len:
+        defw    0
+
+tokline_start:
+        defw    0
+
+outline_len:
+        defw    0
+
+outline_start:
         defw    0
 
 command_tail:
