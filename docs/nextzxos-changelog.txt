@@ -1,3 +1,34 @@
+v2.06A 2020-03-30
+=================
+* LET is now optional and can be omitted.
+* Fixed ability to indent lines in the editor (broken in v2.06).
+* Fixed crash assigning a null string to a sliced string (or string array).
+* Fixes for integer FOR loops:
+    + no longer incorrectly wrap around from 65535 to 0
+    + allow negative steps
+* Fixed DELETE in editor; this no longer causes the remainder of the line to
+  be entered/executed if delete pressed at the start of the line.
+* Fixed incorrect line number in error reports when error occurs in VAL/VAL$.
+* Fixed error trapping when error occurs in VAL/VAL$/INPUT.
+* Fixed CONTINUE to generate a "Statement lost" error (instead of appearing to
+  hang) when attempting to CONTINUE a direct command.
+* Fixed AY sound becoming accidentally enabled when making settings changes
+  in the NMI menu.
+* Ensure error trapping details are properly initialised on startup.
+* Replace non-ASCII characters in long filenames with underscores when
+  displayed.
+* Made the RAM test non-destructive on 16K banks >= 12.
+* Improved the "stickiness" of the current editor line position; no longer
+  reset to the start after various menu options (Clear, 32/64/85 cols,
+  Command Line <--> NextBASIC), and no longer change to the line in the
+  error report for OK/BREAK reports.
+* No longer disable TurboSound on legacy games (fixes Aliens Neoplasma).
+* Removed obsolete workaround for layer2 writes from interrupt routine.
+* .TXT2BAS v1.4: Added -a (--always-write) option to output .BAS even if there
+  were syntax errors (these are placed in commented-out lines).
+* Updated About screen credits.
+
+
 v2.06 2020-03-25
 ================
 * Improvements to sprite handling (with example usage programs found in
