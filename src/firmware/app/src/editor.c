@@ -573,7 +573,8 @@ void main()
 	// Honour the current scandoubler, 50/60Hz and scanline settings.
 	update_video_settings();
 
-	if ((mach_id & 0x0f) == (HWID_ZXNEXT & 0x0f))
+	if ( ((mach_id & 0x0f) == (HWID_ZXNEXT & 0x0f))
+		|| (mach_id == HWID_EMULATORS) )
 	{
 		peripherals = peripheralsNext;
 		itemsCount = itemsCountNext;

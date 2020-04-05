@@ -34,7 +34,7 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = "1.25";
+unsigned char * FW_version = "1.25a";
 
 // minimal required for this FW
 unsigned long minimal = 0x030103; // 03 01 03 = 3.01.03
@@ -298,7 +298,7 @@ void display_bootscreen()
 	vdp_gotoxy(1, 16);
 	vdp_prints("For video mode selection press:");
 	vdp_gotoxy(1, 17);
-	vdp_prints("A=all, D=Digital, V=VGA, R=RGB");
+	vdp_prints("A=All, D=Digital, V=VGA, R=RGB");
 
 	vdp_gotoxy(15, 21);
 	vdp_prints("Firmware v");
