@@ -33,6 +33,8 @@ struct opt
    unsigned char *outname;   // output filename (NULL = none)
    unsigned char  mem;       // writing to memory if non-zero, mem=1 for current 64k, mem=2 for zx next linearized
    unsigned long  memaddr;   // destination memory address
+   
+   unsigned char  verbose;   // print informational messages
 };
 
 struct opt options;          // all initialized to zero
@@ -74,6 +76,23 @@ int error(char *fmt, ...)
    
    ebuf[strlen(ebuf) - 1] += 0x80;  
    return (int)ebuf;
+}
+
+// qualified printf
+
+int q_printf(char *fmt, ...)
+{
+   va_list v;
+   va_start(v, fmt);
+
+   if (options.verbose)
+#ifdef __SCCZ80
+      return vprintf(va_ptr(v,char *), v);
+#else
+      return vprintf(fmt, v);
+#endif
+   else
+      return 0;
 }
 
 // hex dump
@@ -125,7 +144,7 @@ void cleanup(void)
    if (fin != 0xff) esx_f_close(fin);
    if (fout != 0xff) esx_f_close(fout);
    
-   puts("    ");
+   q_printf("    \n");
    
    ZXN_NEXTREGA(REG_TURBO_MODE, old_cpu_speed);
 }
@@ -133,6 +152,9 @@ void cleanup(void)
 // bank 8k page into mmu2
 // return non-zero if successful
 
+extern unsigned char page_present(unsigned long address) __z88dk_fastcall;
+
+/*
 unsigned char page_present(unsigned long address)
 {
    unsigned char p;
@@ -142,19 +164,19 @@ unsigned char page_present(unsigned long address)
    
    if ((p = zxn_page_from_addr(address)) > (unsigned char)__ZXNEXT_LAST_PAGE)
       return 0;
-   
+
    // page in bank and test for presence
    
    ZXN_WRITE_REG(mmu_reg, p);
 
-   p = z80_bpeek(mmu_addr);
-   z80_bpoke(mmu_addr, ~p);
-   
-   q = z80_bpeek(mmu_addr);
-   z80_bpoke(mmu_addr, p);
+   p = *mmu_addr;
+   *mmu_addr = ~p;
+   q = *mmu_addr;
+   *mmu_addr = p;
    
    return q == (unsigned char)(~p);
 }
+*/
 
 // program starts
 
@@ -176,14 +198,14 @@ int main(int argc, char **argv)
    // initialization
 
    old_cpu_speed = ZXN_READ_REG(REG_TURBO_MODE);
-   ZXN_NEXTREG(REG_TURBO_MODE, RTM_14MHZ);
+   ZXN_NEXTREG(REG_TURBO_MODE, 3);
    
    atexit(cleanup);
    
    // determine which mmu slot to use for paging
    
    mmu_reg = extract_get_mmu() + REG_MMU0;
-   mmu_addr = (void *)zxn_addr_from_page(mmu_reg - REG_MMU0);
+   mmu_addr = (void *)zxn_addr_from_mmu(mmu_reg - REG_MMU0);
 
    // find out screen column width
    // esxdos ruled out by crt
@@ -201,6 +223,8 @@ int main(int argc, char **argv)
       
       if (!stricmp(p, "-f"))
          options.force = 1;
+      else if (!stricmp(p, "-v"))
+         options.verbose = 1;
       else if (!stricmp(p, "-o") || !stricmp(p, "-a"))
       {
          if (options.outname != NULL)
@@ -231,7 +255,7 @@ int main(int argc, char **argv)
          if (*(p + 2) == 'p')
             options.memaddr *= 0x2000U;   // 8k page number given
 
-         if (((options.mem == 1) && (options.memaddr & 0xffff0000UL)) || ((options.mem == 2) && ((options.memaddr >> 12) > __ZXNEXT_LAST_PAGE)))
+         if (((options.mem == 1) && (options.memaddr & 0xffff0000UL)) || ((options.mem == 2) && ((options.memaddr >> 13) > __ZXNEXT_LAST_PAGE)))
             return error("%s: Out of range", p);
       }
       else if ((*p == '+') || (*p == '-'))
@@ -267,7 +291,7 @@ int main(int argc, char **argv)
       *dzx7_standard(help, buffer) = 0;
       puts(buffer);
       
-      return 0;
+      return ESX_EOK;  // treated as an error message by esxdos
    }
    
    options.inname = argv[1];
@@ -346,7 +370,7 @@ int main(int argc, char **argv)
             return error("%u: Error writing file", errno);
          
          transferred += size;
-         printf("%03u%%" "\x08\x08\x08\x08", (unsigned int)(transferred * 100 / transfer_size));
+         q_printf("%03u%%" "\x08\x08\x08\x08", (unsigned int)(transferred * 100 / transfer_size));
       }
       
       // write to 64k memory
@@ -398,16 +422,15 @@ int main(int argc, char **argv)
             memcpy((void*)((unsigned int)(options.memaddr & 0x1fff) + mmu_addr), buffer, max);
             options.memaddr += max;
          }
-         
+
          ZXN_WRITE_REG(mmu_reg, mmu_state);
          
          if (tmp)
          {
             options.mem = 0;
-            printf("Stopped at page %u (%lu bytes)\n", (unsigned int)(zxn_page_from_addr(options.memaddr)), total);
+            q_printf("Stopped at page %u (%lu bytes)\n", (unsigned int)(zxn_page_from_addr(options.memaddr)), total);
             
-            if (fout == 0xff)
-               break;
+            return error("4 Out of Memory");
          }
       }
 

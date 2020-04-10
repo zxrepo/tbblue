@@ -1,7 +1,7 @@
 .extract file [+off][-off][len]
  [-f] [-o file] [-a file]
  [-m addr] [-ml linaddr]
- [-mp pnum] [-mb bnum]
+ [-mp pnum] [-mb bnum] [-v]
 
 input:
   file = input file
@@ -20,4 +20,4 @@ output:
 
 no -o,-a,-m* generates hexdump
 
-extract v1.3 zx-next z88dk
+extract v1.4 zx-next z88dk
