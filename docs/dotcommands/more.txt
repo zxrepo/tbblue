@@ -1,4 +1,4 @@
-.MORE dot command v. 1.0
+.MORE dot command v. 1.1
 
 by Marco Varesio
 https://retrobits.altervista.org
@@ -15,6 +15,7 @@ Options (available only in 128K NextZXOS mode):
 		-64  force  64 columns mode
 		-85  force  85 columns mode
 		-128 force 128 columns mode
+        -h   ignore PLUS3DOS header
 
 Commands:
 		8/RIGHT/ENTER:   next page
@@ -23,8 +24,11 @@ Commands:
 
 History:
 
+1.1 2020-04-13
+    do not show PLUS3DOS header (Next version)
+
 1.0 2019-12-02
-    Runs at 28MHz
+    Runs at 28MHz (Next version)
 
 0.9 2019-04-06
     Maintenance/bufgix release
