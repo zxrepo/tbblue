@@ -1,3 +1,34 @@
+v2.06B 2020-04-13
+=================
+* Fix for .Z80 snapshot loading where 0xED is the last byte in a block.
+* Fix IM2 usage in Next/+3 mode for games using 0xFF bytes in ROM as IM2 table.
+* Fix for calculator bug introduced in v2.06 (negative integers multiplied by
+  zero gave -1E-38 instead of zero).
+* Fix for accuracy of DEC_TO_FP routine in ROM3.
+* Ensure Pentagon 512 mode is disabled at reset.
+* Fix for editor incorrectly suppressing spaces surrounding UDGs in strings.
+* Added hint to .CPM that CPM-A.P3D may need defragmenting if mount fails.
+* Improved performance of .ASSOCIATE, .BAS2TXT, .TXT2BAS, .MKSWAP, .MKDATA,
+  .DEFRAG and .BROWSE by running at 28MHz instead of 14MHz.
+* Fixed problem with editor in 32/64-column modes where the maximum line length
+  supportable was considerably shorter than needed since not all the offscreen
+  buffers were fully utilised.
+* Added limit of 1280 chars (1.25K) of text for a single program line (including
+  line number digits and terminating ENTER) to ensure editor can always
+  properly edit a line. This is enforced by the editor, LINE MERGE and .txt2bas.
+* Fixed TAP/TZX/tape loads in Next/+3 mode to execute from a direct command
+  instead of a program line, preventing spurious problems such as "Statement
+  lost" when loading non-autorunning programs.
+* Fixed crash after dot commands caused errors during channel i/o.
+* Fixed .ASSOCIATE, .BAS2TXT, .TXT2BAS and .BROWSE to generate correct standard
+  errors when they occur (eg during channel i/o).
+* Fixed lower-screen/tape tester/main menu background colours to use the editor
+  colours instead of BASIC colours (broken by v2.05).
+* Fixed typo causing RAM7 to be overwritten during legacy ROM installation,
+  leading to .SNA files not being correctly closed after loading.
+* Updated About screen credits.
+
+
 v2.06A 2020-03-30
 =================
 * LET is now optional and can be omitted.

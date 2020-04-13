@@ -5,6 +5,7 @@
 
 Z80N    equ     1
 include "macros.def"
+include "nexthw.def"
 
 macro call48k,address
         rst     $18
@@ -52,22 +53,9 @@ ide_tokeniser           equ     $01d8           ; tokenisation
 RECLAIM_2               equ     $19e8           ; reclaim BC bytes at HL
 
 ; System variables
+RAMRST                  equ     $5b5d
 E_LINE                  equ     $5c59           ; address of line being edited
 STKBOT                  equ     $5c63           ; end of workspace area
-
-; Next Registers
-next_reg_select         equ     $243b
-next_reg_access         equ     $253b
-nxr_turbo               equ     $07
-nxr_mmu0                equ     $50
-nxr_mmu1                equ     $51
-nxr_mmu2                equ     $52
-nxr_mmu3                equ     $53
-nxr_mmu4                equ     $54
-nxr_mmu5                equ     $55
-nxr_mmu6                equ     $56
-nxr_mmu7                equ     $57
-turbo_max               equ     2
 
 
 ; ***************************************************************************
@@ -120,7 +108,7 @@ got_mmuid:
         ex      de,hl
         sbc     hl,de                   ; check version number
         jr      c,bad_nextzxos
-        ld      hl,error_handler
+        ld      hl,stderr_handler
         callesx m_errh                  ; install error handler to reset turbo
         call    allocate_bank
         ld      (bank_input),a          ; allocate the input buffer bank
@@ -198,6 +186,7 @@ err_custom:
 
 error_handler:
         ld      sp,(saved_sp)           ; restore entry SP
+restore_all:
         push    af
         push    hl
         call    unbind_io_bank          ; restore bank originally bound to MMU
@@ -209,6 +198,22 @@ error_handler:
         pop     hl
         pop     af
         ret
+
+
+; ***************************************************************************
+; * Error handler for standard BASIC errors                                 *
+; ***************************************************************************
+; This handler is entered if a standard BASIC error occurs during a call to
+; ROM3.
+
+stderr_handler:
+        call    restore_all             ; restore entry conditions
+        ld      h,a
+        ld      l,$cf                   ; RST8 instruction
+        ld      (RAMRST),hl             ; store RST8;error in sysvars
+        ld      hl,0
+        callesx m_errh                  ; disable error handler
+        call48k RAMRST                  ; generate the BASIC error
 
 
 ; ***************************************************************************
@@ -1491,7 +1496,7 @@ option_always_write:
 ; TAB 32 used within help message so it is formatted wide in 64/85 column mode.
 msg_help:
 ;                01234567890123456789012345678901
-        defm    "TXT2BAS v1.4 by Garry Lancaster",$0d
+        defm    "TXT2BAS v1.5 by Garry Lancaster",$0d
         defm    "Convert text file to BASIC",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    ".TXT2BAS [OPT] TXTFILE [BASFILE]",$0d,$0d

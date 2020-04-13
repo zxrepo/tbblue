@@ -4,6 +4,7 @@
 
 Z80N    equ     1
 include "macros.def"
+include "nexthw.def"
 
 macro call48k,address
         rst     $18
@@ -45,11 +46,8 @@ esx_mode_creat_trunc    equ     $0c             ; create new, delete existing
 BC_SPACES_r3            equ     $0030           ; allocate workspace
 PR_STRING_r3            equ     $203c           ; print string DE,BC
 
-; Next Registers
-next_reg_select         equ     $243b
-next_reg_access         equ     $253b
-nxr_turbo               equ     $07
-turbo_max               equ     2
+; System variables
+RAMRST                  equ     $5b5d
 
 
 ; ***************************************************************************
@@ -92,7 +90,7 @@ associate_init:
         ex      de,hl
         sbc     hl,de                   ; check version number >= 1.99
         jr      c,bad_nextzxos
-        ld      hl,error_handler
+        ld      hl,stderr_handler
         callesx m_errh                  ; install error handler to reset turbo
         pop     hl                      ; restore address of arguments
         ; drop through to parse_arguments
@@ -138,11 +136,28 @@ err_custom:
 
 error_handler:
         ld      sp,(saved_sp)           ; restore entry SP
+restore_all:
         push    af
         ld      a,(saved_turbo)
         nxtrega nxr_turbo               ; restore entry turbo setting
         pop     af
         ret
+
+
+; ***************************************************************************
+; * Error handler for standard BASIC errors                                 *
+; ***************************************************************************
+; This handler is entered if a standard BASIC error occurs during a call to
+; ROM3.
+
+stderr_handler:
+        call    restore_all             ; restore entry conditions
+        ld      h,a
+        ld      l,$cf                   ; RST8 instruction
+        ld      (RAMRST),hl             ; store RST8;error in sysvars
+        ld      hl,0
+        callesx m_errh                  ; disable error handler
+        call48k RAMRST                  ; generate the BASIC error
 
 
 ; ***************************************************************************
@@ -891,7 +906,7 @@ bad_ext_char:
 
 ; TAB 32 used within help message so it is formatted wide in 64/85 column mode.
 msg_help:
-        defm    "ASSOCIATEv1.0 by Garry Lancaster",$0d
+        defm    "ASSOCIATEv1.1 by Garry Lancaster",$0d
         defm    "Manage Browser file associations",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    " .ASSOCIATE [OPTION]",$0d,$0d

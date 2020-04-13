@@ -6,6 +6,7 @@
 
 Z80N    equ     1
 include "macros.def"
+include "nexthw.def"
 
 macro call48k,address
         rst     $18
@@ -55,11 +56,6 @@ esx_seek_set            equ     $00             ; set fileposition
 
 ; Errors
 esx_eio                 equ     6
-
-; ZX Next registers
-next_reg_select         equ     $243b
-nxr_turbo               equ     $07
-turbo_max               equ     2
 
 ; Definitions
 filemap_size            equ     2               ; must be at least 2 to detect

@@ -1204,10 +1204,14 @@ msg_vthelp:     ;12345678901234567890123456789012345678901234567890
 
 msg_cpmfail:    ;01234567890123456789012345678901
         defm    $0d
-        defm    "ERROR loading CP/M. Please",$0d
-        defm    "ensure you have the latest",$0d
-        defm    "CPMBASE.P3D in C:/NEXTZXOS, and",$0d
-        defm    "remove any invalid CPM-A.P3D.",$0d,0
+        defm    "ERROR loading CP/M. You may need",$0d
+        defm    "to defragment the system file",$0d
+        defm    "C:/NEXTZXOS/CPM-A.P3D using the",$0d
+        defm    ".DEFRAG command.",$0d,$0d
+        defm    "Otherwise, please ensure that",$0d
+        defm    "you have the latest CPMBASE.P3D",$0d
+        defm    "in C:/NEXTZXOS, and remove any",$0d
+        defm    "invalid CPM-A.P3D.",$0d,0
 
 msg_oldloader:
         defm    $0d,$0d
@@ -1254,9 +1258,12 @@ msg_readerr:
 msg_halted:
         defm    $0d,$0a,$0a
                 ;1234567890123456789012345678901234567890
-        defm    "CP/M could not be started. Please ensure"
-        defm    " you have the latest CPMBASE.P3D in",$0d,$0a
-        defm    "C:/NEXTZXOS, and remove any invalid CPM-A.P3D.",$0d,$0a,0
+        defm    "CP/M could not be started. You may need",$0d,$0a
+        defm    "to defragment C:/NEXTZXOS/CPM-A.P3D",$0d,$0a
+        defm    "using the .DEFRAG command. Otherwise,",$0d,$0a
+        defm    "Please ensure you have the latest",$0d,$0a
+        defm    "CPMBASE.P3D in C:/NEXTZXOS, and remove",$0d,$0a
+        defm    "any invalid CPM-A.P3D.",$0d,$0a,0
 
 ; Filenames of CPM3 system files.
 msg_biosfile:
