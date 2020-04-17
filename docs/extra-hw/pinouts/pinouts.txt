@@ -4,10 +4,11 @@ ZX Spectrum Next Conn. Pinouts
 Author:  Phoebus R. Dokos
 Date:	 2018-09-24
 License: CC BY-NC-SA
-Version: 1.7
+Version: 1.8
 
 Changelog
 ---------
+2020-04-17: 1.8 Added info for RGB connector usage (Robin Verhaguen-Guest)
 2020-04-17: 1.7 Changed impedance for speaker (thanks to Simon N. Goodwin)
 2019-10-14: 1.6 Modified J15 for new keyboard lines
 2019-10-14: 1.5 Modified CN4 EDGE
