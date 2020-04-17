@@ -121,7 +121,7 @@ N/C--------------------|
  
 Notes: Pins 6,7,8,9,10,& 5 are all GND
        In VGA mode, H-SYNC and V-SYNC are carried separately
-       In RGB mode, H-SYNC carries composite sync, and V-SYNC carries 1
+       In RGB mode, H-SYNC carries composite sync, and V-SYNC carries 1 (3.3V)
 
 
 
