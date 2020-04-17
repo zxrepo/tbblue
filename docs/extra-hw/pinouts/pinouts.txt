@@ -4,10 +4,11 @@ ZX Spectrum Next Conn. Pinouts
 Author:  Phoebus R. Dokos
 Date:	 2018-09-24
 License: CC BY-NC-SA
-Version: 1.4
+Version: 1.7
 
 Changelog
 ---------
+2020-04-17: 1.7 Changed impedance for speaker (thanks to Simon N. Goodwin)
 2019-10-14: 1.6 Modified J15 for new keyboard lines
 2019-10-14: 1.5 Modified CN4 EDGE
 2018-09-25: 1.4 Added CN4 EDGE
@@ -88,7 +89,7 @@ ___________________
     
 Accepts:
 a. Standard PC Piezo speaker -or-
-b.  20 - 25mm magnet, impedance 8 - 16 ohm
+b.  20 - 25mm magnet, impedance >=24 ohms
 
 Pin 1 or 2 = negative, pin 3 or 4 = positive for Piezo type. 
 For normal coned type speaker the polarity does not matter.
