@@ -1,3 +1,10 @@
+v2.06C 2020-04-18
+=================
+* Added support for non-standard .Z80 hardware type 12 (+2) used by FUSE and
+  possibly other emulators. Fixes a .Z80 snapshot of Football Manager Revisited
+  seen in the wild.
+
+
 v2.06B 2020-04-13
 =================
 * Fix for .Z80 snapshot loading where 0xED is the last byte in a block.
