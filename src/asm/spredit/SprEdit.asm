@@ -111,13 +111,25 @@ F_GET_DIR    equ $a8
 F_SET_DIR    equ $a9
 FA_READ      equ $01
 FA_APPEND    equ $06
-FA_OVERWRITE equ $0E
+FA_OVERWRITE equ $0C
 
 TBBLUE_REGISTER_SELECT			equ $243B
 TBBLUE_REGISTER_ACCESS			equ $253B
 
-TURBO_CONTROL_REGISTER			equ $07		;Turbo mode 0=3.5Mhz, 1=7Mhz, 2=14Mhz
+TURBO_CONTROL_REGISTER			equ $07		;Turbo mode 0=3.5Mhz, 1=7Mhz, 2=14Mhz 3=28Mhz
 SPRITE_CONTROL_REGISTER			equ $15		;Enables/disables Sprites and Lores Layer, and chooses priority of sprites and Layer 2.
+SPRITE_SELECT_REGISTER			equ $34
+SPRITE_X_VALUE_REGISTER			equ $35
+SPRITE_Y_VALUE_REGISTER			equ $36
+SPRITE_X_MSB_AND_FLIP_REGISTER	equ $37
+SPRITE_PATTERN_ENABLE_REGISTER	equ $38
+SPRITE_ATTRIBUTES_REGISTER		equ $39
+SPRITE_X_VALUE_REGISTER_INC		equ $75
+SPRITE_Y_VALUE_REGISTER_INC		equ $76
+SPRITE_X_MSB_AND_FLIP_REGISTER_INC	equ $77
+SPRITE_PATTERN_ENABLE_REGISTER_INC	equ $78
+SPRITE_ATTRIBUTES_REGISTER_INC		equ $79
+
 RASTER_LINE_MSB_REGISTER		equ $1E
 RASTER_LINE_LSB_REGISTER		equ $1F
 PALETTE_INDEX_REGISTER			equ $40		;Chooses a ULANext palette number to configure.
@@ -140,39 +152,9 @@ GRAPHIC_PRIORITIES_SUL	= %00001000
 GRAPHIC_PRIORITIES_LUS	= %00001100
 GRAPHIC_PRIORITIES_USL	= %00010000
 GRAPHIC_PRIORITIES_ULS	= %00010100
-GRAPHIC_OVER_BORDER	= %00000010
+GRAPHIC_OVER_BORDER		= %00000010
 GRAPHIC_SPRITES_VISIBLE	= %00000001
-LORES_ENABLE		= %10000000
-
-	MACRO MUL_DE:dw $30ED:ENDM
-	MACRO PIXELAD:dw $94ED:ENDM
-	MACRO PIXELDN:dw $93ED:ENDM
-
-	MACRO SWAPNIB: dw $23ED: ENDM
-	MACRO ADD_HL_A: dw $31ED: ENDM
-	MACRO ADD_DE_A: dw $32ED: ENDM
-	MACRO ADD_BC_A: dw $33ED: ENDM
-	MACRO ADD_HL_nnnn data: dw $34ED: dw data: ENDM
-	MACRO ADD_DE_nnnn data: dw $35ED: dw data: ENDM
-	MACRO ADD_BC_nnnn data: dw $36ED: dw data: ENDM
-
-	MACRO SetSpriteControlRegister:NEXTREG_A SPRITE_CONTROL_REGISTER:ENDM
-
-	MACRO Set14mhz:NEXTREG_nn TURBO_CONTROL_REGISTER,%10:ENDM
-
-	MACRO BREAK:dw $01DD:ENDM
-
-; Set Next hardware register using A
-	MACRO NEXTREG_A register
-	dw $92ED
-	db register
-	ENDM
-; Set Next hardware register using an immediate value
-	MACRO NEXTREG_nn register, value
-	dw $91ED
-	db register
-	db value
-	ENDM
+LORES_ENABLE			= %10000000
 
 ;-------------------------------
 
@@ -185,9 +167,10 @@ start
 
 	org	$2000
 start
-	ld de,filename:ld b,255
-	ld a,h:or l:jp z,noname
-.bl	ld	a,(hl):cp ":":jr z,.dn:or a:jr z,.dn:cp 13:jr z,.dn:bit 7,a:jr nz,.dn
+	ld	de,filename:ld b,64
+	ld	a,h:or l:jp z,noname
+.bl	ld	a,(hl):cp '"':jr nz,.nq:inc hl:jr .bl
+.nq	cp	":":jr z,.dn:or a:jr z,.dn:cp 13:jr z,.dn:bit 7,a:jr nz,.dn
 	ld	(de),a:inc hl:inc de:djnz .bl
 .dn	xor a:ld	(de),a
 	ld	(stackptr),sp:ld sp,$3fff
@@ -198,33 +181,33 @@ start
 	ld bc,$243b:ld a,MMU_REGISTER_5:out (c),a:inc b:in a,(c):ld (reg5+1),a
 	ld bc,$243b:ld a,MMU_REGISTER_6:out (c),a:inc b:in a,(c):ld (reg6+1),a
 	ld bc,$243b:ld a,MMU_REGISTER_7:out (c),a:inc b:in a,(c):ld (reg7+1),a
-	NEXTREG_nn MMU_REGISTER_4,40
-	NEXTREG_nn MMU_REGISTER_5,41
-	NEXTREG_nn MMU_REGISTER_6,42
-	NEXTREG_nn MMU_REGISTER_7,43
+	nextreg MMU_REGISTER_4,40
+	nextreg MMU_REGISTER_5,41
+	nextreg MMU_REGISTER_6,42
+	nextreg MMU_REGISTER_7,43
 	
-	Set14mhz
+	nextreg TURBO_CONTROL_REGISTER,3
 	call DecompressEditorSprites
-
+	ld hl,$8000:ld de,$8001:ld bc,$3fff:ld a,(e3col):ld (hl),a:ldir
 	call setdrv:ld ix,filename:ld a,(ix+0):or a:call nz,loadto8000
 
 	ld hl,nextpal:ld c,0
 .pp	ld (hl),c:inc hl:ld a,c:rra:and 1:ld (hl),a:inc hl:inc c:jr nz,.pp
-	ld hl,filename:ld de,palname:call changeext
-	ld ix,palname:ld a,(ix+0):or a:jr z,.sp
+	ld hl,filename:ld de,palext:call changeext:jr nz,.sp
+	ld ix,filename:ld a,(ix+0):or a:jr z,.sp
 	call fopen:jr c,.sp
-	ld ix,nextpal:ld bc,$200:call fread
+	ld ix,nextpal:ld bc,$200:call dofread
 	call fclose
 	ld hl,nextpal:ld c,0:ld b,0
 .sc	ld a,(hl):inc hl:inc hl:cp $e3:jr nz,.ne:ld b,c
 .ne	inc c:jr nz,.sc
-	ld hl,nextpal:ld a,b:ld c,a:ld b,0:ld (e3col),a:add hl,bc:ld (hl),$e3
+	ld hl,nextpal:ld a,b:ld (e3col),a:add hl,a:ld (hl),$e3
 .sp
-	NEXTREG_nn PALETTE_CONTROL_REGISTER,%10000
-	NEXTREG_nn PALETTE_INDEX_REGISTER, 	0
+	nextreg PALETTE_CONTROL_REGISTER,%10000
+	nextreg PALETTE_INDEX_REGISTER, 	0
 	ld	hl,nextpal:ld b,0
-.pl	ld a,(hl):inc hl:NEXTREG_A PALETTE_VALUE_BIT9_REGISTER
-	ld a,(hl):inc hl:NEXTREG_A PALETTE_VALUE_BIT9_REGISTER
+.pl	ld a,(hl):inc hl:nextreg PALETTE_VALUE_BIT9_REGISTER,a
+	ld a,(hl):inc hl:nextreg PALETTE_VALUE_BIT9_REGISTER,a
 	djnz .pl
 
 	ld	de,$0000
@@ -246,16 +229,16 @@ finish
 	ld	hl,$4000:ld de,$4001:ld bc,$1800:ld (hl),l:ldir:ld bc,$2ff:ld (hl),$38:ldir
 	ld	bc,4667:xor a:out (c),a
 	call sproff
-	ld a,4:NEXTREG_A MMU_REGISTER_4
-	ld a,5:NEXTREG_A MMU_REGISTER_5
-	ld a,($5b5c):and 7:add a,a:NEXTREG_A MMU_REGISTER_6:inc a:NEXTREG_A MMU_REGISTER_7
-;	ld a,0:NEXTREG_A MMU_REGISTER_6
-;	ld a,1:NEXTREG_A MMU_REGISTER_7
+	ld a,4:nextreg MMU_REGISTER_4,a
+	ld a,5:nextreg MMU_REGISTER_5,a
+	ld a,($5b5c):and 7:add a,a:nextreg MMU_REGISTER_6,a:inc a:nextreg MMU_REGISTER_7,a
+;	ld a,0:nextreg MMU_REGISTER_6,a
+;	ld a,1:nextreg MMU_REGISTER_7,a
 	ld sp,(stackptr):ei:xor a:ret
-reg4 ld a,0:NEXTREG_A MMU_REGISTER_4
-reg5 ld a,0:NEXTREG_A MMU_REGISTER_5
-reg6 ld a,0:NEXTREG_A MMU_REGISTER_6
-reg7 ld a,0:NEXTREG_A MMU_REGISTER_7
+reg4 ld a,0:nextreg MMU_REGISTER_4,a
+reg5 ld a,0:nextreg MMU_REGISTER_5,a
+reg6 ld a,0:nextreg MMU_REGISTER_6,a
+reg7 ld a,0:nextreg MMU_REGISTER_7,a
 	ld sp,(stackptr):ei:xor a:ret
 
 noname
@@ -268,29 +251,81 @@ noname
 	xor a:ret
 
 changeext
-	ld a,(hl):inc hl:ld (de),a:inc de:or a:jr nz,changeext
-	dec	de
-	dec de:ld a,(de):cp ".":jr z,.got
-	dec de:ld a,(de):cp ".":jr z,.got
-	dec de:ld a,(de):cp ".":jr z,.got
-	dec de:ld a,(de):cp ".":jr z,.got
-	xor a:ld (palname),a
+	ld a,(hl):inc hl:or a:jr nz,changeext
+	dec	hl
+	dec hl:ld a,(hl):cp ".":jr z,.got
+	dec hl:ld a,(hl):cp ".":jr z,.got
+	dec hl:ld a,(hl):cp ".":jr z,.got
+	dec hl:ld a,(hl):cp ".":jr z,.got
 	ret
-.got ld hl,nxp:inc de
-.gl ld a,(hl):ld (de),a:inc hl:inc de:or a:jr nz,.gl:ret
-nxp	db "nxp",0
+.got inc hl
+.gl ld a,(de):ld (hl),a:inc de:inc hl:or a:jr nz,.gl:ret
 
+palext	db 	"pal",0
+sprext	db	"spr",0
+
+;-------------------------------
+
+;IDE_BANK	equ $01bd
+;
+;NEXTOS_RAM	equ	$0000
+;MMC_RAM		equ $0100
+;
+;NEXTOS_BANK_REASON_TOTAL		=	0
+;NEXTOS_BANK_REASON_ALLOCATE		=	1
+;NEXTOS_BANK_REASON_RESERVE		=	2
+;NEXTOS_BANK_REASON_FREE			=	3
+;NEXTOS_BANK_REASON_AVAILABLE	=	0
+;
+;NumBanksUsed	db	4
+;AllocatedBank	db	0
+;AllocatedBanks	db	0,0,0,0
+;
+;AllocateBanks
+;	ld hl,AllocatedBanks:ld a,(NumBanksUsed):ld b,a
+;.lp	push hl:push bc:call AllocateBank:pop bc:pop hl:jp nc,mallocerr:ld (hl),a:inc hl:djnz .lp
+;	xor a
+;	ret
+;
+;FreeBanks
+;	ld hl,AllocatedBanks:ld a,(NumBanksUsed):ld b,a
+;.lp	push hl:push bc:ld a,(hl):inc hl:call FreeBank:pop bc:pop hl:djnz .lp
+;	ret
+;
+; H=banktype (ZX=0, 1=MMC); L=reason (1=allocate)*
+;AllocateBank
+;	exx:ld hl,NEXTOS_BANK_REASON_ALLOCATE:exx	;If you want a specific bank ID, you can change L to $02 (reserve) and provide the bank number you want in E
+;	ld c,7:ld de,IDE_BANK:rst $8:defb $94		; M_P3DOS
+;	ld (AllocatedBank),a:ret					;If successful (carry SET), returns 8K bank id in A
+;FreeBank
+;	exx:ld hl,NEXTOS_BANK_REASON_FREE:exx	;If you want a specific bank ID, you can change L to $02 (reserve) and provide the bank number you want in E
+;	ld c,7:ld de,IDE_BANK:rst $8:defb $94		; M_P3DOS
+;	ret
+;HowManyAvailable
+;	exx:ld hl,NEXTOS_BANK_REASON_AVAILABLE:exx	;If you want a specific bank ID, you can change L to $02 (reserve) and provide the bank number you want in E
+;	ld c,7:ld de,IDE_BANK:rst $8:defb $94		; M_P3DOS
+;	ret
+;HowManyTotal
+;	exx:ld hl,NEXTOS_BANK_REASON_TOTAL:exx		;If you want a specific bank ID, you can change L to $02 (reserve) and provide the bank number you want in E
+;	ld c,7:ld de,IDE_BANK:rst $8:defb $94		; M_P3DOS
+;	ret
+;
+;mallocerr
+;	scf
+;	ret
+;
 ;-------------------------------
 
 savefile	push hl:push bc:call fcreate:pop bc:pop ix:jr c,failsave:push bc:call fwrite:pop de:ld a,c:cp e:jr nz,failsave:ld a,b:cp d:jr nz,failsave:call fclose:xor a:ret
 failsave	scf:ret
-loadto8000	call fopen:ld a,(handle):or a:ret z:ld ix,$8000:ld bc,$4000:call fread:jp fclose
-;loadspr	push de:call fopen:pop de:ld a,(handle):or a:ret z
-;		ld bc,$303b:out (c),e
-;.lp		push de:ld ix,SPRBUF256:ld bc,$100:call fread:pop de:ld a,b:or c:jp z,fclose
-;		ld hl,SPRBUF256:ld bc,SPRITE_INFO_PORT
-;.lp2	ld	a,(hl):inc l:out (c),a:jr nz,.lp2
-;		inc e:ld a,e:cp 64:jp nc,fclose:jr .lp
+loadto8000	call fopen:ld a,(handle):or a:ret z:ld ix,$8000:ld bc,$4000:call dofread:jp fclose
+
+dofread		push bc:push ix:ld bc,128:call fread:pop hl:push hl
+			ld b,8:ld de,.plus3
+.lp			ld a,(de):cp (hl):jr nz,.skip:inc hl:inc de:djnz .lp
+			pop ix:pop bc:jp fread
+.skip		pop ix:ld bc,128:add ix,bc:pop bc:add bc,-128:jp fread
+.plus3		db "PLUS3DOS"
 ;--------------------
 
 sprint	pop hl:call prt:jp (hl)
@@ -301,13 +336,13 @@ prt		ld a,(hl):inc hl:or a:ret z:cp 32:jr c,.codes
 
 prthex16	ld a,h:call prthex8:ld a,l
 prthex8	push af:rra:rra:rra:rra:call prthex4:pop af
-prthex4	push hl:and 15:ld hl,.hex:ADD_HL_A:ld a,(hl):call prtchr:pop hl:ret
+prthex4	push hl:and 15:ld hl,.hex:add hl,a:ld a,(hl):call prtchr:pop hl:ret
 .hex	db	"0123456789ABCDEF"
 
 prtchr	push hl:push de:push bc
 		push af:PIXELAD:pop af
-		sub 32:ld e,a:ld d,8:MUL_DE:ADD_DE_nnnn font:ld b,8
-.lp		ld a,(de):inc de:ld (hl),a:PIXELDN:djnz .lp
+		sub 32:ld e,a:ld d,8:mul d,e:add de,font:ld b,8
+.lp		ld a,(de):inc de:ld (hl),a:pixeldn:djnz .lp
 		pop bc:pop de:pop hl:ld a,e:add a,8:ld e,a:ret
 
 WaitVertical192
@@ -373,16 +408,9 @@ DMAW	dw 0,0
 	db %01010100, %00000010, %01101000,%00000010,%10101101,$5b,%10000010,$cf,$87
 DMALen	equ $-DMA
 ;-------------
-filename	db	"test.spr"
-			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-
-palname		dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-			dw	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+filename	db	"cursor.spr"
+		db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+		db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 nextpal	db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 		db		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -411,36 +439,38 @@ scankeys	ld	a,%01111111:ld hl,oldkeys:ld de,newkeys:ld bc,debkeys
 ;-------------------------------
 
 stackptr	dw	0
-gameframe db	0
+gameframe	db	0
 sprnumber	db	0
-sprn			db	0
-spri			db	$00
-sprb			db	$00
+sprn		db	0
+spri		db	$00
+sprb		db	$00
 paper		db	$e3
 ink			db	$ff
 cursorx		db	0
 cursory		db	0
-mousex	db	0
-mousey	db	0
-omousex	db	0
-omousey	db	0
-nmousex	db	0
-nmousey	db	0
-mouseb	db	0
-omouseb	db	0
-mouseon	db	0
-rmousex	dw	0
-rmousey	dw	0
-dmousex	db	0
-dmousey	db	0
+mousex		db	0
+mousey		db	0
+omousex		db	0
+omousey		db	0
+nmousex		db	0
+nmousey		db	0
+mouseb		db	0
+omouseb		db	0
+mouseon		db	0
+rmousex		dw	0
+rmousey		dw	0
+dmousex		db	0
+dmousey		db	0
 
-e3col	db	$e3
+e3col		db	$e3
 
 animframe	db	0
 animtable	db	0,1,2,3,4,5,6,7
 animcount	db	0
 animtick	db	0
-animspd	db	4
+animspd		db	4
+
+copyID		db	0
 
 rangehl
 	bit 7,h:jr nz,.mi
@@ -449,7 +479,7 @@ rangehl
 .mi ld hl,0:ret
 
 editor
-	NEXTREG_nn  SPRITE_CONTROL_REGISTER,3	;Sprites Enabled and over border.
+	nextreg SPRITE_CONTROL_REGISTER,3	;Sprites Enabled and over border.
 
 	ld	de,$8000:xor a
 .l	push af:push de:call draw16x16:pop de:ld a,e:add a,16:ld e,a:jr nc,.s:ld a,d:add a,16:ld d,a
@@ -464,7 +494,7 @@ editlp
 	call scankeys
 	ld	hl,gameframe:inc (hl)
 	call WaitVertical192
-	xor  a:ld bc,$303b:out (c),a
+	nextreg SPRITE_SELECT_REGISTER,0
 	ld	a,(gameframe):rra:rra:and 1:ld (spri),a
 	
 	ld c,0
@@ -476,7 +506,7 @@ editlp
 	ld a,(cursorx):and $0f:add a,a:add a,a:add a,a:add a,$20-1:ld e,a:ld d,0:ld a,(cursory):and $0f:add a,a:add a,a:add a,a:add a,$20-1:ld l,a:ld bc,(spri):set 7,c:call SetSprite
 
 	ld	a,(paper):ld l,a:and $0f:add a,a:add a,a:add a,$e0:ld e,a:adc a,0:sub e:ld d,a:ld a,l:and $f0:rra:rra:add a,$20:ld l,a:ld b,0:ld a,(spri):add a,$82:ld c,a:call SetSprite
-	ld	a,(ink)    :ld l,a:and $0f:add a,a:add a,a:add a,$e0:ld e,a:adc a,0:sub e:ld d,a:ld a,l:and $f0:rra:rra:add a,$20:ld l,a:ld b,0:ld a,(spri):add a,$84:ld c,a:call SetSprite
+	ld	a,(ink):ld l,a:and $0f:add a,a:add a,a:add a,$e0:ld e,a:adc a,0:sub e:ld d,a:ld a,l:and $f0:rra:rra:add a,$20:ld l,a:ld b,0:ld a,(spri):add a,$84:ld c,a:call SetSprite
 
 	ld	de,(nmousex):ld (omousex),de
 	ld	a,(mouseb):ld (omouseb),a
@@ -568,7 +598,7 @@ editlp
 	ld	a,(animcount):or a:jr z,.ng:dec a:ld (animcount),a
 .ng
 	ld	a,(debkeys+KEY_H):and KEYAND_H:jr z,.nh
-	ld	a,(animcount):cp 8:jr z,.nh:ld hl,animtable:ADD_HL_A:ld a,(sprnumber):ld (hl),a:ld a,(animcount):inc a:ld (animcount),a
+	ld	a,(animcount):cp 8:jr z,.nh:ld hl,animtable:add hl,a:ld a,(sprnumber):ld (hl),a:ld a,(animcount):inc a:ld (animcount),a
 .nh
 
 	ld	a,(debkeys+KEY_Y):and KEYAND_Y:jr z,.ny
@@ -578,6 +608,20 @@ editlp
 	ld	a,(animspd):cp 31:jr z,.nt:inc a:ld (animspd),a
 .nt
 
+	ld	a,(newkeys+KEY_SYM):and KEYAND_SYM:jr z,.nsym
+	ld	a,(debkeys+KEY_C):and KEYAND_C:jr z,.ncopy
+	ld	a,(sprnumber):ld (copyID),a
+.ncopy
+	ld	a,(debkeys+KEY_V):and KEYAND_V:jr z,.npaste
+	ld	a,(copyID):and 63:or $80:ld h,a:ld l,0
+	ld	a,(sprnumber):and 63:or $80:ld d,a:ld e,0:ld bc,256:ldir:jp editor
+.npaste
+	ld	a,(debkeys+KEY_W):and KEYAND_W:jr z,.nwipe
+	ld	a,(sprnumber):and 63:or $80:ld h,a:ld l,0:ld d,a:ld e,1:ld bc,255:ld a,(e3col):ld (hl),a:ldir:jp editor
+.nwipe
+	jp	.symskip
+.nsym
+	ld a,(debkeys+KEY_7):and KEYAND_7:jr nz,.iup
 	ld a,(debkeys+KEY_Q):and KEYAND_Q+KEYAND_W+KEYAND_E:jr nz,.iup
 	ld	a,(gameframe):and 7:jr nz,.nup
 	ld a,(newkeys+KEY_Q):and KEYAND_Q+KEYAND_W+KEYAND_E:jr z,.nup
@@ -585,6 +629,7 @@ editlp
 	ld a,1:ld (zapgameframe),a
 	ld a,(cursory):dec a:and 15:ld (cursory),a
 .nup
+	ld a,(debkeys+KEY_6):and KEYAND_6:jr nz,.idn
 	ld a,(debkeys+KEY_Z):and KEYAND_Z+KEYAND_X+KEYAND_C:jr nz,.idn
 	ld	a,(gameframe):and 7:jr nz,.ndn
 	ld a,(newkeys+KEY_Z):and KEYAND_Z+KEYAND_X+KEYAND_C:jr z,.ndn
@@ -592,6 +637,7 @@ editlp
 	ld a,1:ld (zapgameframe),a
 	ld a,(cursory):inc a:and 15:ld (cursory),a
 .ndn
+	ld a,(debkeys+KEY_5):and KEYAND_5:jr nz,.gol
 	ld a,(debkeys+KEY_Q):and KEYAND_Q:jr nz,.gol:ld a,(debkeys+KEY_A):and KEYAND_A:jr nz,.gol:ld a,(debkeys+KEY_Z):and KEYAND_Z:jr nz,.gol
 	ld	a,(gameframe):and 7:jr nz,.nlt
 	ld a,(newkeys+KEY_Q):and KEYAND_Q:jr nz,.gol:ld a,(newkeys+KEY_A):and KEYAND_A:jr nz,.gol:ld a,(newkeys+KEY_Z):and KEYAND_Z:jr z,.nlt
@@ -599,6 +645,7 @@ editlp
 	ld a,1:ld (zapgameframe),a
 	ld a,(cursorx):dec a:and 15:ld (cursorx),a
 .nlt
+	ld a,(debkeys+KEY_8):and KEYAND_8:jr nz,.gor
 	ld a,(debkeys+KEY_E):and KEYAND_E:jr nz,.gor:ld a,(debkeys+KEY_D):and KEYAND_D:jr nz,.gor:ld a,(debkeys+KEY_C):and KEYAND_C:jr nz,.gor
 	ld	a,(gameframe):and 7:jr nz,.nrt
 	ld a,(newkeys+KEY_E):and KEYAND_E:jr nz,.gor:ld a,(newkeys+KEY_D):and KEYAND_D:jr nz,.gor:ld a,(newkeys+KEY_C):and KEYAND_C:jr z,.nrt
@@ -620,8 +667,10 @@ editlp
 	ld de,(cursorx):ld a,$e3:call setbyte
 .nb
 
+.symskip
 
-	ld e,1
+
+	ld	e,1
 	ld	a,(newkeys+KEY_CAPS):and KEYAND_CAPS:jr z,.nC
 	ld	e,16
 .nC
@@ -670,16 +719,20 @@ editlp
 .nl
 	ld	a,(debkeys+KEY_J):and KEYAND_J:jr z,.nj
 	ld 	a,(newkeys+KEY_CAPS):and KEYAND_CAPS:ld e,1:jr z,.ij:ld e,-1
-.ij	ld	a,(helppage):add a,e:and 7:ld (helppage),a:call showhelp
+.ij	ld	a,(helppage):add a,e:cp 9:jr nz,.n9:ld a,0
+.n9	cp	-1:jr nz,.m1:ld a,8
+.m1	ld	(helppage),a:call showhelp
 .nj
 
 	ld	a,(newkeys+KEY_CAPS):and KEYAND_CAPS:jr z,.ns
 	ld	a,(debkeys+KEY_S):and KEYAND_S:jr z,.ns
 	ld	hl,savetext:call prt
 	ld	a,20:ld bc,$303b:out (c),a:ld a,(cursorx):and $0f:add a,a:add a,a:add a,a:add a,$20-2:ld e,a:ld d,0:ld a,(cursory):and $0f:add a,a:add a,a:add a,a:add a,$20-1:ld l,a:ld bc,$0087:call SetSprite
+	ld	hl,filename:ld de,sprext:call changeext
 	ld	ix,filename:ld hl,$8000:ld bc,$4000:call savefile:ld hl,saveFailtext:jr c,.ds
-	ld	ix,palname:ld hl,saveOktext:ld a,(ix+0):or a:jr z,.ds:ld hl,nextpal:ld bc,$200:call savefile:ld hl,saveFailtext:jr c,.ds:ld hl,saveOktext
-.ds	call prt:call pausekey:call showhelp
+	ld	hl,filename:ld de,palext:call changeext:ld hl,saveOktext:jr nz,.ds
+	ld	ix,filename:ld hl,nextpal:ld bc,$200:call savefile:ld hl,saveFailtext:jr c,.ds:ld hl,saveOktext
+.ds	call prt:call pausekey:call showhelp:call sproff
 .ns
 
 	db	62
@@ -701,10 +754,10 @@ zapgameframe db	0:or a:jr z,.nz
 showhelp
 	db	62
 helppage	db	0
-	and 7:add a,a:ld hl,helptexts:ADD_HL_A:ld a,(hl):inc hl:ld h,(hl):ld l,a:jp prt
+	add a,a:ld hl,helptexts:add hl,a:ld a,(hl):inc hl:ld h,(hl):ld l,a:jp prt
 	
 helptexts
-	dw	helptext0,helptext1,helptext2,helptext3,helptext4,helptext5,helptext6,helptext7
+	dw	helptext0,helptext1,helptext2,helptext3,helptext4,helptext5,helptext6,helptext7,helptext8
 
 helptext0
 	db	22,16*8,10*8,"Sprite Editor   "
@@ -778,6 +831,15 @@ helptext7
 	db	22,16*8,15*8,"editor.         "
 	db	0
 
+helptext8
+	db	22,16*8,10*8,"Help : Cpy+Paste "
+	db	22,16*8,11*8,"----------------"
+	db	22,16*8,12*8,"Symbol Shift    "
+	db	22,16*8,13*8,"+ C to copy spr "
+	db	22,16*8,14*8,"+ V to paste spr"
+	db	22,16*8,15*8,"+ W to wipe spr "
+	db	0
+
 savetext
 	db	22,16*8,10*8,"Saving          "
 	db	22,16*8,11*8,"----------------"
@@ -828,7 +890,12 @@ setbyte
 ;-------------------------------
 ;DE = Xpos    L = Ypos     B = sprite bits    C = Sprite image      sprite number already out to $303b
 SetSprite
-	push hl:push bc:push bc:ld bc,$0057:out (c),e:out (c),l:pop hl:ld a,d:and 1:or h:out(c),a:out(c),l:pop bc:pop hl:ret
+	xor a:nextreg SPRITE_PATTERN_ENABLE_REGISTER,a
+	ld a,e:nextreg SPRITE_X_VALUE_REGISTER,a
+	ld a,l:nextreg SPRITE_Y_VALUE_REGISTER,a
+	ld a,d:and 1:or h:nextreg SPRITE_X_MSB_AND_FLIP_REGISTER,a
+	ld a,c:or 128:nextreg SPRITE_PATTERN_ENABLE_REGISTER_INC,a
+	ret
 
 SetSprite4x4
 	ld a,4
@@ -853,10 +920,11 @@ SetSprite2x2
 	ret
 
 sproff
-	NEXTREG_nn 21,0
-	ld bc,$303b:xor a:out (c),a:ld bc,$57
-.lp out	(c),a:djnz .lp
-	ld bc,$303b:xor a:out (c),a
+	nextreg SPRITE_SELECT_REGISTER,0
+	ld b,128
+.l	nextreg SPRITE_PATTERN_ENABLE_REGISTER_INC,0
+	djnz .l
+	nextreg SPRITE_SELECT_REGISTER,0
 	ret
 
 sendsprs
@@ -865,20 +933,20 @@ sendsprs
 	ret
 
 tovram
-	push bc:ld a,d:rlca:rlca:rlca:and 7:add a,LAYER_2_PAGE:NEXTREG_A MMU_REGISTER_6:ld a,d:and 31:or $c0:ld d,a:pop bc:ldir
+	push bc:ld a,d:rlca:rlca:rlca:and 7:add a,LAYER_2_PAGE:nextreg MMU_REGISTER_6,a:ld a,d:and 31:or $c0:ld d,a:pop bc:ldir
 	ret
 
 vramfill
-	push bc:ld a,d:rlca:rlca:rlca:and 7:add a,LAYER_2_PAGE:NEXTREG_A MMU_REGISTER_6:ld a,d:and 31:or $c0:ld d,a:pop bc:ld a,c
+	push bc:ld a,d:rlca:rlca:rlca:and 7:add a,LAYER_2_PAGE:nextreg MMU_REGISTER_6,a:ld a,d:and 31:or $c0:ld d,a:pop bc:ld a,c
 .l	ld (de),a:inc e:djnz .l
 	ret
 
 plot
-	push af:ld a,d:rlca:rlca:rlca:and 7:add a,LAYER_2_PAGE:NEXTREG_A MMU_REGISTER_6:ld a,d:and 31:or $c0:ld h,a:ld l,e:pop af:ld (hl),a
+	push af:ld a,d:rlca:rlca:rlca:and 7:add a,LAYER_2_PAGE:nextreg MMU_REGISTER_6,a:ld a,d:and 31:or $c0:ld h,a:ld l,e:pop af:ld (hl),a
 	ret
 
 plot8x8
-	push af:ld a,d:rlca:rlca:rlca:and 7:add a,LAYER_2_PAGE:NEXTREG_A MMU_REGISTER_6:ld a,d:and 31:or $c0:ld h,a:ld l,e:xor a:ld b,8
+	push af:ld a,d:rlca:rlca:rlca:and 7:add a,LAYER_2_PAGE:nextreg MMU_REGISTER_6,a:ld a,d:and 31:or $c0:ld h,a:ld l,e:xor a:ld b,8
 .l	ld	(hl),a:inc hl:djnz .l
 	ld	de,256-8:add hl,de:pop af:ld c,7
 .c	ld	(hl),0:inc l:ld b,7
@@ -887,7 +955,7 @@ plot8x8
 	ret
 
 plot4x4
-	push af:ld a,d:rlca:rlca:rlca:and 7:add a,LAYER_2_PAGE:NEXTREG_A MMU_REGISTER_6:ld a,d:and 31:or $c0:ld h,a:ld l,e:xor a:ld b,4
+	push af:ld a,d:rlca:rlca:rlca:and 7:add a,LAYER_2_PAGE:nextreg MMU_REGISTER_6,a:ld a,d:and 31:or $c0:ld h,a:ld l,e:xor a:ld b,4
 .l	ld	(hl),a:inc hl:djnz .l
 	ld	de,256-4:add hl,de:pop af:ld c,3
 .c	ld	(hl),0:inc l:ld b,3
