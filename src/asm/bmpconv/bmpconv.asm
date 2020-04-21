@@ -82,7 +82,6 @@ start
 	
 	org	$2000
 start
-	ld hl,0
 	ld a,h:or l:jr nz,.gl
 	ld hl,emptyline:call print_rst16:jr finish
 .gl	ld de,lineName:ld b,255
@@ -110,6 +109,39 @@ dontMatch	db	0	; 0=remove duplicate, 1=each tile is grabbed even if it repeats.
 MAPSTARTBANK	db	12*2
 BMPSTARTBANK	db	16*2
 TILESTARTBANK	db	32*2
+
+;-------------------------------
+
+IDE_BANK	equ $01bd
+
+NEXTOS_RAM	equ	$0000
+MMC_RAM		equ $0100
+
+NEXTOS_BANK_REASON_TOTAL		=	0
+NEXTOS_BANK_REASON_ALLOCATE		=	1
+NEXTOS_BANK_REASON_RESERVE		=	2
+NEXTOS_BANK_REASON_FREE			=	3
+NEXTOS_BANK_REASON_AVAILABLE	=	4
+
+; H=banktype (ZX=0, 1=MMC); L=reason (1=allocate)
+AllocateBank
+	ld a,e:exx:ld hl,NEXTOS_BANK_REASON_ALLOCATE:exx	;If you want a specific bank ID, you can change L to $02 (reserve) and provide the bank number you want in E
+	ld c,7:ld de,IDE_BANK:rst $8:defb $94				; M_P3DOS
+	ld a,e:ret											;If successful (carry SET), returns 8K bank id in A
+FreeBank
+	ld e,a:exx:ld hl,NEXTOS_BANK_REASON_FREE:exx		;If you want a specific bank ID, you can change L to $02 (reserve) and provide the bank number you want in E
+	ld c,7:ld de,IDE_BANK:rst $8:defb $94				; M_P3DOS
+	ret
+HowManyAvailable
+	exx:ld hl,NEXTOS_BANK_REASON_AVAILABLE:exx			;If you want a specific bank ID, you can change L to $02 (reserve) and provide the bank number you want in E
+	ld c,7:ld de,IDE_BANK:rst $8:defb $94				; M_P3DOS
+	ret
+HowManyTotal
+	exx:ld hl,NEXTOS_BANK_REASON_TOTAL:exx				;If you want a specific bank ID, you can change L to $02 (reserve) and provide the bank number you want in E
+	ld c,7:ld de,IDE_BANK:rst $8:defb $94				; M_P3DOS
+	ret
+
+;-------------------------------
 
 skipspace
 	ld a,(ix+0):cp " ":ret nz:inc ix:jr skipspace
