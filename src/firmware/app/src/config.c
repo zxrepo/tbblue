@@ -155,7 +155,7 @@ unsigned char settings[eSettingMAX];
 unsigned char menu_cont = 0;
 mnuitem menus[MAX_MENU_ITEMS];
 
-char line[256], temp[256];
+char line[256], temp[16];
 const char *pLine, *comma;
 mnuitem *pMenu;
 
@@ -178,7 +178,13 @@ void parsestring(char *pDest, unsigned int maxlen)
 
 void parsenumber(unsigned char *pValue)
 {
-	parsestring(temp, 256);
+	parsestring(temp, 16);
+	*pValue = atoi(temp);
+}
+
+void parseword(unsigned int *pValue)
+{
+	parsestring(temp, 16);
 	*pValue = atoi(temp);
 }
 

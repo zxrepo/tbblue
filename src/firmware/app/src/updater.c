@@ -46,7 +46,7 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL			Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char	t[256], buffer[512];
+unsigned char	buffer[512];
 unsigned char	mach_id, mach_version,mach_version_sub;
 unsigned char 	mach_ab = 0;
 unsigned char 	cLed = 0;
@@ -176,8 +176,8 @@ void main() {
 	}
 	memcpy(&dsize, buffer+7, 4);
 	if (fsize != dsize + 512) {
-		sprintf(t, "Wrong size, %ld != %ld", fsize, dsize);
-		display_error(t);
+		sprintf(line, "Wrong size, %ld != %ld", fsize, dsize);
+		display_error(line);
 	}
 	file_mach_id = buffer[11];
 	file_mach_version = buffer[12];
@@ -196,24 +196,24 @@ void main() {
 	}
 	else
 	{
-		sprintf(t, "%d.%02d.%02d  ->  ", mach_version >> 4, mach_version & 0x0F, mach_version_sub);
+		sprintf(line, "%d.%02d.%02d  ->  ", mach_version >> 4, mach_version & 0x0F, mach_version_sub);
 		vdp_gotox(6);
-		vdp_prints(t);
+		vdp_prints(line);
 	}
 
 	vdp_setfg(COLOR_LCYAN);
-	sprintf(t, "%d.%02d.%02d\n\n", vma, vmi, vsub);
-	vdp_prints(t);
+	sprintf(line, "%d.%02d.%02d\n\n", vma, vmi, vsub);
+	vdp_prints(line);
 
 	vdp_setfg(COLOR_WHITE);
 	vdp_gotox(15);
 	vdp_prints("ID\n");
-	sprintf(t, "%d  ->  ", mach_id);
+	sprintf(line, "%d  ->  ", mach_id);
 	vdp_gotox(11);
-	vdp_prints(t);
+	vdp_prints(line);
 	vdp_setfg(COLOR_LCYAN);
-	sprintf(t, "%d\n\n", file_mach_id);
-	vdp_prints(t);
+	sprintf(line, "%d\n\n", file_mach_id);
+	vdp_prints(line);
 	vdp_setfg(COLOR_WHITE);
 
 	vdp_gotox(12);
@@ -258,16 +258,14 @@ void main() {
 	// W25Q32BV  = 0x15
 	// W25Q128JV = 0x17
 	buffer[0] = cmd_read_id;
-	l = SPI_send4bytes_recv(buffer);
+	SPI_send4bytes(buffer);
+	SPI_receive(buffer, 1);
+	SPI_cshigh();
 
-	if (l != 0x12 && l != 0x15 && l != 0x17)
+	if ( (buffer[0] != 0x15) && (buffer[0] != 0x17) )
 	{
 		display_error("Flash not detected!");
 	}
-
-//	sprintf(t, "detected 0x%02x\n", l);
-//	vdp_prints(t);
-
 
 	vdp_prints("Checksum calculating...");
 
@@ -301,8 +299,8 @@ void main() {
 
 	if (cs != csc)
 	{
-		sprintf(t, "CS error: %02X %02X", cs, csc);
-		display_error(t);
+		sprintf(line, "CS error: %02X %02X", cs, csc);
+		display_error(line);
 	}
 	vdp_prints("OK\n");
 
@@ -322,6 +320,7 @@ void main() {
 		{
 			SPI_sendcmd(cmd_write_enable);
 			SPI_send4bytes(buffer); // send the command to erase a 64kb block
+			SPI_cshigh();
 			++buffer[1]; // next 64kb block
 			while ((SPI_sendcmd_recv(cmd_read_status) & 0x01) == 1) ;
 
@@ -362,12 +361,10 @@ void main() {
 	if (mach_id == HWID_ZXNEXT)
 	{
 		dsize = 0x080000;
-//		vdp_prints("2 ");
 	}
 	else
 	{
 		dsize = 0;
-//		vdp_prints("3 ");
 	}
 
 	l = 0;
@@ -400,15 +397,6 @@ void main() {
 	}
 	vdp_prints(" OK\n");
 
-	// Protect Flash
-/*	if (mach_id == HWID_ZXNEXT) {
-		SPI_sendcmd(cmd_write_enable);
-		buffer[0] = cmd_write_status;
-		buffer[1] = 0x30;
-		buffer[2] = 0x02;
-		SPI_send3bytes(buffer);
-	}
-*/
 	SPI_sendcmd(cmd_write_disable);
 
 	vdp_cls();

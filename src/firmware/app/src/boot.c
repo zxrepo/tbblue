@@ -29,25 +29,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #include "fwfile.h"
 #include "videotest.h"
+#include "switch.h"
 
 FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = "1.25a";
+unsigned char * FW_version = "1.26";
 
 // minimal required for this FW
 unsigned long minimal = 0x030103; // 03 01 03 = 3.01.03
 unsigned long current = 0;
 
-unsigned char t[256];
-
 const char *filename;
 static unsigned char	mach_id, l;
 static unsigned char	opc = 0;
-static unsigned int	bl = 0, cont;
-static unsigned char	temp_byte = 0;
-
+static unsigned int	bl = 0, cont, i;
 
 void error_loading(char e)
 {
@@ -66,6 +63,33 @@ void error_loading(char e)
 
 	ULAPORT = COLOR_RED;
 	for(;;);
+}
+
+void switchModule(unsigned char m)
+{
+	REG_NUM = REG_TURBO;
+	REG_VAL = 3;
+
+	memset((unsigned char *)0x4000, 0, 6912);
+
+	fwOpenAndSeek(m);
+	i = fwBlockLength(m);
+	bl = 0;
+	
+	while (i)
+	{
+		REG_NUM = REG_RAMPAGE;
+		REG_VAL = RAMPAGE_ROMSPECCY + bl;
+
+		l = (i > 32) ? 32 : i;
+		fwRead((unsigned char *)0x0, l * 512);
+		i = i - l;
+		bl++;
+	}
+
+	fwClose();
+
+	switch_routine();
 }
 
 void load_roms()
@@ -91,9 +115,9 @@ void load_roms()
 		vdp_prints("Loading ESXMMC:\n");
 		vdp_prints(filename);
 		vdp_prints("...");
-		strcpy(temp, NEXT_DIRECTORY);
-		strcat(temp, filename);
-		res = f_open(&Fil, temp, FA_READ);
+		strcpy(line, NEXT_DIRECTORY);
+		strcat(line, filename);
+		res = f_open(&Fil, line, FA_READ);
 		if (res != FR_OK) {
 			error_loading('O');
 		}
@@ -143,9 +167,9 @@ void load_roms()
 		vdp_prints("Loading Multiface ROM:\n");
 		vdp_prints(filename);
 		vdp_prints("...");
-		strcpy(temp, NEXT_DIRECTORY);
-		strcat(temp, filename);
-		res = f_open(&Fil, temp, FA_READ);
+		strcpy(line, NEXT_DIRECTORY);
+		strcat(line, filename);
+		res = f_open(&Fil, line, FA_READ);
 		if (res != FR_OK) {
 			error_loading('O');
 		}
@@ -165,9 +189,9 @@ void load_roms()
 	vdp_prints("...");
 
 	// Load 16K
-	strcpy(temp, NEXT_DIRECTORY);
-	strcat(temp, filename);
-	res = f_open(&Fil, temp, FA_READ);
+	strcpy(line, NEXT_DIRECTORY);
+	strcat(line, filename);
+	res = f_open(&Fil, line, FA_READ);
 	if (res != FR_OK) {
 		error_loading('O');
 	}
@@ -239,12 +263,12 @@ void check_coreversion()
 		vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
 
 		vdp_prints(  "You need at least core  v");
-		sprintf(t, "%lu.%02lu.%02lu", (minimal >> 16) & 0xff, (minimal >> 8) & 0xff, minimal & 0xff);
-		vdp_prints(t);
+		sprintf(line, "%lu.%02lu.%02lu", (minimal >> 16) & 0xff, (minimal >> 8) & 0xff, minimal & 0xff);
+		vdp_prints(line);
 
 		vdp_prints("\nYou currently have core v");
-		sprintf(t, "%lu.%02lu.%02lu", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
-		vdp_prints(t);
+		sprintf(line, "%lu.%02lu.%02lu", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
+		vdp_prints(line);
 
 		if (mach_id != HWID_ZXNEXT)
 		{
@@ -306,8 +330,8 @@ void display_bootscreen()
 
 	vdp_gotoxy(19, 22);
 	vdp_prints("Core v");
-	sprintf(t, "%lu.%02lu.%02lu", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
-	vdp_prints(t);
+	sprintf(line, "%lu.%02lu.%02lu", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
+	vdp_prints(line);
 
 	// Revert to standard 3.5MHz
 	REG_NUM = REG_TURBO;
@@ -438,12 +462,12 @@ void init_registers()
 void load_keymap()
 {
 	// Read and send Keymap
-	strcpy(temp, NEXT_DIRECTORY);
-	strcat(temp, KEYMAP_FILE);
+	strcpy(line, NEXT_DIRECTORY);
+	strcat(line, KEYMAP_FILE);
 	vdp_prints("Loading keymap:\n");
 	vdp_prints(KEYMAP_FILE);
 	vdp_prints("...");
-	res = f_open(&Fil, temp, FA_READ);
+	res = f_open(&Fil, line, FA_READ);
 	if (res != FR_OK) {
 		error_loading('O');
 	}
@@ -492,6 +516,12 @@ void main()
 		update_video_settings();
 	}
 
+	if (getCoreBoot())
+	{
+		// Switch to cores module if alternative core requested.
+		switchModule(FW_BLK_CORES);
+	}
+
 	// Show the boot screen
 	check_coreversion();
 	display_bootscreen();
@@ -500,23 +530,29 @@ void main()
 	{
 		if ((cont & 0x7ff) == 0)
 		{
-			vdp_gotoxy(5, 13);
+			vdp_gotoxy(5, 11);
 			if ((cont & 0x800) == 0)
 			{
 				vdp_prints("Press SPACEBAR for menu\n");
+				vdp_gotoxy(5, 13);
+				vdp_prints("Press C for extra cores\n");
 			}
 			else
 			{
+				vdp_prints("                       \n");
+				vdp_gotoxy(5, 13);
 				vdp_prints("                       \n");
 			}
 		}
 
 		if ((HROW7 & 0x01) == 0)
 		{
-			// Reboot to loader if SPACE is pressed.
-			// This will load the editor module.
-			REG_NUM = REG_RESET;
-			REG_VAL = RESET_HARD;
+			switchModule(FW_BLK_EDITOR);
+		}
+
+		if ((HROW0 & 0x08) == 0)
+		{
+			switchModule(FW_BLK_CORES);
 		}
 
 		if (videoTestActive())

@@ -30,55 +30,17 @@ PORTSPI		= 0xEB
 ; Send 1 byte to flash
 ; ------------------------------------------------
 ; void SPI_sendcmd(unsigned char cmd)
+; void SPI_cshigh(void)
 _SPI_sendcmd::
-	ld		iy, #0
-	add		iy, sp
-	ld		l, 2(iy)
+	ld		hl, #2
+	add		hl, sp
+	ld		l, (hl)
 
 	ld		a, #0x7F
 	out		(PORTCFG), a			; /CS = 0
 	ld		a, l
 	out		(PORTSPI), a
-	ld		a, #0xFF
-	out		(PORTCFG), a			; /CS = 1
-	ret
-
-; ------------------------------------------------
-; Send 3 bytes to flash
-; ------------------------------------------------
-; void SPI_send3bytes(unsigned char *buffer)
-_SPI_send3bytes::
-	pop		bc
-	pop		hl
-	push	hl
-	push	bc
-
-	ld		c, #PORTSPI
-	ld		a, #0x7F
-	out		(#PORTCFG), a			; /CS = 0	11 T-States
-	.rept 3
-	outi							; 			16 T-States
-	.endm
-	ld		a, #0xFF
-	out		(PORTCFG), a			; /CS = 1
-	ret
-
-; ------------------------------------------------
-; Send 4 bytes to flash
-; ------------------------------------------------
-; void SPI_send4bytes(unsigned char *buffer)
-_SPI_send4bytes::
-	pop		bc
-	pop		hl
-	push	hl
-	push	bc
-
-	ld		c, #PORTSPI
-	ld		a, #0x7F
-	out		(#PORTCFG), a			; /CS = 0	11 T-States
-	.rept 4
-	outi							; 			16 T-States
-	.endm
+_SPI_cshigh::
 	ld		a, #0xFF
 	out		(PORTCFG), a			; /CS = 1
 	ret
@@ -106,10 +68,10 @@ _SPI_sendcmd_recv::
 	ret
 
 ; ------------------------------------------------
-; Send 4 bytes to flash and receive answer
+; Send 4 bytes to flash
 ; ------------------------------------------------
-; unsigned char SPI_send4bytes_recv(unsigned char *buffer)
-_SPI_send4bytes_recv::
+; void SPI_send4bytes(unsigned char *buffer)
+_SPI_send4bytes::
 	pop		bc
 	pop		hl
 	push	hl
@@ -121,14 +83,25 @@ _SPI_send4bytes_recv::
 	.rept 4
 	outi							; 			16 T-States
 	.endm
-	in		a, (c)					; 			12 T-States
-	nop								; 			 4 T-States
-	in		a, (c)					; 			12 T-States
-	nop								; 			 4 T-States
-	in		a, (c)					; 			12 T-States
-	ld		l, a					; 			 4 T-States
-	ld		a, #0xFF
-	out		(#PORTCFG), a			; /CS = 1
+	ret
+
+; ------------------------------------------------
+; Receive up to 256 bytes from flash
+; ------------------------------------------------
+; void SPI_receive(unsigned char *buffer, unsigned char len)
+_SPI_receive::
+	pop	bc
+	pop	hl
+	pop	de
+	push	de
+	push	hl
+	push	bc
+
+	ld	b,e			; B=bytes (1..256)
+	ld	c, #PORTSPI
+	in	a,(c)			; clock chip
+	nop
+	inir				; read bytes
 	ret
 
 ; ------------------------------------------------

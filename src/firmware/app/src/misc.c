@@ -65,9 +65,27 @@ unsigned long get_core_ver()
         return  (mach_version_major*65536) + (mach_version_minor*256) + mach_version_sub;
 }
 
-
-
 unsigned long get_fattime()
 {
 	return 0x44210000UL;
+}
+
+unsigned char getCoreBoot()
+{
+	unsigned int j;
+	unsigned char sum = 0;
+	coreboot *pCoreBoot = (coreboot *)0x0000;
+
+	REG_NUM = REG_RAMPAGE;
+	REG_VAL = RAMPAGE_ALTROM0;
+
+	if (strncmp(pCoreBoot->magic, COREBOOT_MAGIC, COREBOOT_MAGIC_SIZE) == 0)
+	{
+		for (j = 0; j < COREBOOT_STRUCT_SIZE; j++)
+		{
+			sum += *(((unsigned char *)(pCoreBoot)) + j);
+		}
+	}
+
+	return (sum == COREBOOT_CHECKSUM);
 }

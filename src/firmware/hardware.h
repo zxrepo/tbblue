@@ -148,6 +148,8 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define RAMPAGE_RAMDIVMMC	0x08 /* 0x00 */
 #define RAMPAGE_ROMDIVMMC	0x04 /* 0x18 */
 #define RAMPAGE_ROMMF		0x05 /* 0x19 */
+#define RAMPAGE_ALTROM0		0x06
+#define RAMPAGE_ALTROM1		0x07
 #define RAMPAGE_ROMSPECCY	0x00 /* 0x1C */
 #define RAMPAGE_RAMSPECCY	0x10	// start of standard ZX RAM
 

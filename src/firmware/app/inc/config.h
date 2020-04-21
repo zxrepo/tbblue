@@ -123,12 +123,13 @@ extern const unsigned char settingType[eSettingMAX];
 extern unsigned char settings[eSettingMAX];
 extern unsigned char menu_cont;
 extern mnuitem menus[MAX_MENU_ITEMS];
-extern char line[256], temp[256];
+extern char line[256], temp[16];
 extern const char *pLine, *comma;
 extern mnuitem *pMenu;
 
 void parsestring(char *pDest, unsigned int maxlen);
 void parsenumber(unsigned char *pValue);
+void parseword(unsigned int *pValue);
 void update_video_settings();
 void reset_settings();
 void load_config();

@@ -26,10 +26,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 void SPI_sendcmd(unsigned char cmd);
-void SPI_send3bytes(unsigned char *buffer);
-void SPI_send4bytes(unsigned char *buffer);
+void SPI_cshigh(void);
 unsigned char SPI_sendcmd_recv(unsigned char cmd);
-unsigned char SPI_send4bytes_recv(unsigned char *buffer);
+void SPI_send4bytes(unsigned char *buffer);
+void SPI_receive(unsigned char *buffer, unsigned char len);
 void SPI_writebytes(unsigned char *buffer);
 
 #endif
