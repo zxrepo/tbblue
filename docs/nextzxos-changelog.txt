@@ -1,3 +1,13 @@
+v2.06D 2020-04-22
+=================
+* Reordered initialisation code to ensure all Pentagon modes properly disabled
+  at reset.
+* Added .CORE for booting additional cores flashed by the new multicore
+  firmware (v1.26).
+* Fixed use of dot commands from within banked sections of NextBASIC programs.
+* Updated About screen credits.
+
+
 v2.06C 2020-04-18
 =================
 * Added support for non-standard .Z80 hardware type 12 (+2) used by FUSE and

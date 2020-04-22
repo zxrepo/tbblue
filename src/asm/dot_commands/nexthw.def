@@ -88,6 +88,7 @@ nxr_tilemap_ctrl                        equ     $6b
 nxr_tilemap_attr                        equ     $6c
 nxr_tilemap_base                        equ     $6e
 nxr_tiledefs_base                       equ     $6f
+nxr_altrom                              equ     $8c
 
 transparency_default                    equ     $e3
 
