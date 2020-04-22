@@ -32,6 +32,7 @@ get back to the previous link, press @{i}B@{ui}.
  @{" Copyright " LINK COPYRIGHT}
  @{" Using the Guide " LINK GUIDE}
  @{" Authoring a Guide " LINK AUTHORING}
+ @{" Acknowledgements " LINK THANKS}
 
 Use the @{i}Up@{ui} and @{i}Down@{ui} arrows to scroll, @{i}SPACE@{ui} to page down and @{i}DELETE@{ui} to page up.
 
@@ -699,6 +700,7 @@ offer different colours:
 
 @-------------------------------------------------------------------------------
 @node Limits
+@next Thanks
 @prev Text_Attrs
 @toc AUTHORING
 @{r}NextGuide Manual
@@ -756,3 +758,16 @@ version.
 Internally an 8-bit value is used for storing the index of the current link.
 Any links after the first 255 will still be visible in the document, just not
 selectable.
+@-------------------------------------------------------------------------------
+@node Thanks
+@prev Limits
+@toc MAIN
+@{r}NextGuide Manual
+@{c}@{h1}Acknowledgements
+
+@{h2}Thanks to the Beta-Testers:
+
+  HeartWare
+  Konstantin Dzreev
+  Matthew Tillett
+
