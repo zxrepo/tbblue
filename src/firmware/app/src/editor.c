@@ -325,7 +325,7 @@ static void readkeyb()
 			while(!(HROW2 & 0x04));
 			return;
 		}
-		if ((HROW7 & 0x01) == 0) {
+		if (((HROW7 & 0x01) == 0) && ((HROW0 & 0x01) ==1)) {
 			button_space = 1;
 			while(!(HROW7 & 0x01));
 			return;

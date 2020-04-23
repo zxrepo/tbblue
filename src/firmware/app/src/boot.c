@@ -35,10 +35,10 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = "1.26";
+unsigned char * FW_version = "1.27";
 
 // minimal required for this FW
-unsigned long minimal = 0x030103; // 03 01 03 = 3.01.03
+unsigned long minimal = 0x030104; // 03 01 04 = 3.01.04
 unsigned long current = 0;
 
 const char *filename;
@@ -545,7 +545,7 @@ void main()
 			}
 		}
 
-		if ((HROW7 & 0x01) == 0)
+		if (((HROW7 & 0x01) == 0) && ((HROW0 & 0x01) ==1))
 		{
 			switchModule(FW_BLK_EDITOR);
 		}

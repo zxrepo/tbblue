@@ -84,7 +84,8 @@ void main()
 	
 	//capture if some key was pressed
 	module = MODULE_BOOT_INDEX;			// Load module 'boot'
-	if ((HROW7 & 0x01) == 0) {			// SPACE key pressed, load module 'editor'
+	if (((HROW7 & 0x01) == 0) && ((HROW0 & 0x01) ==1)) {
+		// SPACE key pressed, load module 'editor'
 		module = MODULE_EDITOR_INDEX;
 	}
 

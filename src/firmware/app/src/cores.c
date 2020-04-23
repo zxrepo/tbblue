@@ -71,6 +71,7 @@ unsigned long	fsize, dsize;
 #define MENU_LINES		19
 #define MAX_USER_FILES		16
 #define MAX_CONFIG_ITEMS	32
+#define FLASH_NAME_CHARS	16
 
 #define CFG_OFFSET_GENCFG	0
 #define CFG_OFFSET_FILES	16
@@ -85,6 +86,7 @@ typedef struct {
 	char		dirname[MAX_DIR_NAME];
 	char		name[MAX_CORE_NAME];
 	unsigned char	update;
+	char		flashname[FLASH_NAME_CHARS];
 } coreitem;
 
 coreitem cores[MAX_CORE_SLOTS];
@@ -101,6 +103,7 @@ unsigned char	file_entry;
 unsigned char	sram_page;
 unsigned char	numFileItems;
 unsigned char	curItem;
+unsigned char	numUnmatchedSlots;
 
 char		searchDir[3*(MAX_DIR_NAME+1)];
 char *		file_name;
@@ -250,24 +253,35 @@ unsigned char findBitstreamSlot()
 {
 	unsigned char id;
 
+	if (numUnmatchedSlots)
 	{
-		res = f_read(&Fil, buffer, 256, &bl);
-		f_close(&Fil);
-		if ((res == FR_OK) & (bl == 256) && parseBitstream(buffer))
-		{
-			strncpy(bit_name, line, MAX_BIT_NAME);
-			strncpy(bit_date, tmp_date, MAX_DATE);
-			strncpy(bit_time, tmp_time, MAX_TIME);
+		sprintf(line, "/machines/%s/core.bit", FilInfo.fname);
 
-			for (id = 0; id < MAX_CORE_SLOTS; id++)
+		res = f_open(&Fil, line, FA_READ);
+		if (res == FR_OK)
+		{
+			res = f_read(&Fil, buffer, 256, &bl);
+			f_close(&Fil);
+			if ((res == FR_OK) & (bl == 256) && parseBitstream(buffer))
 			{
-				if (cores[id].dirname[0] == 0)
+				strncpy(bit_name, line, MAX_BIT_NAME);
+				strncpy(bit_date, tmp_date, MAX_DATE);
+				strncpy(bit_time, tmp_time, MAX_TIME);
+
+				for (id = 0; id < MAX_CORE_SLOTS; id++)
 				{
-					if (readCoreHeader(RESERVED_SLOTS+id))
+					if (cores[id].dirname[0] == 0)
 					{
-						if (strncmp(bit_name, line, MAX_BIT_NAME) == 0)
+						if (strncmp(bit_name, cores[id].flashname, FLASH_NAME_CHARS) == 0)
 						{
-							return RESERVED_SLOTS+id;
+							if (readCoreHeader(RESERVED_SLOTS+id))
+							{
+								if (strncmp(bit_name, line, MAX_BIT_NAME) == 0)
+								{
+									numUnmatchedSlots--;
+									return RESERVED_SLOTS+id;
+								}
+							}
 						}
 					}
 				}
@@ -275,7 +289,6 @@ unsigned char findBitstreamSlot()
 		}
 	}
 
-	// Not a valid bitstream file.
 	return 0;
 }
 
@@ -354,17 +367,15 @@ void eraseCore(unsigned char entry)
 	getEnter();
 }
 
-unsigned char upgradeCore(unsigned char entry)
+unsigned char upgradeCore(unsigned char core_id, unsigned char *pName, unsigned char *pDirname)
 {
-	unsigned char core_id = RESERVED_SLOTS+entry;
-
 	vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
 	vdp_cls();
 	vdp_setbg(COLOR_BLUE);
 	vdp_prints(CORES_TITLE);
 	vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
 
-	sprintf(line, "\n\nFlashing core:\n\n  \%02d: %s\n\n", core_id, cores[entry].name);
+	sprintf(line, "\n\nFlashing core:\n\n  \%02d: %s\n\n", core_id, pName);
 	vdp_prints(line);
 
 	if ((core_id < 2) || (core_id > 31))
@@ -372,17 +383,20 @@ unsigned char upgradeCore(unsigned char entry)
 		vdp_prints("Invalid core id!\n");
 		vdp_prints("\n\nPress ENTER");
 		getEnter();
-		return entry;
+		return 0;
 	}
 
-	sprintf(line,"/machines/%s/core.bit", cores[entry].dirname);
+	sprintf(line,"/machines/%s/core.bit", pDirname);
 	res = f_open(&Fil, line, FA_READ);
 
 	if (res != FR_OK)
 	{
-		sprintf(line,"Error opening core file:\n/machines/%s/core.bit", cores[entry].dirname);
+		sprintf(line,"Error opening core file:\n/machines/%s/core.bit", pDirname);
 		vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
 		vdp_prints(line);
+		vdp_prints("\n\nPress ENTER");
+		getEnter();
+		return 0;
 	}
 	else
 	{
@@ -444,37 +458,43 @@ unsigned char upgradeCore(unsigned char entry)
 	vdp_prints("\n\nPress ENTER");
 	getEnter();
 
-	return entry;
+	return 1;
 }
 
 void readCores() {
 	unsigned char id;
 
 	numFileItems = 0;
+	numUnmatchedSlots = 0;
 
 	memset(cores, 0, MAX_CORE_SLOTS * sizeof(coreitem));
+	memset(fileItems, 0, MAX_FILE_ITEMS * sizeof(fileitem));
+
+	for (id = 0; id < MAX_CORE_SLOTS; id++)
+	{
+		if (readCoreHeader(RESERVED_SLOTS+id))
+		{
+			strncpy(cores[id].flashname, line, FLASH_NAME_CHARS);
+			numUnmatchedSlots++;
+		}
+	}
 
 	f_opendir(&Dir, "/machines");
 
 	do {
 		f_readdir(&Dir, &FilInfo);
+		vdp_putchar(ce[l]);
+		vdp_putchar(8);
+		l = (l + 1) & 0x03;
 
-		if (FilInfo.fname[0])
+		if (FilInfo.fname[0] && strncmp(FilInfo.fname, "NEXT", MAX_DIR_NAME))
 		{
-			sprintf(line, "/machines/%s/core.bit", FilInfo.fname);
-			res = f_open(&Fil, line, FA_READ);
-			if (res != FR_OK)
-			{
-				continue;
-			}
-
 			id = findBitstreamSlot();
 
 			if (id)
 			{
 				curItem = id - RESERVED_SLOTS;
 				strncpy(cores[curItem].dirname, FilInfo.fname, MAX_DIR_NAME);
-				strncpy(cores[curItem].name, FilInfo.fname, MAX_CORE_NAME);
 
 				if (strncmp(bit_date, tmp_date, MAX_DATE)
 					|| strncmp(bit_time, tmp_time, MAX_TIME))
@@ -487,7 +507,6 @@ void readCores() {
 				if (numFileItems < MAX_FILE_ITEMS)
 				{
 					strncpy(fileItems[numFileItems].fname, FilInfo.fname, MAX_RES_NAME);
-					strncpy(fileItems[numFileItems].name, FilInfo.fname, MAX_CORE_NAME);
 					curItem = numFileItems + MAX_CORE_SLOTS;
 					numFileItems++;
 				}
@@ -495,51 +514,6 @@ void readCores() {
 				{
 					continue;
 				}
-			}
-
-			sprintf(line, "/machines/%s/core.cfg", FilInfo.fname);
-
-			res = f_open(&Fil, line, FA_READ);
-			if (res == FR_OK)
-			{
-				while (f_eof(&Fil) == 0)
-				{
-					if (!f_gets(line, 255, &Fil))
-					{
-//						//             12345678901234567890123456789012
-//						display_error("Error reading core.cfg data!");
-						break;
-					}
-
-					if (line[0] == ';')
-						continue;
-
-					// Ensure correct parsing even if no EOL on last line
-					if (line[strlen(line)-1] == '\n')
-					{
-						line[strlen(line)-1] = '\0';
-					}
-					else
-					{
-						line[strlen(line)] = '\0';
-					}
-
-					if ( strncmp ( line, "name=", 5) == 0)
-					{
-						pLine = line + 5;
-
-						if (curItem < MAX_CORE_SLOTS)
-						{
-							parsestring(cores[curItem].name, MAX_CORE_NAME);
-						}
-						else
-						{
-							parsestring(fileItems[curItem - MAX_CORE_SLOTS].name, MAX_CORE_NAME);
-						}
-					}
-				}
-
-				f_close(&Fil);
 			}
 		}
 
@@ -593,7 +567,7 @@ static void readkeyb()
 			while(!(HROW6 & 0x01));
 			return;
 		}
-		if ((HROW7 & 0x01) == 0) {
+		if (((HROW7 & 0x01) == 0) && ((HROW0 & 0x01) ==1)) {
 			button_space = 1;
 			while(!(HROW7 & 0x01));
 			return;
@@ -774,15 +748,61 @@ unsigned char utilityExit(unsigned char entry)
 	return MAX_FILE_ITEMS+(entry-entry);
 }
 
+void parseCoreName(char *pName, char *pDirname)
+{
+	if (pName[0] == 0)
+	{
+		strncpy(pName, pDirname, MAX_CORE_NAME);
+		sprintf(line, "/machines/%s/core.cfg", pDirname);
+
+		res = f_open(&Fil, line, FA_READ);
+		if (res == FR_OK)
+		{
+			while (f_eof(&Fil) == 0)
+			{
+				if (!f_gets(line, 255, &Fil))
+				{
+//						//             12345678901234567890123456789012
+//						display_error("Error reading core.cfg data!");
+					break;
+				}
+
+				if (line[0] == ';')
+					continue;
+
+				// Ensure correct parsing even if no EOL on last line
+				if (line[strlen(line)-1] == '\n')
+				{
+					line[strlen(line)-1] = '\0';
+				}
+				else
+				{
+					line[strlen(line)] = '\0';
+				}
+
+				if ( strncmp ( line, "name=", 5) == 0)
+				{
+					pLine = line + 5;
+					parsestring(pName, MAX_CORE_NAME);
+				}
+			}
+
+			f_close(&Fil);
+		}
+	}
+}
+
 void displayFileName(unsigned char entry)
 {
+	parseCoreName(fileItems[entry].name, fileItems[entry].fname);
 	vdp_prints(fileItems[entry].name);
 }
 
 void displayCoreName(unsigned char entry)
 {
-	if (cores[entry].name[0])
+	if (cores[entry].dirname[0])
 	{
+		parseCoreName(cores[entry].name, cores[entry].dirname);
 		unsigned char ch = cores[entry].update ? '*' : ' ';
 		sprintf(line, "%02d%c %s", RESERVED_SLOTS+entry, ch, cores[entry].name);
 	}
@@ -812,15 +832,32 @@ unsigned char flashCore(unsigned char entry)
 	if (file_entry == MAX_FILE_ITEMS)
 	{
 		eraseCore(entry);
+
+		if ((numFileItems < MAX_FILE_ITEMS) && cores[entry].dirname[0])
+		{
+			strncpy(fileItems[numFileItems].fname, cores[entry].dirname, MAX_DIR_NAME);
+			strncpy(fileItems[numFileItems].name, cores[entry].name, MAX_CORE_NAME);
+			numFileItems++;
+		}
+
+		cores[entry].dirname[0] = cores[entry].name[0] = 0;
 	}
 	else if (file_entry < numFileItems)
 	{
-		strncpy(cores[entry].name, fileItems[file_entry].name, MAX_CORE_NAME);
-		strncpy(cores[entry].dirname, fileItems[file_entry].fname, MAX_DIR_NAME);
-		upgradeCore(entry);
-	}
+		if (upgradeCore(RESERVED_SLOTS+entry, fileItems[file_entry].name, fileItems[file_entry].fname))
+		{
+			strncpy(cores[entry].name, fileItems[file_entry].name, MAX_CORE_NAME);
+			strncpy(cores[entry].dirname, fileItems[file_entry].fname, MAX_DIR_NAME);
+			cores[entry].update = 0;
 
-	readCores();
+			if ((file_entry+1) < MAX_FILE_ITEMS)
+			{
+				memcpy(&fileItems[file_entry], &fileItems[file_entry+1], sizeof(fileitem)*(MAX_FILE_ITEMS-(file_entry+1)));
+			}
+
+			numFileItems--;
+		}
+	}
 
 	return entry;
 }
@@ -893,7 +930,7 @@ void showBootCoreScreen()
 			{
 				vdp_prints("Y");
 				while ((HROW5 & 16) == 0);
-				upgradeCore(core_entry);
+				upgradeCore(RESERVED_SLOTS+core_entry, cores[core_entry].name, cores[core_entry].dirname);
 				break;
 			}
 
@@ -1076,6 +1113,13 @@ void main() {
 
 	vdp_init();
 
+	vdp_setcolor(COLOR_BLACK, COLOR_BLUE, COLOR_WHITE);
+	vdp_prints(CORES_TITLE);
+
+	vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
+	vdp_gotoxy(2, 2);
+	vdp_prints("Reading core information: ");
+
 	// Read config.ini and honour the video settings.
 	load_config();
 	update_video_settings();
@@ -1083,12 +1127,6 @@ void main() {
 	// Run at maximum speed after config file has been loaded.
 	REG_NUM = REG_TURBO;
 	REG_VAL = 3;
-
-	vdp_setcolor(COLOR_BLACK, COLOR_BLUE, COLOR_WHITE);
-	vdp_prints(CORES_TITLE);
-
-	vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
-	vdp_gotoxy(0, 2);
 
 	if (mach_id != HWID_ZXNEXT)
 	{
