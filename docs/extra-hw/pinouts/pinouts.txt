@@ -4,10 +4,11 @@ ZX Spectrum Next Conn. Pinouts
 Author:  Phoebus R. Dokos
 Date:	 2018-09-24
 License: CC BY-NC-SA
-Version: 2.0
+Version: 2.1
 
 Changelog
 ---------
+2020-04-24: 2.1 Updated info for CN4
 2020-04-24: 2.0 Updated info for Speaker (AA)
 2020-04-24: 1.9 Added info about Joystick / External I/O dual purpose connectors
 2020-04-17: 1.8 Added info for RGB connector usage (Robin Verhagen-Guest)
@@ -195,7 +196,7 @@ BUS_A13     |                      |     BUS_A12
 ------------|===                ===|------------
 BUS_D7      |                      |          5V           
 ------------|===                ===|------------
-BUS_ROM_OE  |                      |          9V           
+/BUS_ROMCS  |                      |          9V           
 ------------|===                ===|------------
 Key         |                      |         Key           
 ------------]]]]                [[[[------------
@@ -203,7 +204,7 @@ BUS_D0      |                      |         GND
 ------------|===                ===|------------
 BUS_D1      |                      |         GND           
 ------------|===                ===|------------
-BUS_D2      |                      |     CPU_CLK           
+BUS_D2      |                      |    /CPU_CLK           
 ------------|===                ===|------------
 BUS_D6      |                      |      BUS_A0           
 ------------|===                ===|------------
@@ -213,39 +214,40 @@ BUS_D3      |                      |      BUS_A2
 ------------|===                ===|------------
 BUS_D4      |                      |      BUS_A3           
 ------------|===                ===|------------
-BUS_INT     |                      |BUS_IORQ_ULA           
+/BUS_INT    |                      |/BUS_IORQULA           
 ------------|===                ===|------------
-BUS_NMI     |                      |         GND           
+/BUS_NMI    |                      |         GND           
 ------------|===                ===|------------
-CPU_HALT    |                      | BUS_ROM_OE2            
+/CPU_HALT   |                      |  /BUS_ROMCS            
 ------------|===                ===|------------
-BUS_MREQ    |                      |       BUS_Y        
+/BUS_MREQ   |                      |    Reserved        
 ------------|===                ===|------------
-BUS_IORQ    |                      |         NC3           
+/BUS_IORQ   |                      |          NC           
 ------------|===                ===|------------
-BUS_RD      |                      |         NC4           
+/BUS_RD     |                      |          NC           
 ------------|===                ===|------------
-BUS_WR      |                      |  BUS_BUSREQ             
+/BUS_WR     |                      |BUS_BUSREQ**             
 ------------|===                ===|------------
--5V         |                      |     BUS_RST              
+NC          |                      |    /BUS_RST              
 ------------|===                ===|------------
-BUS_WAIT    |                      |      BUS_A7                       
+/BUS_WAIT   |                      |      BUS_A7                       
 ------------|===                ===|------------
 NC*         |                      |      BUS_A6                       
 ------------|===                ===|------------
-5V_2        |                      |      BUS_A5                       
+NC          |                      |      BUS_A5                       
 ------------|===                ===|------------
-BUS_M1      |                      |      BUS_A4                       
+/BUS_M1     |                      |      BUS_A4                       
 ------------|===                ===|------------
-BUS_REFSH   |                      |   BUS_ROMCS                       
+/BUS_REFSH  |                      |  /BUS_ROMCS                       
 ------------|===                ===|------------
-BUS_A8      |                      |  BUS_BUSACK             
+BUS_A8      |                      | /BUS_BUSACK             
 ------------|===                ===|------------
 BUS_A10     |                      |      BUS_A9           
 ------------|===                ===|------------
-BUS_RAMCS   |                      |     BUS_A11          
+Reserved    |                      |     BUS_A11          
 ------------|===                ===|------------
             |                      |
             ========================
             
 * No 12V line on the Next PCB; needs to be provided by external adapter
+** BUSREQ is Active High 
