@@ -75,8 +75,9 @@ unsigned long	fsize, dsize;
 
 #define CFG_OFFSET_GENCFG	0
 #define CFG_OFFSET_FILES	16
-#define CFG_OFFSET_CORECFG	32
-#define CFG_SIZE		64
+#define CFG_OFFSET_DIR		32
+#define CFG_OFFSET_CORECFG	64
+#define CFG_SIZE		256
 
 #define CHOOSE_CORE_HELP	"Press ENTER to start core    \n      SPACE to replace core  "
 
@@ -708,10 +709,17 @@ void loadResource(const char *pName, unsigned char pageId)
 		dsize = 0;
 
 		do {
+			// Prevent overwrite of RAM used by firmware.
+			if ((pageId == (RAMPAGE_RAMSPECCY + 5)) ||
+				(pageId == (RAMPAGE_RAMSPECCY + 2)) ||
+				(pageId == (RAMPAGE_RAMSPECCY + 0)) )
+			{
+				break;
+			}
+
 			REG_NUM = REG_RAMPAGE;
 			REG_VAL = pageId;
 
-			memset((unsigned char *)0, 0, 16384);
 			res = f_read(&DatFil, (unsigned char *)0, 16384, &bl);
 			if (res != FR_OK)
 			{
@@ -1077,6 +1085,8 @@ void bootCore()
 		pCfg[6] = settings[eSettingHDMISound];
 
 		memcpy((unsigned char *)(configOffset+CFG_OFFSET_FILES), userFiles, MAX_USER_FILES);
+	
+		sprintf((char *)(configOffset+CFG_OFFSET_DIR), "/MACHINES/%s/", cores[core_entry].dirname);
 	}
 
 	// Pause a bit.

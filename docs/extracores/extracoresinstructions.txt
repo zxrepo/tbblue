@@ -124,7 +124,10 @@ config=PAGE,OFFSET
 ; in a file being selected. For each byte, 0 means "not selected" and 1 means
 ; "selected".
 ;
-; The next 32 bytes are reserved for future use.
+; The next 32 bytes contain the null-terminated path of the core
+; (eg "/MACHINES/CORENAME",0)
+;
+; The next 192 bytes are reserved for future use.
 ;
 ; eg
 ;    config=32
