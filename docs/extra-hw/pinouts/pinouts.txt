@@ -4,10 +4,11 @@ ZX Spectrum Next Conn. Pinouts
 Author:  Phoebus R. Dokos
 Date:	 2018-09-24
 License: CC BY-NC-SA
-Version: 1.9
+Version: 2.0
 
 Changelog
 ---------
+2020-04-24: 2.0 Updated info for Speaker (AA)
 2020-04-24: 1.9 Added info about Joystick / External I/O dual purpose connectors
 2020-04-17: 1.8 Added info for RGB connector usage (Robin Verhagen-Guest)
 2020-04-17: 1.7 Changed impedance for speaker (thanks to Simon N. Goodwin)
@@ -91,7 +92,7 @@ ___________________
     
 Accepts:
 a. Standard PC Piezo speaker -or-
-b.  20 - 25mm magnet, impedance >=24 ohms
+b.  20 - 25mm magnet, impedance >=28 ohms
 
 Pin 1 or 2 = negative, pin 3 or 4 = positive for Piezo type. 
 For normal coned type speaker the polarity does not matter.
