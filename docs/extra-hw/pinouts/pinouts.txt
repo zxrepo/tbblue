@@ -136,8 +136,8 @@ Type: DB-9 Male (As seen on Next)
  +---------------+------------------------------------------+ 
  | JOYSTICK MODE |              I/O MODE                    |
  +---------------+-----------------------------+------------+
- |   Function    |   Function    |   Function  |  Function  |
-#| (Atari Mode)  |in Bitbang Mode|In Clock Mode|In UART Mode|
+ |   Pin Name    |   Function    |   Function  |  Function  |
+#|(Atari compat.)|in Bitbang Mode|In Clock Mode|In UART Mode|
 -+---------------+---------------+-------------+------------+
 1|      Up       |     Input     |     Input   |    Input   |   
 2|     Down      |     Input     |     Input   |    Input   |   
@@ -149,20 +149,23 @@ Type: DB-9 Male (As seen on Next)
 8|     GND       |      GND      |      GND    |     GND    |
 9|   Button 2    |     Input     |     Input   |     RxD    |
 -+---------------+---------------+-------------+------------+
+
 Notes
 -----
-When in JOYSTICK mode lines are normally active low
-In I/O mode lines are 3.3V Active High
-In I/O Clock mode, pin 7 carries a fast or slow clock signal
-In IO mode the output appears on both joystick connectors but the input is only
-read from the selected joystick in io mode.
-In MD mode, the joystick is read using a State Machine as follows:
+* Joystick signals are active low with a pull up resistor attached.
+* In I/O mode the output is 3.3V and inputs are 5V tolerant with small series 
+  resistance.  The output appears on both joystick connectors but the input is 
+  only read from the selected joystick.
+* In I/O Clock mode, pin 7 carries either a fast or slow clock signal
 
-1. Loop through each state (0-7).
+In joystick mode, the joystick is read using the six button md pad algorithm 
+using the following State Machine:
+
+1. Loop through each state (0-7) with duration of one scan line per state.
 2. If the state is even, output LOW to the select pin. If it's odd, output HIGH.
 3. Read the six input pins according to the table 
    (LOW = the button is being pressed).
-4. After the loop, wait at least 1.5ms (16.6 ms is better) so that the control-
+4. After the loop, wait approximately 3ms so that the control-
    ler can reset.
 
 +-----+-----------+-----+-----+-----+-----+-----+-----+
