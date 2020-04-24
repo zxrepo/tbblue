@@ -133,29 +133,53 @@ Type: DB-9 Male (As seen on Next)
  \  6  7  8  9 /
   -------------
  
- +-------------------------------------------+--------------------------+ 
- |                                           |        UART MODE         | 
- |                JOYSTICK MODE              +------------+-------------+
- +---------------+---------------------------+  Function  |             |
- |   Function    |Function In Megadrive Mode | In BitBang |   Function  |
-#| (Atari Mode)  |SELECT LOW   |SELECT HIGH  |or I/O Mode |In Clock Mode|
--+---------------+-------------+-------------+------------+-------------+
-1|      Up       |     Up      |     Up      |            |             |
-2|     Down      |    Down     |    Down     |            |             |
-3|     Left      |  Logic Low  |    Left     |            |             |
-4|    Right      |  Logic Low  |    Right    |            |             |
-5|     +5V       |     +5V     |     +5V     |    +5V     |     +5V     |
-6|   Button 1    |  Button A   |  Button B   |            |             |
-7| Select Signal |Select Signal|Select Signal|    TxD     |    Clock    |
-8|     GND       |     GND     |     GND     |    GND     |     GND     |
-9|   Button 2    | Start Button|  Button C   |    RxD     |     RxD     |
--+---------------+-------------+-------------+------------+-------------+
+ +---------------+------------------------------------------+ 
+ | JOYSTICK MODE |              I/O MODE                    |
+ +---------------+-----------------------------+------------+
+ |   Function    |   Function    |   Function  |  Function  |
+#| (Atari Mode)  |in Bitbang Mode|In Clock Mode|In UART Mode|
+-+---------------+---------------+-------------+------------+
+1|      Up       |     Input     |     Input   |    Input   |   
+2|     Down      |     Input     |     Input   |    Input   |   
+3|     Left      |     Input     |     Input   |    Input   |   
+4|    Right      |     Input     |     Input   |    Input   |   
+5|     +5V       |      +5V      |      +5V    |     +5V    |
+6|   Button 1    |     Input     |     Input   |    Input   |   
+7| Select Signal |    Output     |     Clock   |     TxD    |
+8|     GND       |      GND      |      GND    |     GND    |
+9|   Button 2    |     Input     |     Input   |     RxD    |
+-+---------------+---------------+-------------+------------+
 Notes
 -----
 When in JOYSTICK mode lines are normally active low
-In UART mode lines are 3.3V Active High
-In UART Clock mode, pin 7 carries a fast or slow clock signal
+In I/O mode lines are 3.3V Active High
+In I/O Clock mode, pin 7 carries a fast or slow clock signal
+In IO mode the output appears on both joystick connectors but the input is only
+read from the selected joystick in io mode.
+In MD mode, the joystick is read using a State Machine as follows:
 
+1. Loop through each state (0-7).
+2. If the state is even, output LOW to the select pin. If it's odd, output HIGH.
+3. Read the six input pins according to the table 
+   (LOW = the button is being pressed).
+4. After the loop, wait at least 1.5ms (16.6 ms is better) so that the control-
+   ler can reset.
+
++-----+-----------+-----+-----+-----+-----+-----+-----+
+|State|SEL (Pin 7)|Pin 1|Pin 2|Pin 3|Pin 4|Pin 6|Pin 9|
++-----+-----------+-----+-----+-----+-----+-----+-----+
+|  0  |   LOW	  |	    |     |     |     |     |     |			
+|  1  |   HIGH    |	    |     |     |     |     |     |					
+|  2  |   LOW	  |	    |     |  *	|  *  |	 A	|Start|
+|  3  |   HIGH	  | Up	| Down| Left|Right|	 B	|  C  |
+|  4  |   LOW	  | **	|  ** |     |     |     |     |				
+|  5  |   HIGH	  |  Z	|  Y  |	 X	|Mode |     |     |		
+|  6  |   LOW	  |	    |     |     |     |     |     |							
+|  7  |   HIGH	  |	    |     |     |     |     |     |							
++-----+-----------+-----+-----+-----+-----+-----+-----+
+
+ *: These pins are set LOW together and indicate the presence of a controller.
+**: These pins are set LOW together and indicate a 6-button controller connected
 
 CN4 - Edge Connector
 ====================
