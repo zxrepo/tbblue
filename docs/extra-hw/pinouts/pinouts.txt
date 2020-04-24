@@ -132,21 +132,29 @@ Type: DB-9 Male (As seen on Next)
 \ 1  2  3  4  5 / 
  \  6  7  8  9 /
   -------------
-
- |   Function    |Function In Megadrive Mode |  Function  |
-#| (Atari Mode)  |SELECT LOW   |SELECT HIGH  |In I/O Mode*|
--+---------------+-------------+-------------+------------+
-1|      Up       |     Up      |     Up      |            |
-2|     Down      |    Down     |    Down     |            |
-3|     Left      |  Logic Low  |    Left     |            |
-4|    Right      |  Logic Low  |    Right    |            |
-5|     +5V       |     +5V     |     +5V     |    +5V     |
-6|   Button 1    |  Button A   |  Button B   |            |
-7| Select Signal |Select Signal|Select Signal|    TxD     |
-8|     GND       |     GND     |     GND     |    GND     |
-9|   Button 2    | Start Button|  Button C   |    RxD     |
--+---------------+-------------+-------------+------------+
-*3.3V Active High
+ 
+ +-------------------------------------------+--------------------------+ 
+ |                                           |        UART MODE         | 
+ |                JOYSTICK MODE              +------------+-------------+
+ +---------------+---------------------------+  Function  |             |
+ |   Function    |Function In Megadrive Mode | In BitBang |   Function  |
+#| (Atari Mode)  |SELECT LOW   |SELECT HIGH  |or I/O Mode |In Clock Mode|
+-+---------------+-------------+-------------+------------+-------------+
+1|      Up       |     Up      |     Up      |            |             |
+2|     Down      |    Down     |    Down     |            |             |
+3|     Left      |  Logic Low  |    Left     |            |             |
+4|    Right      |  Logic Low  |    Right    |            |             |
+5|     +5V       |     +5V     |     +5V     |    +5V     |     +5V     |
+6|   Button 1    |  Button A   |  Button B   |            |             |
+7| Select Signal |Select Signal|Select Signal|    TxD     |    Clock    |
+8|     GND       |     GND     |     GND     |    GND     |     GND     |
+9|   Button 2    | Start Button|  Button C   |    RxD     |     RxD     |
+-+---------------+-------------+-------------+------------+-------------+
+Notes
+-----
+When in JOYSTICK mode lines are normally active low
+In UART mode lines are 3.3V Active High
+In UART Clock mode, pin 7 carries a fast or slow clock signal
 
 
 CN4 - Edge Connector
