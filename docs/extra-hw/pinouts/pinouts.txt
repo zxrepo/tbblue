@@ -133,18 +133,18 @@ Type: DB-9 Male (As seen on Next)
  \  6  7  8  9 /
   -------------
 
- |Function       |Function In Megadrive Mode |  Function  |
-#|(Atari Mode)   |SELECT LOW   |SELECT HIGH  |In I/O Mode*|
+ |   Function    |Function In Megadrive Mode |  Function  |
+#| (Atari Mode)  |SELECT LOW   |SELECT HIGH  |In I/O Mode*|
 -+---------------+-------------+-------------+------------+
-1|Up             |     Up      |     Up      |            |
-2|Down           |    Down     |    Down     |            |
-3|Left           |  Logic Low  |    Left     |            |
-4|Right          |  Logic Low  |    Right    |            |
-5|+5 V           |     +5V     |     +5V     |    +5V     |
-6|Button 1       |  Button A   |  Button B   |            |
-7|Select Signal  |Select Signal|Select Signal|    TxD     |
-8|GND            |     GND     |     GND     |    GND     |
-9|Button 2       | Start Button|  Button C   |    RxD     |
+1|      Up       |     Up      |     Up      |            |
+2|     Down      |    Down     |    Down     |            |
+3|     Left      |  Logic Low  |    Left     |            |
+4|    Right      |  Logic Low  |    Right    |            |
+5|     +5V       |     +5V     |     +5V     |    +5V     |
+6|   Button 1    |  Button A   |  Button B   |            |
+7| Select Signal |Select Signal|Select Signal|    TxD     |
+8|     GND       |     GND     |     GND     |    GND     |
+9|   Button 2    | Start Button|  Button C   |    RxD     |
 -+---------------+-------------+-------------+------------+
 *3.3V Active High
 
