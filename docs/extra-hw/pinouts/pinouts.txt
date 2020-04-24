@@ -168,14 +168,14 @@ In MD mode, the joystick is read using a State Machine as follows:
 +-----+-----------+-----+-----+-----+-----+-----+-----+
 |State|SEL (Pin 7)|Pin 1|Pin 2|Pin 3|Pin 4|Pin 6|Pin 9|
 +-----+-----------+-----+-----+-----+-----+-----+-----+
-|  0  |   LOW	  |	    |     |     |     |     |     |			
-|  1  |   HIGH    |	    |     |     |     |     |     |					
-|  2  |   LOW	  |	    |     |  *	|  *  |	 A	|Start|
-|  3  |   HIGH	  | Up	| Down| Left|Right|	 B	|  C  |
+|  0  |   LOW	  |	|     |     |     |     |     |			
+|  1  |   HIGH    |     |     |     |     |     |     |					
+|  2  |   LOW	  |	|     |  *  |  *  |  A  |Start|
+|  3  |   HIGH	  | Up	| Down| Left|Right|  B  |  C  |
 |  4  |   LOW	  | **	|  ** |     |     |     |     |				
-|  5  |   HIGH	  |  Z	|  Y  |	 X	|Mode |     |     |		
-|  6  |   LOW	  |	    |     |     |     |     |     |							
-|  7  |   HIGH	  |	    |     |     |     |     |     |							
+|  5  |   HIGH	  |  Z	|  Y  |	 X  |Mode |     |     |		
+|  6  |   LOW	  |     |     |     |     |     |     |	
+|  7  |   HIGH	  |     |     |     |     |     |     |	
 +-----+-----------+-----+-----+-----+-----+-----+-----+
 
  *: These pins are set LOW together and indicate the presence of a controller.
