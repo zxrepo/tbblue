@@ -4,10 +4,11 @@ Running the Next Core on ZX-DOS
 Author:  Phoebus R. Dokos based on a document by Robin Verhagen-Guest
 Date:	 2020-04-24
 License: CC BY-NC-SA
-Version: 1.0
+Version: 1.1
 
 Changelog
 ---------
+2020-04-26: 1.1 Minor update based on Antonio Silva's feedback
 2020-04-24: 1.0 Initial Version
 
 A. Preparation
@@ -16,12 +17,14 @@ A. Preparation
    additional 512K RAM on it otherwise NextZXOS will only have 256Kbytes 
    available to it.
 2. Format blank SD card
-3. Copy standard esxDOS 0.8.6 on it
+3. Copy standard esxDOS 0.8.6 or greater on it (this will have to match what your
+   other cores carry as standard)
 4. Copy latest distro on it. Edit config.ini under c:/machines/next to 
    include the line ps2=0 if it doesn't exist or edit the existing line from 1
    to 0. This effectively switches the dual PS/2 port to keyboard first as the
    Next Firmware (TBBLUE.FW) switches the primary input to mouse (for cased
-   ZX Spectrum Nexts)
+   ZX Spectrum Nexts). Also edit the config.ini file to disable the Internal
+   Beeper (with intbeep=0) as the ZX DOS does not have one.
 5. Download https://github.com/zxdos/binaries/raw/master/zxnext_zxdos_issue2.ZX2
    and rename to core31.zx2, in root of SD
 
@@ -44,3 +47,6 @@ C. Starting the Core
 D. Notes
 --------
 1. There is no Reset or Drive button. All F keys work as expected.
+2. Configuration described in A.4 above can also be done by entering the config
+   module in the core by pressing SPACE when the ZX DOS logo is displayed and 
+   then pressing E to edit configuration options.
