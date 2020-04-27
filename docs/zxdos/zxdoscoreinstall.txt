@@ -26,13 +26,14 @@ A. Preparation
    ZX Spectrum Nexts). Also edit the config.ini file to disable the Internal
    Beeper (with intbeep=0) as the ZX DOS does not have one.
 5. Download https://github.com/zxdos/binaries/raw/master/zxnext_zxdos_issue2.ZX2
-   and rename to core31.zx2, in root of SD
+   and rename to core31.zx2 (or whichever core slot you desire), in root of SD
 
 B. Flashing
 -----------
 1. Boot into BIOS, which is power on (or CTRL+ALT+BKSPC) and hit F2 on the first
    screen
-2. Use right cursor to go to Update menu. Go down to Core slot 31 and hit ENTER
+2. Use right cursor to go to Update menu. Go down to Core slot 31 (or the one
+   one you chose in step A5. and hit ENTER
 3. Pick SD file. In the "Are you Sure?" prompt, answer "Yes"
 4. Wait. When prompted type name "Next" (or whatever else you wish)
 5. Select Exit/Save changes & Exit.
