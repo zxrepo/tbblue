@@ -1,3 +1,13 @@
+v2.06E 2020-04-27
+=================
+* Fixed crash in Calculator if used prior to NextBASIC and DELETE immediately
+  pressed followed by any other character.
+* Fixed bug where LET x=BANK x... was incorrectly accepted as valid syntax.
+* Fixed bug in tokeniser causing additional spaces to be inserted after REM
+  keyword (bug introduced in v2.06B).
+* Updated About screen credits.
+
+
 v2.06D 2020-04-22
 =================
 * Reordered initialisation code to ensure all Pentagon modes properly disabled
