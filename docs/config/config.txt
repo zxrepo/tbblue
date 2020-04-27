@@ -170,7 +170,7 @@ ps2=0
 
 14. scanlines
 This setting produces a cosmetic scanline-like effect of variable intensity from
-totally disabled (0), to 75% (1), 50% (2) and 25% (3).
+totally disabled (0), to 50% (1), 25% (2) and 12.5% (3).
 Scanlines are also controlled on the fly with the F8 key on the PS/2 keyboard 
 (or M1+8)
 
@@ -196,7 +196,11 @@ turbo=1
 timing sets a global screenmode setting from 0..7 for all menu items that have a
 screen mode set to 8 and it's set automatically from the new testcard video
 setting module upon boot. If a menu item contains a video mode different from 
-8 then this setting is overridden.
+8 then this setting is overridden. An express setting of timing=8 forces the
+appearance of the TestCard.
+
+Default setting (new distribution):
+timing=8
 
 18. default
 this setting bridges the global configuration section with the per-personality 
