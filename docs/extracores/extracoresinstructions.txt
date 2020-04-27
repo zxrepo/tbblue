@@ -62,10 +62,16 @@ Running a core from NextBASIC
 -----------------------------
 
 A new dot command, .CORE, is provided to allow you to start a core from within
-NextBASIC. For example, use .CORE BBCMASTER to start the core in the 
-"machines/bbcmaster" directory (provided it has been installed to your Next's
+NextBASIC. For example, use .CORE BBCMA~1 (see note below) to start the core in
+the "machines/bbcmaster" directory (provided it has been installed to your Next's
 flash memory).
 
+
+IMPORTANT NOTE!
+---------------
+If the core folder you chose is a long name, you will need to use an 8.3 
+compliant (short) name to start it with .CORE. For differences between long and
+short names refer to Chapter 20 of the ZX Spectrum Next User Manual.
 
 Additional core configuration facilities
 ========================================
