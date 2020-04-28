@@ -75,7 +75,7 @@ If you're using a PS/2 keyboard this setting can also be changed on the fly by
 pressing F3 (or NMI+3)
 
 Default setting:
-50_60hz=1
+50_60hz=0
 
 
 3. timex 
