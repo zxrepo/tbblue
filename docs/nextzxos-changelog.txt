@@ -1,3 +1,19 @@
+v2.06F 2020-04-28
+=================
+* Fixed bug where BANK n ERASE without any parameters erroneously used the same
+  number of parameters as any preceding BANK n ERASE... command, leading to
+  incorrect bank/length/erase value and potential memory corruption.
+* Fixed bug in RAMdisk block allocation causing a big slowdown in writing
+  files to the RAMdisk.
+* Before executing a command, the editor screen is cleared as well as the
+  BASIC screen. This prevents program listings being left visible (or partially
+  visible) if the last LAYER command was LAYER 2,0 (ie layer 2 is current but
+  hidden).
+* Improved performance of .POK file processing by buffering the file reads.
+  This reduces the time taken to process the pathological 353K "MattsKit.pok"
+  case from ~72s to ~5s.
+
+
 v2.06E 2020-04-27
 =================
 * Fixed crash in Calculator if used prior to NextBASIC and DELETE immediately
