@@ -4,6 +4,24 @@ Author:  Phoebus R. Dokos (based on documentation by: Garry Lancaster &
                            Allen Allbright)
 Date:	 2020-03-05
 License: CC BY-NC-SA
+Version: 1.4
+
+Changelog
+---------
+2018-09-24: 1.0 Initial version
+2019-06-24: 1.1 Major update due to FW changes
+2020-02-29: 1.2 Update to reflect new folder
+                locations and esxDOS ROM file
+                name
+2020-03-05: 1.3 Minor update
+2020-04-28: 1.4 Added new config.ini options
+
+The config.ini file
+-------------------
+Author:  Phoebus R. Dokos (based on documentation by: Garry Lancaster &
+                           Allen Allbright)
+Date:	 2020-03-05
+License: CC BY-NC-SA
 Version: 1.3
 
 Changelog
@@ -78,11 +96,13 @@ This enables Timex modes (HiRes and Multicolour) if set to (1)
 Default setting:
 timex=1
 
+
 4.psgmode
 psgmode sets the on board PSG mode to AY (0), YM (1) or disabled (2)
 
 Default setting:
 psgmode=0
+
 
 5.stereomode
 stereomode changes the stereophonic (Left-Center-Right) ordering of the PSG 
@@ -91,12 +111,14 @@ channels from ABC (0) to ACB (1)
 Default setting:
 stereomode=1
 
+
 6.intsnd
 
 Intsnd enables (1) or disables (0) the internal beeper.
 
 Default setting:
 intsnd=1
+
 
 7.turbosound
 Turbosound disables(0) or enables(1) the additional 2 AYs to give you either an 
@@ -105,12 +127,14 @@ option of 3 or 9 channels of PSG audio
 Default setting:
 turbosound=1
 
+
 8.covox
 The Covox setting enables (1) or disables (0) the onboard SpecDRUM / Covox 
 Soundrive compatible DAC hardware.
 
 Default setting:
 covox=1
+
 
 9.divmmc
 This enables (1) or disables (0) the onboard divMMC. This won't affect boot but
@@ -122,7 +146,18 @@ esxmmc.bin is expected to be located in c:/machines/next/.
 Default setting:
 divmmc=0
 
-10. mf
+
+10.divports
+This enables(1) access to the DivMMC i/o ports. For the +3e personality to 
+operate properly, this needs to be set, as it needs access to these ports even 
+though the DivMMC ROM is not loaded/used. It's used together
+with divmmc=0
+
+Default setting:
+divports=1
+
+
+11. mf
 This enables (1) or disables (0) the onboard MF-compatible hardware. It, too can
 be overridden by the per-personality setting as outlined in the following 
 section. If it is however enabled and the ROM filename is NOT overriden, then it
@@ -135,7 +170,8 @@ and then placed in the c:/machines/next/ folder.
 Default setting:
 mf=0
 
-11. joystick1
+
+12. joystick1
 joystick1 (and joystick2 that follows) sets the first port joystick type to one
 of the following options: 
 0 = Sinclair 2 (67890)
@@ -151,7 +187,8 @@ of the following options:
 Default setting:
 joystick1=2
 
-12. joystick2
+
+13. joystick2
 This setting is as the previous one and accepts the same options (some of which 
 are mutually exclusive i.e. if you select a Kempston 1 for joystick1 you cannot 
 select a Kempston 1 for the second port as well)
@@ -159,16 +196,19 @@ select a Kempston 1 for the second port as well)
 Default setting:
 joystick2=0
 
-13. ps2
+
+14. ps2
 This setting rewires internally the PS/2 port to have the mouse connector as 
 first PS/2 device(1) rather than the default which is keyboard(0). This 
 facilitates plugging in a PS/2 mouse without a Y-splitter cable if you already 
 have a membrane keyboard attached or a regular cased Next.
 
 Default setting:
-ps2=0
+ps2=0 (cased next)
+ps2=1 (board backers' distribution)
 
-14. scanlines
+
+15. scanlines
 This setting produces a cosmetic scanline-like effect of variable intensity from
 totally disabled (0), to 50% (1), 25% (2) and 12.5% (3).
 Scanlines are also controlled on the fly with the F8 key on the PS/2 keyboard 
@@ -177,22 +217,25 @@ Scanlines are also controlled on the fly with the F8 key on the PS/2 keyboard
 Default setting:
 scanlines=0
 
-15. dac
+
+16. dac
 The dac setting only applies to the Vtrucco development board and can be safely 
 disregarded as it doesn't apply to the ZX Spectrum Next.
 
 Default setting:
-dac=1
+dac=0
 
-16. turbo
-turbo, enables(1) or disables (0) access to speeds over the standard 3.58Mhz. If
-enabled, speed can be also overriden on the fly with the F7 key on a PS/2 
+
+17. turbokey
+turbokey, enables(1) or disables (0) access to speeds over the standard 3.58Mhz.
+If enabled, speed can be also overriden on the fly with the F7 key on a PS/2 
 keyboard (or M1+7)
 
 Default setting:
-turbo=1
+turbokey=1
 
-17. timing
+
+18. timing
 timing sets a global screenmode setting from 0..7 for all menu items that have a
 screen mode set to 8 and it's set automatically from the new testcard video
 setting module upon boot. If a menu item contains a video mode different from 
@@ -202,14 +245,71 @@ appearance of the TestCard.
 Default setting (new distribution):
 timing=8
 
-18. default
+
+19. default
 this setting bridges the global configuration section with the per-personality 
 configuration section/menu and selects which of the machine personalities that 
 follow will be the one that boots by default. Entries are 0-based so the default
 (9) actually means the 10th entry in the list
 
 Default setting:
-default=9
+default=0
+
+
+20. dma
+This setting enables(1) or disables (0) the onboard DMA controller. 
+The controller type is determined by which port is accessed and can be either 
+Z80DMA or ZXNDMA. See the NextREG and zxnDMA documentation for details.
+
+default=0
+
+
+21. keyb_issue
+This setting enables Issue 2 (1) keyboard emulation or selects the default 
+Issue 3 (0). Only applies to very old software.
+
+default=0
+
+
+22. ay48
+This setting enables (1) or disables  (0) the presence of the base (128K style)
+AY chip while in 48K mode. This is needed for certain programs that identify 
+erroneously a 48K personality as 128K.
+
+default=0
+
+
+23. uart_i2c
+This setting enables (1) or disables (0) the I2C and UART devices
+
+default=1
+
+
+24. kmouse
+This setting enables (1) or disables (1) the Kempston Mouse.
+default=1
+
+
+25. ulaplus
+This setting enables (1) or disables (0) support for the ULA+ ULA extensions
+
+default=1
+
+
+26. hdmisound
+This settings enables (1) or disables (0) sound output from the digital video
+port. Sound is still being output by the audio out jack in the back.
+
+default=1
+
+
+27. beepmode
+This setting disables (1) or enables (0) mixing of the beeper channel in the 
+audio stream output. If set to disabled, beeper audio will only come from the 
+internal speaker.
+
+default=0
+
 
 Per-Personality Settings
 ========================
