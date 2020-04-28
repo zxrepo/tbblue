@@ -18,23 +18,6 @@ Changelog
 2020-04-28: 1.5 Corrected some descriptions (with input from Garry Lancaster,
                                              Alvin Albrecht and Darran Rimron)
 
-The config.ini file
--------------------
-Author:  Phoebus R. Dokos (based on documentation by: Garry Lancaster &
-                           Allen Allbright)
-Date:	 2020-03-05
-License: CC BY-NC-SA
-Version: 1.3
-
-Changelog
----------
-2018-09-24: 1.0 Initial version
-2019-06-24: 1.1 Major update due to FW changes
-2020-02-29: 1.2 Update to reflect new folder
-                locations and esxDOS ROM file
-                name
-2020-03-05: 1.3 Minor update
-
 Introduction
 ============
 Configuration of your ZX Spectrum Next computer can be done in two ways:
@@ -351,6 +334,8 @@ Type can be one of the following: 0 (48K Spectrum),
                                   
 The machine type controls what roms are loaded (so it will prevent paging in 
 non-existent roms via ports 7ffd, 1ffd) and which multiface model is implemented
+The Firmware can use that information to further modify the machine's timing 
+model to accurately reflect the operation of the specific personality chosen.
 
 Display can be a number from 0 to 6 for VGA or 7 for Digital. This takes as a 
 base the 50_60hz setting in the Global settings group and modifies the sync 
