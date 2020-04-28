@@ -150,8 +150,7 @@ divmmc=0
 10.divports
 This enables(1) access to the DivMMC i/o ports. For the +3e personality to 
 operate properly, this needs to be set, as it needs access to these ports even 
-though the DivMMC ROM is not loaded/used. It's used together
-with divmmc=0
+though the DivMMC ROM is not loaded/used. 
 
 Default setting:
 divports=1
@@ -211,8 +210,8 @@ ps2=1 (board backers' distribution)
 15. scanlines
 This setting produces a cosmetic scanline-like effect of variable intensity from
 totally disabled (0), to 50% (1), 25% (2) and 12.5% (3).
-Scanlines are also controlled on the fly with the F8 key on the PS/2 keyboard 
-(or M1+8)
+Scanlines are also controlled on the fly with the F7 key on the PS/2 keyboard 
+(or M1+7)
 
 Default setting:
 scanlines=0
@@ -228,8 +227,8 @@ dac=0
 
 17. turbokey
 turbokey, enables(1) or disables (0) access to speeds over the standard 3.58Mhz.
-If enabled, speed can be also overriden on the fly with the F7 key on a PS/2 
-keyboard (or M1+7)
+If enabled, speed can be also overriden on the fly with the F8 key on a PS/2 
+keyboard (or M1+8)
 
 Default setting:
 turbokey=1
