@@ -249,7 +249,7 @@ timing=8
 this setting bridges the global configuration section with the per-personality 
 configuration section/menu and selects which of the machine personalities that 
 follow will be the one that boots by default. Entries are 0-based so the default
-(9) actually means the 10th entry in the list
+(0) actually means the 1st entry in the list
 
 Default setting:
 default=0
