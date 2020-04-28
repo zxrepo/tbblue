@@ -1,10 +1,10 @@
 The config.ini file
 -------------------
 Author:  Phoebus R. Dokos (based on documentation by: Garry Lancaster &
-                           Allen Allbright)
+                           Alvin Albrecht)
 Date:	 2020-03-05
 License: CC BY-NC-SA
-Version: 1.4
+Version: 1.5
 
 Changelog
 ---------
@@ -15,6 +15,8 @@ Changelog
                 name
 2020-03-05: 1.3 Minor update
 2020-04-28: 1.4 Added new config.ini options
+2020-04-28: 1.5 Corrected some descriptions (with input from Garry Lancaster,
+                                             Alvin Albrecht and Darran Rimron)
 
 The config.ini file
 -------------------
@@ -45,7 +47,7 @@ The second method provides access to some settings not found on the regular ZX
 Spectrum Next Editor Module, adding a machine personality, changing the machine
 type for said personality, provide alternate ROM images and even more 
 importantly setting your monitor if it doesn't work out of the box.
-Config.ini is a regular text file, located in the c:/machines/nezt/ folder of 
+Config.ini is a regular text file, located in the c:/machines/next/ folder of 
 your boot SD Card and it's read upon first boot after an F1 reset or cold boot.
 
 Config.ini groups
@@ -68,23 +70,26 @@ values with the smallest acceptable one.
 
 These are:
 1. scandoubler
-This sets the scandoubler ON (1) or OFF (0). Scandoubler is needed for modern 
-hires monitors but should be turned off for older monitors. If you're using a 
-PS/2 keyboard this setting can also be changed on the fly by pressing F2 other-
-wise on a Spectrum membrane keyboard you'll need to press M1 (on the side of the
-machine) + 2
+This sets the scandoubler ON (1) or OFF (0). 
+Scandoubler must be ON for VGA displays and OFF for RGB type monitors (or SCART
+connections). It changes the horizontal scanrate from 30kHz (VGA) to 15KHz
+(RGB). If you're using a  PS/2 keyboard this setting can also be changed on the 
+fly by pressing F2 otherwise on a Spectrum membrane keyboard you'll need to 
+press NMI (on the side of the machine) + 2. This function key responds differently
+on digital displays as it forces a resync.
 
 Default setting:
 scandoubler=1
 
 
 2.50_60hz 
-This sets the main frequency of the display to 50Hz(0) or 60Hz(1). If you're 
-using a VGA monitor or are located in a country that uses 60Hz mains, chances 
-are your monitor will lock at 60Hz. (But that's not all you need... look further
-down in the per-personality settings section). 
+This sets the main frequency of the display to 50Hz(0) or 60Hz(1). 
+60Hz should be avoided whenever possible and as a setting it is only there for 
+those whose displays cannot work below 60Hz (usually monitors specifically made 
+for PCs). 50Hz retains the proper frame rate for Spectrum software and software
+that requires very strict timings so it's advisable you always use that.
 If you're using a PS/2 keyboard this setting can also be changed on the fly by 
-pressing F3 (or M1+3)
+pressing F3 (or NMI+3)
 
 Default setting:
 50_60hz=1
@@ -98,7 +103,10 @@ timex=1
 
 
 4.psgmode
-psgmode sets the on board PSG mode to AY (0), YM (1) or disabled (2)
+psgmode sets the on board PSG mode to AY (0), YM (1), reserved (2) and disabled
+(3).
+Noe: To truly disable AY the port addresses should be disabled and reset will 
+silence it (See relavant NextREG documentation)
 
 Default setting:
 psgmode=0
@@ -129,8 +137,10 @@ turbosound=1
 
 
 8.covox
-The Covox setting enables (1) or disables (0) the onboard SpecDRUM / Covox 
-Soundrive compatible DAC hardware.
+This setting enables (1) or disables (0) ALL onboard SpecDRUM / Covox 
+Soundrive compatible DAC hardware. Individual DAC hardware can be selectively
+disabled/enabled by the relevant NextREG. See the NextREG documentation for
+details.
 
 Default setting:
 covox=1
@@ -211,7 +221,7 @@ ps2=1 (board backers' distribution)
 This setting produces a cosmetic scanline-like effect of variable intensity from
 totally disabled (0), to 50% (1), 25% (2) and 12.5% (3).
 Scanlines are also controlled on the fly with the F7 key on the PS/2 keyboard 
-(or M1+7)
+(or NMI+7)
 
 Default setting:
 scanlines=0
@@ -219,7 +229,9 @@ scanlines=0
 
 16. dac
 The dac setting only applies to the Vtrucco development board and can be safely 
-disregarded as it doesn't apply to the ZX Spectrum Next.
+disregarded as it doesn't apply to the ZX Spectrum Next. It has nothing to do
+with the actual DACs on the ZX Spectrum Next which are controlled by the covox
+setting above.
 
 Default setting:
 dac=0
@@ -228,7 +240,7 @@ dac=0
 17. turbokey
 turbokey, enables(1) or disables (0) access to speeds over the standard 3.58Mhz.
 If enabled, speed can be also overriden on the fly with the F8 key on a PS/2 
-keyboard (or M1+8)
+keyboard (or NMI+8)
 
 Default setting:
 turbokey=1
@@ -336,19 +348,20 @@ Type can be one of the following: 0 (48K Spectrum),
                                   1 (128K/+2 -grey- Spectrum), 
                                   2 (+2A/+3/Next), 
                                   3 (Soviet clone-style timings 128K Spectrum)
-
-The type affects both the available memory, paging mechanism as well as ULA type
-and timings of the machine personality. This setting can also be further 
-modified after boot by modifying the appropriate Next hardware registers
+                                  
+The machine type controls what roms are loaded (so it will prevent paging in 
+non-existent roms via ports 7ffd, 1ffd) and which multiface model is implemented
 
 Display can be a number from 0 to 6 for VGA or 7 for Digital. This takes as a 
 base the 50_60hz setting in the Global settings group and modifies the sync 
 frequency in steps of approximately 1Hz to facilitate screen "lock" according to
-your monitor. The higher the number the more the machine will speed-up although 
-timings of all peripherals stay constant relative to one another. Setting 7 
-(Digital) completely modifies the timings to make the display compatible with 
-modern HDMI/DVI monitors as well as changing the aspect ratio and border size 
-(Especially for the 60Hz Digital setting 7). 
+your monitor. As the number is increased, the realtime speed of the machine 
+increases with frame rates rising with it toward a rate VGA monitors may be able
+to accept.  The relative timings of all the hardware remains intact so that the
+machine will continue to generate a correct display with the spectrum's original
+video frame.. Setting 7 (Digital) completely modifies the timings to make the 
+display compatible with modern HDMI/DVI monitors as well as changing the aspect 
+ratio and border size (Especially for the 60Hz Digital setting 7). 
 Many HDMI/DVI monitors will work with a setting of 0 to 6 however ALL HDMI/DVI
 monitors will work with a setting of 7.
 A setting of 8 allows the video testing boot module to set the screen according
