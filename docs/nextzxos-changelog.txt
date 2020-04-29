@@ -1,3 +1,10 @@
+v2.06G 2020-04-29
+=================
+* Clear attributes on reset to avoid visible artifacts during memory test.
+* Fixed crash loading Scapeghost +3 .DSK, caused by a flawed optimisation
+  introduced in v2.06F.
+
+
 v2.06F 2020-04-28
 =================
 * Fixed bug where BANK n ERASE without any parameters erroneously used the same
