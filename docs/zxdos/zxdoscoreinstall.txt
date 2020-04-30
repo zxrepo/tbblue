@@ -24,7 +24,9 @@ A. Preparation
    to 0. This effectively switches the dual PS/2 port to keyboard first as the
    Next Firmware (TBBLUE.FW) switches the primary input to mouse (for cased
    ZX Spectrum Nexts). Also edit the config.ini file to disable the Internal
-   Beeper (with intbeep=0) as the ZX DOS does not have one.
+   Beeper (with intbeep=0) as the ZX DOS does not have one.The gomaDOS and 
+   gomaDOS+ do have an internal beeper so that can be set to anything you want
+   if you have one of these
 5. Download https://github.com/zxdos/binaries/raw/master/zxnext_zxdos_issue2.ZX2
    and rename to core31.zx2 (or whichever core slot you desire), in root of SD
 
