@@ -36,7 +36,6 @@ const char * settingName[eSettingMAX] =
 	"intsnd",		// eSettingIntSnd
 	"stereomode",		// eSettingStereoMode
 	"turbosound",		// eSettingTurboSound
-	"covox",		// eSettingCovox
 	"divmmc",		// eSettingDivMMC
 	"mf",			// eSettingMF
 	"joystick1",		// eSettingJoystick1
@@ -56,6 +55,8 @@ const char * settingName[eSettingMAX] =
 	"ulaplus",		// eSettingULAplus
 	"hdmisound",		// eSettingHDMISound
 	"beepmode",		// eSettingBEEPMode
+	"buttonswap",		// eSettingMouseBtnSwap
+	"mousedpi",		// eSettingMouseDPI
 };	
 
 const unsigned char settingMaxValue[eSettingMAX] =
@@ -67,7 +68,6 @@ const unsigned char settingMaxValue[eSettingMAX] =
 	MAX_INTSND,		// eSettingIntSnd
 	MAX_STEREOMODE,		// eSettingStereoMode
 	MAX_TURBOSOUND,		// eSettingTurboSound
-	MAX_COVOX,		// eSettingCovox
 	MAX_DIVMMC,		// eSettingDivMMC
 	MAX_MF,			// eSettingMF
 	MAX_JOYSTICK1,		// eSettingJoystick1
@@ -87,6 +87,8 @@ const unsigned char settingMaxValue[eSettingMAX] =
 	MAX_ULAPLUS,		// eSettingULAplus
 	MAX_HDMISOUND,		// eSettingHDMISound
 	MAX_BEEPMODE,		// eSettingBEEPMode
+	MAX_BUTTONSWAP,		// eSettingMouseBtnSwap
+	MAX_MOUSEDPI,		// eSettingMouseDPI
 };
 
 const unsigned char settingDefaults[eSettingMAX] =
@@ -98,7 +100,6 @@ const unsigned char settingDefaults[eSettingMAX] =
 	1,			// eSettingIntSnd
 	0,			// eSettingStereoMode
 	1,			// eSettingTurboSound
-	1,			// eSettingCovox
 	0,			// eSettingDivMMC
 	0,			// eSettingMF
 	1,			// eSettingJoystick1
@@ -111,13 +112,15 @@ const unsigned char settingDefaults[eSettingMAX] =
 	8,			// eSettingTiming
 	0,			// eSettingIss23
 	1,			// eSettingDivPorts
-	0,			// eSettingDAC
+	1,			// eSettingDAC
 	0,			// eSettingAY48
 	1,			// eSettingUARTI2C
 	1,			// eSettingKMouse
 	1,			// eSettingULAplus
 	1,			// eSettingHDMISound
 	0,			// eSettingBEEPMode
+	0,			// eSettingMouseBtnSwap
+	1,			// eSettingMouseDPI
 };
 
 const unsigned char settingType[eSettingMAX] =
@@ -129,7 +132,6 @@ const unsigned char settingType[eSettingMAX] =
 	eTypeYesNo,		// eSettingIntSnd
 	eTypeStereoMode,	// eSettingStereoMode
 	eTypeYesNo,		// eSettingTurboSound
-	eTypeYesNo,		// eSettingCovox
 	eTypeYesNo,		// eSettingDivMMC
 	eTypeYesNo,		// eSettingMF
 	eTypeJoystickMode,	// eSettingJoystick1
@@ -149,6 +151,8 @@ const unsigned char settingType[eSettingMAX] =
 	eTypeYesNo,		// eSettingULAplus
 	eTypeYesNo,		// eSettingHDMISound
 	eTypeBEEPMode,		// eSettingBEEPMode
+	eTypeYesNo,		// eSettingMouseBtnSwap
+	eTypeDPI,		// eSettingMouseDPI
 };
 
 unsigned char settings[eSettingMAX];
@@ -246,13 +250,54 @@ void load_config()
 	}
 
 	res = f_open(&Fil, CONFIG_FILE, FA_READ);
-	if (res != FR_OK)
+	if (res == FR_OK)
 	{
-		//             12345678901234567890123456789012
-		display_error("Error opening 'config.ini'!");
+		// Read configuration
+		while(f_eof(&Fil) == 0)
+		{
+			if (!f_gets(line, 255, &Fil))
+			{
+				//             12345678901234567890123456789012
+				display_error("Error reading file data!");
+			}
+
+			// Ensure correct parsing even if no EOL on last line
+			if (line[strlen(line)-1] == '\n')
+			{
+				line[strlen(line)-1] = '\0';
+			}
+			else
+			{
+				line[strlen(line)] = '\0';
+			}
+
+			for (i = 0; i < eSettingMAX; i++)
+			{
+				unsigned int len = strlen(settingName[i]);
+				if ((line[len] == '=') && strncmp(line, settingName[i], len) == 0)
+				{
+					settings[i] = CLAMP(atoi(line + len + 1), settingMaxValue[i]);
+					break;
+				}
+			}
+		}
+
+		f_close(&Fil);
 	}
 
-	// Read configuration
+	res = f_open(&Fil, MENU_FILE, FA_READ);
+	if (res != FR_OK)
+	{
+		res = f_open(&Fil, MENU_DEFAULT_FILE, FA_READ);
+
+		if (res != FR_OK)
+		{
+			//             12345678901234567890123456789012
+			display_error("Error opening 'menu.ini/.def'!");
+		}
+	}
+
+	// Read menu
 	while(f_eof(&Fil) == 0)
 	{
 		if (!f_gets(line, 255, &Fil))
@@ -260,9 +305,6 @@ void load_config()
 			//             12345678901234567890123456789012
 			display_error("Error reading file data!");
 		}
-
-		if (line[0] == ';')
-			continue;
 
 		// Ensure correct parsing even if no EOL on last line
 		if (line[strlen(line)-1] == '\n')
@@ -289,18 +331,6 @@ void load_config()
 				if (pMenu->romfile[0])
 				{
 					++menu_cont;
-				}
-			}
-		}
-		else
-		{
-			for (i = 0; i < eSettingMAX; i++)
-			{
-				unsigned int len = strlen(settingName[i]);
-				if ((line[len] == '=') && strncmp(line, settingName[i], len) == 0)
-				{
-					settings[i] = CLAMP(atoi(line + len + 1), settingMaxValue[i]);
-					break;
 				}
 			}
 		}

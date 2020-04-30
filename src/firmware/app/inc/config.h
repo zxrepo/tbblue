@@ -36,7 +36,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define	MAX_INTSND	1
 #define	MAX_STEREOMODE	1
 #define	MAX_TURBOSOUND	1
-#define	MAX_COVOX	1
 #define	MAX_DIVMMC	1
 #define MAX_MF		1
 #define	MAX_JOYSTICK1	6
@@ -55,6 +54,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define	MAX_ULAPLUS	1
 #define	MAX_HDMISOUND	1
 #define	MAX_BEEPMODE	1
+#define	MAX_BUTTONSWAP	1
+#define	MAX_MOUSEDPI	3
 
 #define MAX_TITLE 	31	// inc null; 2 spaces get printed to left
 #define MAX_ROMNAME	15
@@ -69,7 +70,6 @@ enum {
 	eSettingSpeakerMode,
 	eSettingStereoMode,
 	eSettingTurboSound,
-	eSettingCovox,
 	eSettingDivMMC,
 	eSettingMF,
 	eSettingJoystick1,
@@ -89,6 +89,8 @@ enum {
 	eSettingULAplus,
 	eSettingHDMISound,
 	eSettingBEEPMode,
+	eSettingMouseBtnSwap,
+	eSettingMouseDPI,
 
 	eSettingMAX
 };
@@ -102,6 +104,7 @@ enum {
 	eTypeScanlines,
 	eTypeIss23,
 	eTypeBEEPMode,
+	eTypeDPI,
 };
 
 typedef struct {

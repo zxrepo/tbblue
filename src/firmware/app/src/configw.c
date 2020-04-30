@@ -36,29 +36,11 @@ void save_config()
 	REG_NUM = REG_TURBO;
 	REG_VAL = 2;
 
-	// FA_CREATE_ALWAYS should be used, but f_open always returns an error.
-	ERR_CHECK(f_open(&Fil, CONFIG_FILE, /*FA_CREATE_ALWAYS*/
-					FA_OPEN_EXISTING | FA_WRITE));
+	ERR_CHECK(f_open(&Fil, CONFIG_FILE, FA_CREATE_ALWAYS | FA_OPEN_EXISTING | FA_WRITE));
 
 	for (i = 0; i < eSettingMAX; i++)
 	{
 		ERR_CHECK_PF(f_printf(&Fil, "%s=%d\n", settingName[i], settings[i]));
-	}
-
-	for (i=0; i < menu_cont; i++)
-	{
-		ERR_CHECK_PF(f_printf(&Fil, "menu=%s,%d,%d,%s", menus[i].title, menus[i].mode, menus[i].video_timing, menus[i].romfile));
-		
-		if (menus[i].divmmc_romfile[0])
-		{
-			ERR_CHECK_PF(f_printf(&Fil, ",%s", menus[i].divmmc_romfile));
-			if (menus[i].mf_romfile[0])
-			{
-				ERR_CHECK_PF(f_printf(&Fil, ",%s", menus[i].mf_romfile));
-			}
-		}
-
-		ERR_CHECK_PF(f_printf(&Fil, "\n"));
 	}
 
 	// Delete any further part of the file that we haven't overwritten

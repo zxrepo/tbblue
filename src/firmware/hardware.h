@@ -54,6 +54,8 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define NEXT_FIRMWARE_FILE2 "TBBLUE.FW"
 #define NEXT_DIRECTORY      "/machines/next/"
 #define CONFIG_FILE         NEXT_DIRECTORY "config.ini"
+#define MENU_FILE           NEXT_DIRECTORY "menu.ini"
+#define MENU_DEFAULT_FILE   NEXT_DIRECTORY "menu.def"
 #define TIMING_FILE         NEXT_DIRECTORY "timing.ini"
 #define ESXMMC_FILE         "esxmmc.bin"
 #define MF1_FILE            "mf1.rom"
@@ -86,6 +88,7 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define REG_TURBO		0x07
 #define REG_PERIPH3		0x08
 #define REG_PERIPH4		0x09
+#define REG_PERIPH5		0x0a
 #define REG_VERSION_SUB 	0x0e
 #define REG_ANTIBRICK		0x10
 #define REG_VIDEOT		0x11

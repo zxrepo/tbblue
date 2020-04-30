@@ -35,10 +35,10 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = "1.28";
+unsigned char * FW_version = "1.29b";
 
 // minimal required for this FW
-unsigned long minimal = 0x030104; // 03 01 04 = 3.01.04
+unsigned long minimal = 0x030105; // 03 01 05 = 3.01.05
 unsigned long current = 0;
 
 const char *filename;
@@ -366,7 +366,7 @@ void init_registers()
 	opc = 0;
 	if (settings[eSettingStereoMode])	opc |= 0x20;	// bit 5
 	if (settings[eSettingSpeakerMode])	opc |= 0x10;	// bit 4
-	if (settings[eSettingCovox])		opc |= 0x08;	// bit 3
+	if (settings[eSettingDAC])		opc |= 0x08;	// bit 3
 	if (settings[eSettingTimex])		opc |= 0x04;	// bit 2
 	if (settings[eSettingTurboSound])	opc |= 0x02;	// bit 1
 	if (settings[eSettingIss23])		opc |= 0x01;	// bit 0
@@ -375,6 +375,11 @@ void init_registers()
 	REG_NUM = REG_PERIPH4;
 	opc = settings[eSettingScanlines] & 3;			// bits 1-0
 	if (settings[eSettingHDMISound] == 0)	opc |= 0x04;	// bit 2
+	REG_VAL = opc;
+
+	REG_NUM = REG_PERIPH5;
+	opc = settings[eSettingMouseDPI] & 3;			// bits 1-0
+	if (settings[eSettingMouseBtnSwap])	opc |= 0x04;	// bit 2
 	REG_VAL = opc;
 	
 	// NOTE: With bit 31 of hwenables[3] set to 0, the internal port
@@ -449,6 +454,8 @@ void init_registers()
 		case 3:
 			// Disable: ff/1ffd/+3 FB/6b
 			hwenables[0] = 0xc6;
+			// Disable: Soundrive 2 DAC
+			hwenables[2] &= 0xfb;
 		break;
 	}
 

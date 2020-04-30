@@ -36,9 +36,10 @@ const char AYYM[4][4]  = {"YM ","AY ","---","OFF"};
 const char JOYS[7][7]  = {"Sincl2","Kemps1","Cursor","Sincl1","Kemps2","MD 1  ","MD 2  "};
 const char PS_2[2][6]  = {"Keyb.","Mouse"};
 const char STEREO[2][4] = {"ABC","ACB"};
-const char SCANL[4][4] = {"OFF","75%","50%","25%"};
+const char SCANL[4][6] = {"OFF  ","50%  ","25%  ","12.5%"};
 const char ISS23[2][5] = {"Iss3","Iss2"};
-const char BEEPMODE[3][4] = {"All","Int"};
+const char BEEPMODE[2][4] = {"All","Int"};
+const char DPIMODE[4][7] = {"Low   ","Normal","Medium","High  "};
 
 unsigned char * help_joy[] =
 				{ // 12345678901234567890123456789012
@@ -95,7 +96,6 @@ const char * editName[eSettingMAX] =
 	"IntSpeak",		// eSettingSpeakerMode
 	"Stereo M.",		// eSettingStereoMode
 	"TurboSnd",		// eSettingTurboSound
-	"Covox",		// eSettingCovox
 	"DivmmcROM",		// eSettingDivMMC
 	"Multiface",		// eSettingMF
 	"Left joy",		// eSettingJoystick1
@@ -115,6 +115,8 @@ const char * editName[eSettingMAX] =
 	"ULAplus",		// eSettingULAplus
 	"HDMISound",		// eSettingHDMISound
 	"BEEPer",		// eSettingBEEPMode
+	"BtnSwap",		// eSettingMouseBtnSwap
+	"MouseDPI",		// eSettingMouseDPI
 };	
 
 // ZX Spectrum Next
@@ -123,15 +125,16 @@ const unsigned char peripheralsNext[] =
 	eSettingJoystick1,	eSettingPSGMode,
 	eSettingJoystick2,	eSettingStereoMode,
 	eSettingPS2,		eSettingTurboSound,
-	eSettingKMouse,		eSettingCovox,
+	eSettingKMouse,		eSettingDAC,
 	eSettingIss23,		eSettingAY48,
 	eSettingFreq5060,	eSettingSpeakerMode,
 	eSettingScanlines,	eSettingBEEPMode,
 	eSettingScandoubler,	eSettingHDMISound,
-	eSettingDivMMC,		eSettingDAC,
-	eSettingDivPorts,	eSettingDMA,
-	eSettingMF,		eSettingTimex,
-	eSettingUARTI2C,	eSettingULAplus,
+	eSettingDivMMC,		eSettingTimex,
+	eSettingDivPorts,	eSettingULAplus,
+	eSettingMF,		eSettingDMA,
+	eSettingMouseDPI,	eSettingUARTI2C,
+	eSettingMouseBtnSwap
 };
 
 const unsigned char itemsCountNext = sizeof(peripheralsNext) / sizeof(unsigned char);
@@ -236,6 +239,10 @@ static void printVal(unsigned char help)
 
 		case eTypeBEEPMode:
 			vdp_prints(BEEPMODE[*value]);
+		break;
+
+		case eTypeDPI:
+			vdp_prints(DPIMODE[*value]);
 		break;
 	}
 

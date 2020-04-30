@@ -4,7 +4,7 @@ Author:  Phoebus R. Dokos (based on documentation by: Garry Lancaster &
                            Alvin Albrecht)
 Date:	 2020-04-30
 License: CC BY-NC-SA
-Version: 1.6
+Version: 1.7
 
 Changelog
 ---------
@@ -18,6 +18,7 @@ Changelog
 2020-04-28: 1.5 Corrected some descriptions (with input from Garry Lancaster,
                                              Alvin Albrecht and Darran Rimron)
 2020-04-30: 1.6 Updated for FW v1.29 changes (Garry Lancaster)
+2020-04-30: 1.7 Updated for FW v1.29b changes (Garry Lancaster)
 
 
 Introduction
@@ -307,6 +308,23 @@ internal speaker.
 default=0
 
 
+27. buttonswap
+This setting enables (1) or disables (0) swapping of the left/right mouse
+buttons.
+
+default=0
+
+
+28. mousedpi
+This setting selects the sensitivity to mouse movement:
+0 = Low DPI mouse
+1 = Normal DPI mouse
+2 = Medium DPI mouse
+3 = High DPI mouse
+
+default=1
+
+
 Per-Personality Settings: menu.ini and menu.def
 ===============================================
 The per-personality settings group serves three functions:
@@ -329,7 +347,7 @@ is missing will the default menu file (menu.def) be used.
 
 
 You will need one line starting with "menu=" per-personality up to a maximum of 
-15 lines as follows:
+24 lines as follows:
 
 menu="Name of machine",Type,Display,Main_ROM_Image_File,
       divMMC_ROM_Image_File,MF_ROM_Image_File

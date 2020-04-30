@@ -60,6 +60,10 @@ void vdp_init()
 		REG_VAL = 0xFF;
 	}
 
+	// Set timings to +3/Next to ensure display accurately matches Next mode.
+	REG_NUM = REG_MACHTYPE;
+	REG_VAL = 0xb0;
+
 	cx = cy = 0;
 	fg = COLOR_GRAY;
 	bg = COLOR_BLACK;
