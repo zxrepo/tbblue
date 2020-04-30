@@ -1,10 +1,10 @@
-The config.ini file
--------------------
+The config.ini, menu.ini and menu.def files
+-------------------------------------------
 Author:  Phoebus R. Dokos (based on documentation by: Garry Lancaster &
                            Alvin Albrecht)
-Date:	 2020-03-05
+Date:	 2020-04-30
 License: CC BY-NC-SA
-Version: 1.5
+Version: 1.6
 
 Changelog
 ---------
@@ -17,6 +17,8 @@ Changelog
 2020-04-28: 1.4 Added new config.ini options
 2020-04-28: 1.5 Corrected some descriptions (with input from Garry Lancaster,
                                              Alvin Albrecht and Darran Rimron)
+2020-04-30: 1.6 Updated for FW v1.29 changes (Garry Lancaster)
+
 
 Introduction
 ============
@@ -24,34 +26,42 @@ Configuration of your ZX Spectrum Next computer can be done in two ways:
 1 a. Via the Boot Screen (by pressing <SPACEBAR> while booting and then entering 
      the Editor Module with "E")
   b. Automatically upon boot specifically for the screen detection/adjustment
-2. Via the config.ini file
+2. Via the config.ini or menu.ini files
 
 The second method provides access to some settings not found on the regular ZX 
 Spectrum Next Editor Module, adding a machine personality, changing the machine
 type for said personality, provide alternate ROM images and even more 
 importantly setting your monitor if it doesn't work out of the box.
-Config.ini is a regular text file, located in the c:/machines/next/ folder of 
-your boot SD Card and it's read upon first boot after an F1 reset or cold boot.
 
-Config.ini groups
-=================
-There are two basic groups of settings in the config.ini each one with it's own
-sections/parts:
-1. The global settings; or settings that apply to ALL the machine personalities
--and-
-2. The per-personality settings (which also double as singular menu entries for 
-each personality you setup)
+Config.ini, menu.ini and menu.def are regular text files, located in the
+c:/machines/next/ folder of your boot SD Card and read upon first boot after
+an F1 reset or cold boot.
 
-Global Settings
-===============
-Global settings are set one-per-line with each setting's name followed by an '='
-sign follwed by the value of the setting
+
+Global settings: config.ini
+===========================
+The config.ini file contains global settings that apply to ALL the machine
+personalities. This file is not initially provided on the SD card supplied
+with your Next, but it will be automatically created when you first select
+your desired video mode on the testcard screen. It will also be created or
+updated whenever you make a change to the settings via the boot screen
+(ie by pressing <SPACEBAR> while booting and then entering the editor module
+with "E").
+
+The global settings in the config.ini file are set one-per-line with each
+setting's name followed by an '=' sign followed by the value of the setting
 
 Note: Starting with FW version 1.10b, if you modify the config.ini and enter 
 non-acceptable values for each setting, the FW upon boot will replace these
 values with the smallest acceptable one.
 
-These are:
+Note: Most hardware features are enabled in the ZX Spectrum Next personality
+by NextZXOS, regardless of the global settings. Settings which indicate personal
+preferences (such as joystick modes, scanlines, video mode etc) are respected.
+
+The global settings are:
+
+
 1. scandoubler
 This sets the scandoubler ON (1) or OFF (0). 
 Scandoubler must be ON for VGA displays and OFF for RGB type monitors (or SCART
@@ -119,14 +129,16 @@ Default setting:
 turbosound=1
 
 
-8.covox
+8.dac
 This setting enables (1) or disables (0) ALL onboard SpecDRUM / Covox 
 Soundrive compatible DAC hardware. Individual DAC hardware can be selectively
 disabled/enabled by the relevant NextREG. See the NextREG documentation for
 details.
+For the Soviet Timings personality only, Soundrive mode 2 is disabled as this
+clashes with the Pentagon/ATM DAC.
 
 Default setting:
-covox=1
+dac=1
 
 
 9.divmmc
@@ -210,17 +222,7 @@ Default setting:
 scanlines=0
 
 
-16. dac
-The dac setting only applies to the Vtrucco development board and can be safely 
-disregarded as it doesn't apply to the ZX Spectrum Next. It has nothing to do
-with the actual DACs on the ZX Spectrum Next which are controlled by the covox
-setting above.
-
-Default setting:
-dac=0
-
-
-17. turbokey
+16. turbokey
 turbokey, enables(1) or disables (0) access to speeds over the standard 3.58Mhz.
 If enabled, speed can be also overriden on the fly with the F8 key on a PS/2 
 keyboard (or NMI+8)
@@ -229,7 +231,7 @@ Default setting:
 turbokey=1
 
 
-18. timing
+17. timing
 timing sets a global screenmode setting from 0..7 for all menu items that have a
 screen mode set to 8 and it's set automatically from the new testcard video
 setting module upon boot. If a menu item contains a video mode different from 
@@ -240,7 +242,7 @@ Default setting (new distribution):
 timing=8
 
 
-19. default
+18. default
 this setting bridges the global configuration section with the per-personality 
 configuration section/menu and selects which of the machine personalities that 
 follow will be the one that boots by default. Entries are 0-based so the default
@@ -250,7 +252,7 @@ Default setting:
 default=0
 
 
-20. dma
+19. dma
 This setting enables(1) or disables (0) the onboard DMA controller. 
 The controller type is determined by which port is accessed and can be either 
 Z80DMA or ZXNDMA. See the NextREG and zxnDMA documentation for details.
@@ -258,14 +260,14 @@ Z80DMA or ZXNDMA. See the NextREG and zxnDMA documentation for details.
 default=0
 
 
-21. keyb_issue
+20. keyb_issue
 This setting enables Issue 2 (1) keyboard emulation or selects the default 
 Issue 3 (0). Only applies to very old software.
 
 default=0
 
 
-22. ay48
+21. ay48
 This setting enables (1) or disables  (0) the presence of the base (128K style)
 AY chip while in 48K mode. This is needed for certain programs that identify 
 erroneously a 48K personality as 128K.
@@ -273,31 +275,31 @@ erroneously a 48K personality as 128K.
 default=0
 
 
-23. uart_i2c
+22. uart_i2c
 This setting enables (1) or disables (0) the I2C and UART devices
 
 default=1
 
 
-24. kmouse
+23. kmouse
 This setting enables (1) or disables (1) the Kempston Mouse.
 default=1
 
 
-25. ulaplus
+24. ulaplus
 This setting enables (1) or disables (0) support for the ULA+ ULA extensions
 
 default=1
 
 
-26. hdmisound
+25. hdmisound
 This settings enables (1) or disables (0) sound output from the digital video
 port. Sound is still being output by the audio out jack in the back.
 
 default=1
 
 
-27. beepmode
+26. beepmode
 This setting disables (1) or enables (0) mixing of the beeper channel in the 
 audio stream output. If set to disabled, beeper audio will only come from the 
 internal speaker.
@@ -305,13 +307,26 @@ internal speaker.
 default=0
 
 
-Per-Personality Settings
-========================
+Per-Personality Settings: menu.ini and menu.def
+===============================================
 The per-personality settings group serves three functions:
 1. Create a boot menu entry per-line
 2. Describe each machine personality's type as well as the display that's 
    connected to it
 3. Override -if required- some global settings specifically for that personality
+
+The SD card supplied with your Next comes with a default set of peronsality
+menu items in the menu.def file. This file will be replaced whenever you
+update your SD card from a new distribution, so it is advisable that you do
+not change it.
+
+If you want to add or remove personalities from the menu, first you should
+copy or rename the menu.def file to menu.ini, and then make all your desired
+changes to the menu.ini file.
+
+When booting, the Next will use the menu.ini file if it is present; only if it
+is missing will the default menu file (menu.def) be used.
+
 
 You will need one line starting with "menu=" per-personality up to a maximum of 
 15 lines as follows:
