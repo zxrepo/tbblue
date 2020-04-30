@@ -6,11 +6,12 @@ Maintainer: Alvin Albrecht
 Editor:     Phoebus Dokos
 Date:	    2020-04-27
 License:    CC BY-NC-SA
-Version:    2.0
+Version:    2.1
 
 Changelog
 ---------
 2020-04-27: 2.0 Major update (previous versions discarded)
+2020-04-30: 2.1 New NextREG 143 for memory mapping mode control
 
 Introduction
 ------------
@@ -831,7 +832,20 @@ Writes can affect all ports 0x7ffd, 0xdffd, 0x1ffd
 Writes always change the ROM / allRAM mapping
 Writes immediately change the current mmu mapping as if by port write
 
-0x93,0x92,0x91,0x90 (147-144) => PI GPIO Output Enable (0x93 is MSB)
+0x8F (143) => Memory Mapping Mode
+(R/W) (hard reset = 0)
+  bits 7:2 = Reserved, must be zero
+  bits 1:0 = Mapping mode applied
+    00 = Standard ZX 128k +3
+    01 = Profi 1024K
+    10 = Pentagon 512K
+    11 = Pentagon 1024K
+00: Standard ZX 128K +3 = ports 0x7ffd, 0xdffd, 0x1ffd
+01: Profi 1024K = ports 0x7ffd, 0xdffd
+10: Pentagon 512K = port 0x7ffd
+11: Pentagon 1024K = port 0x7ffd, 0xdffd, 0xeff7
+
+0x93,0x92,0x91,0x90 (144-147) => PI GPIO Output Enable (0x93 is MSB)
 (R/W)
   bits 27:0 Set bits enable GPIO output on the corresponding GPIO pin (soft reset = all 0)
   (GPIO pins 1:0 cannot be enabled)
