@@ -1,3 +1,16 @@
+v2.06H 2020-05-01
+=================
+* Updated scanline options in Settings menu to new 50%/25%/12.5%/OFF values.
+* Added support for new mapmode register ($8f) to disable Pentagon memory mapping.
+* Added ULAplus, Mouse DPI & button swap choices to the Settings/General menu.
+* Enable all DAC hardware at reset.
+* Added new NextRegs to NMI Status page: $0a,$26,$27,$64,$6a,$70,$71,$7f,$80,
+  $81,$82,$83,$84,$85,$86,$87,$88,$89,$8a,$8c,$8f,$90,$91,$92,$93,$a8.
+* Preserve FRAMES when initialising LOADs from cassette/TAP/TZX to preserve
+  game randomness.
+* Updated About screen credits.
+
+
 v2.06G 2020-04-29
 =================
 * Clear attributes on reset to avoid visible artifacts during memory test.

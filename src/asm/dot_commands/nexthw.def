@@ -61,8 +61,8 @@ nxr_lineint_control                     equ     $22
 nxr_tilemapx_msb                        equ     $2f
 nxr_tilemapx_lsb                        equ     $30
 nxr_tilemapy                            equ     $31
-nxr_ulax                                equ     $32
-nxr_ulay                                equ     $33
+nxr_loresx                              equ     $32
+nxr_loresy                              equ     $33
 nxr_sprite_num                          equ     $34
 nxr_palette_index                       equ     $40
 nxr_palette_value8                      equ     $41
