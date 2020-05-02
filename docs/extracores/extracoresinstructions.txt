@@ -9,6 +9,7 @@ Changelog
 ---------
 2020-04-21: 1.0 Initial version
 2020-04-27: 1.1 Minor Update
+2020-05-01: 1.2 Clarification of the 'userfile'  option
 
 Introduction
 ------------
@@ -119,6 +120,14 @@ userfile=SUBDIR,DESCRIPTION,PAGE,FLAGS,OFFSET
 ;
 ; eg
 ;    userfile=GAMEROMS,game,30,1
+;
+; NOTE: The example above will FORCE the loading ANY ROM present in the direc-
+;       tory GAMEROMS found under the core subdirectory you're loading into
+;       SRAM page 30 on. Moreover upon core selection it will display the 
+;       message: Press ENTER to select game and will not allow the core to
+;       boot until the user selects it. "game" is just the message that will
+;       be displayed for the file selection prompt for files present into 
+;       GAMEROMS and NOT THE ACTUAL filename. 
 
 config=PAGE,OFFSET
 ; If this option is present, the firmware will write some configuration
