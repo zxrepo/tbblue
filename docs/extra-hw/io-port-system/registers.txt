@@ -4,14 +4,15 @@ Author:     Victor Trucco with contributions from Kev Brady, Alvin
             Albrecht, Garry Lancaster and Phoebus Dokos
 Maintainer: Alvin Albrecht
 Editor:     Phoebus Dokos
-Date:	    2020-04-27
+Date:	    2020-05-04
 License:    CC BY-NC-SA
-Version:    2.1
+Version:    2.2
 
 Changelog
 ---------
 2020-04-27: 2.0 Major update (previous versions discarded)
 2020-04-30: 2.1 New NextREG 143 for memory mapping mode control
+2020-05-04: 2.2 Added New Machine IDs for MIST, MISTer, UNAmiga, SiDi
 
 Introduction
 ------------
@@ -63,17 +64,25 @@ Generally a set bit indicates the property is asserted
 
 0x00 (00) => Machine ID
 (R)
-  00000001 = DE1A
-  00000010 = DE2A
-  00000101 = FBLABS
-  00000110 = VTRUCCO
-  00000111 = WXEDA
-  00001000 = EMULATORS *
-  00001010 = ZX Spectrum Next *
-  11101010 = ZX Spectrum Next on ZX-DOS FPGA platform *
-  00001011 = Multicore
-  11111010 = ZX Spectrum Next Anti-brick *
-  * = Relevant for ZX Next machines & software
+  0000 0001 = DE1A
+  0000 0010 = DE2A
+  0000 0101 = FBLABS
+  0000 0110 = VTRUCCO
+  0000 0111 = WXEDA
+  0000 1011 = Multicore
+  
+  Relevant for ZX Next machines & software:
+  
+  0000 1000 = EMULATORS
+  
+  0000 1010 = ZX Spectrum Next
+  1111 1010 = ZX Spectrum Next Anti-brick
+  
+  1010 1010 = ZX Spectrum Next Core on UnAmiga
+  1011 1010 = ZX Spectrum Next Core on SiDi
+  1100 1010 = ZX Spectrum Next Core on MIST
+  1101 1010 = ZX Spectrum Next Core on MiSTer
+  1110 1010 = ZX Spectrum Next Core on ZX-DOS
 
 0x01 (01) => Core Version 
 (R)
