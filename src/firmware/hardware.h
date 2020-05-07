@@ -74,6 +74,8 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define HWID_EMULATORS		0x08		/* Emulators */
 #define HWID_MC		0x0b		/* Multicore */
 #define HWID_ZXNEXT		0x0a		/* ZX Spectrum Next */
+#define HWID_UNAMIGA		0xaa		/* UnAmiga */
+#define HWID_SIDI		0xba		/* SiDi */
 #define HWID_ZXDOS		0xea		/* ZX DOS (Next clone mode) */
 #define HWID_ZXNEXT_AB		0xfa		/* ZX Spectrum Next Anti-brick */
 
@@ -172,11 +174,13 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define FW_BLK_UPDATER		2
 #define FW_BLK_CORES		3
 #define FW_BLK_TBBLUE_SCR	4
-#define FW_BLK_NEXT_SCR	5
-#define FW_BLK_ZXDOS_SCR	6
-#define FW_BLK_TESTCARD_SCR	7
-#define FW_BLK_TESTCARD_L2PAL	8
-#define FW_BLK_TESTCARD_TMPAL	9
-#define FW_BLK_TESTCARD_TMDATA	10
+#define FW_BLK_NEXT_SCR		5
+#define FW_BLK_UNAMIGA_SCR	6
+#define FW_BLK_SIDI_SCR		7
+#define FW_BLK_ZXDOS_SCR	8
+#define FW_BLK_TESTCARD_SCR	9
+#define FW_BLK_TESTCARD_L2PAL	10
+#define FW_BLK_TESTCARD_TMPAL	11
+#define FW_BLK_TESTCARD_TMDATA	12
 
 #endif /* _HARDWARE_H */

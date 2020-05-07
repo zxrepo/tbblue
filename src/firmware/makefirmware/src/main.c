@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* Defines */
 #define NUMMODULES 4
-#define NUMSCREENS 7
+#define NUMSCREENS 9
 
 #define MAX_PATH 254
 /* Variables */
@@ -39,6 +39,8 @@ const char *module_files[NUMMODULES] = {
 const char *screen_files[NUMSCREENS] = {
 	"screen0.scr",		// FW_BLK_TBBLUE_SCR
 	"screen1.scr",		// FW_BLK_NEXT_SCR
+	"screen3.scr",		// FW_BLK_UNAMIGA_SCR
+	"screen4.scr",		// FW_BLK_SIDI_SCR
 	"screen2.scr",		// FW_BLK_ZXDOS_SCR
 	"testcard.sl2",		// FW_BLK_TESTCARD_SCR
 	"testcard.npl",		// FW_BLK_TESTCARD_L2PAL
