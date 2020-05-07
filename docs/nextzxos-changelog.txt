@@ -1,3 +1,15 @@
+v2.06I 2020-05-07
+=================
+* Fix for cursor jumping to end of previous screen line in editor if cursor
+  right pressed at end of program line containing syntax errors.
+* Fix for screen scrolling issues in PAWed games run in +3 mode (usually from
+  .DSKs), caused by entry point change introduced in v2.06.
+* Fix for INPUT in layer 0 showing incorrect characters if the character set
+  had been redefined in memory above $c000 (caused by switch to using new
+  nextreg-based ROM paging in v2.06).
+* Updated About screen credits.
+
+
 v2.06H 2020-05-01
 =================
 * Updated scanline options in Settings menu to new 50%/25%/12.5%/OFF values.
