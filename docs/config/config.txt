@@ -209,8 +209,8 @@ facilitates plugging in a PS/2 mouse without a Y-splitter cable if you already
 have a membrane keyboard attached or a regular cased Next.
 
 Default setting:
-ps2=0 (cased next)
-ps2=1 (board backers' distribution)
+ps2=1 (cased next)
+ps2=0 (board backers' distribution)
 
 
 15. scanlines
