@@ -1,3 +1,8 @@
+v2.06K 2020-06-08
+=================
+* Fix hang bug in TAP loader introduced in v2.06J
+
+
 v2.06J 2020-06-08
 =================
 * Fix for .TAP file loading with custom loaders that call into the ROM routine
