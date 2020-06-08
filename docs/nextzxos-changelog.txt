@@ -1,3 +1,34 @@
+v2.06J 2020-06-08
+=================
+* Fix for .TAP file loading with custom loaders that call into the ROM routine
+  at $056a (fixes "Sliding Blocks").
+* Fixed saving/restoring current interrupt status to workaround NMOS Z80 bug
+  with LD A,I/R instructions.
+* Fix for crash/screen corruption problems if the Calculator was used before
+  NextBASIC or the Command Line.
+* Fix for rightmost pixels in 64-column mode being left on the screen when
+  when switching to 85-column mode in the editor.
+* Fixed the editor to cope with programs where the first line has been POKEd
+  to line number zero. Previously this caused the line to be shown (without a
+  number) on every screen row. Now such lines are not shown in the editor
+  (although they can be LISTed).
+* Improved the %RND random-number generator. This now uses an XorShift32
+  instead of XorShift16 to improve the period from 2^16-1 to 2^32-1. Additionally,
+  bitmask rejection is now used to place the number in the correct range,
+  removing the bias inherent in the previously-used integer multiply.
+* %RND 0 can now be used to obtain a random number in the full range 0..65535
+  - this can be thought of (and, indeed, typed as) %RND 65536.
+* Changed the floating-point RND function to use the same generator as %RND.
+  This greatly improves the randomness, provides a full 32-bits of mantissa
+  and improves performance by ~3.3x.
+* Fixed saving/restoring of the current Next register number in the NMI menu
+  (fixes returns to ScrollNutter demo).
+* Fixed restore of new mapmode register ($8f) introduced in v2.06H in NMI menu,
+  to before restoration of +3 and MMU paging registers (fixes return to
+  NextZXOS screensaver).
+* Updated About screen credits.
+
+
 v2.06I 2020-05-07
 =================
 * Fix for cursor jumping to end of previous screen line in editor if cursor
