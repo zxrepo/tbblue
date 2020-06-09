@@ -27,6 +27,7 @@ endm
 
 ; Calls
 m_dosversion            equ     $88             ; get version information
+m_gethandle             equ     $8d             ; get dot command file handle
 f_open                  equ     $9a             ; opens a file
 f_close                 equ     $9b             ; closes a file
 f_read                  equ     $9d             ; read file
@@ -64,7 +65,11 @@ isesxdos:
         ld      de,commandname
         ld      bc,filename-commandname
         ldir                            ; replace "/DOT/" with "/BIN/"
+        jr      notnextzxos
 isnextzxos:
+        callesx m_gethandle             ; close $'s handle, so the same handle
+        callesx f_close                 ; will be used for the chained dot
+notnextzxos:
         pop     hl
         ld      a,h
         or      l
@@ -215,15 +220,9 @@ routine:
         push    hl                      ; save address of argument for command
         ld      hl,(name_addr)
         push    hl                      ; save address of full command line
-        push    af                      ; save file handle
         ld      hl,$2000
         ld      bc,$2000
         callesx f_read                  ; read dot command into dot area
-        pop     bc
-        push    af                      ; save results of read
-        ld      a,b                     ; A=file handle
-        callesx f_close                 ; close dot command file
-        pop     af                      ; restore results of read
         pop     bc                      ; BC=address of full command line
         pop     hl                      ; HL=address of argument
         ret     c                       ; exit if error reading
@@ -307,7 +306,7 @@ get_sizedarg_badsize:
 ; ***************************************************************************
 
 msg_help:
-        defm    "$ v1.2 by Garry Lancaster",$0d
+        defm    "$ v1.3 by Garry Lancaster",$0d
         defm    "Executes any dot command with a",$0d
         defm    "string argument.",$0d,$0d
         defm    "SYNOPSIS:",$0d
