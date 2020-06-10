@@ -191,7 +191,7 @@ printmsg:
 ; ***************************************************************************
 
 msg_help:
-        defm    "MEM v1.0 by Garry Lancaster",$0d,$0d,0
+        defm    "MEM v1.1 by Garry Lancaster",$0d,$0d,0
 
 msg_zxtotal:
         defm    "Main memory:",$0d
@@ -205,7 +205,7 @@ msg_free:
         defm    " Free: ",0
 
 msg_banks:
-        defm    " banks (",0
+        defm    " x 8K banks (",0
 
 msg_memk:
         defm    "K)"
