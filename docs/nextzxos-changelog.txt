@@ -1,3 +1,23 @@
+v2.06L 2020-06-19
+=================
+* Added .UNZIP dot command for extracting files from .zip archives.
+* Fix for corruption with programs that use POKE 23739,111 to suppress output
+  to the screen.
+* Fix for "N Statement lost" with CONTINUE if report occurred at line number
+  with bit 7 set (should have been checking bit 15).
+* Fix for crashes in editor in Command Line mode soon after entering a numbered
+  BASIC line.
+* Fix for IDE_DRIVER call corrupting 2 bytes of BASIC workspace, due to using
+  a +3DOS function which expected RAM7 to be at the top of memory.
+* Fix for crash when performing an in-game save from Spellbound 128 to a .TAP
+  file output. This was caused by an IM2 routine activating whilst the DivMMC
+  was active, and fixed by delaying the tape save trap until after the DI.
+* Removed advanced hardware option to disable DivMMC/SPI in tape/TAP/TZX loaders,
+  since too many aspects of NextZXOS require this to be enabled to allow this
+  to be safely done.
+* Updated About screen credits.
+
+
 v2.06K 2020-06-08
 =================
 * Fix hang bug in TAP loader introduced in v2.06J
