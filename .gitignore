@@ -24,3 +24,4 @@
 /src/asm/espupdate/fw/ESP8266_FULL_V3.3_SPUGS/*.*
 /src/asm/espupdate/build/*.dll
 /src/asm/espupdate/dot
+/src/c/DotCommands/DOT

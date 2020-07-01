@@ -24,6 +24,7 @@
 #include "prune.h"
 #include "user_interaction.h"
 
+#define RTM_28MHZ       3
 
 // MANAGE MEMORY
 
@@ -119,7 +120,7 @@ int main(unsigned int argc, char **argv)
    // initialization
    
    old_cpu_speed = ZXN_READ_REG(REG_TURBO_MODE);
-   ZXN_NEXTREG(REG_TURBO_MODE, RTM_14MHZ);
+   ZXN_NEXTREG(REG_TURBO_MODE, RTM_28MHZ);
 
    atexit(cleanup);
 

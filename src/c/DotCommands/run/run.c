@@ -21,6 +21,7 @@
 #include "sort.h"
 #include "user_interaction.h"
 
+#define RTM_28MHZ       3
 // GLOBAL
 
 unsigned char name[64];                          // filename being matched
@@ -108,7 +109,7 @@ int main(unsigned int argc, char **argv)
    // initialization
 
    old_cpu_speed = ZXN_READ_REG(REG_TURBO_MODE);
-   ZXN_NEXTREG(REG_TURBO_MODE, RTM_14MHZ);
+   ZXN_NEXTREG(REG_TURBO_MODE, RTM_28MHZ);
 
    esx_f_getcwd(cwd);
    current_drive[0] = cwd[0];
