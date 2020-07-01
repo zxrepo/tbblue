@@ -74,7 +74,7 @@ void CommonInit(void)
 
 	IO_NEXTREG_REG = REG_TURBO_MODE;
 	save_turboSpeed = IO_NEXTREG_DAT;
-	IO_NEXTREG_DAT = RTM_14MHZ;
+	IO_NEXTREG_DAT = RTM_28MHZ;
 
 	errno = 0;
 }

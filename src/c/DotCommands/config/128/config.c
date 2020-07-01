@@ -172,7 +172,8 @@ int main(unsigned int argc, char **argv)
    original_cpu_speed = ZXN_READ_REG(REG_TURBO_MODE);
 
 #ifndef ESXDOS
-   ZXN_NEXTREG(REG_TURBO_MODE, RTM_14MHZ);
+#define RTM_28MHZ       3
+   ZXN_NEXTREG(REG_TURBO_MODE, RTM_28MHZ);
 #endif
 
    atexit(cleanup);

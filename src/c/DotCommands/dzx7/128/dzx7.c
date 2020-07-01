@@ -37,6 +37,8 @@
 
 #include "user_interaction.h"
 
+#define RTM_28MHZ       3
+
 #define BUFFER_SIZE     16384   // must be > MAX_OFFSET
 
 unsigned char ifp = 0xff;
@@ -256,11 +258,11 @@ int main(int argc, char **argv)
    // initialization
    
    old_cpu_speed = ZXN_READ_REG(REG_TURBO_MODE);
-   ZXN_NEXTREG(REG_TURBO_MODE, RTM_14MHZ);
+   ZXN_NEXTREG(REG_TURBO_MODE, RTM_28MHZ);
 
    atexit(cleanup);
    
-   puts("\nDZX7: LZ77/LZSS decompression\n(C) 2015 Einar Saukas\n\nv1.1 zx-next 128k z88dk.org\n");
+   puts("\nDZX7: LZ77/LZSS decompression\n(C) 2015 Einar Saukas\n\nv1.1 zxn 28mhz 128k z88dk.org\n");
 
    // process optional parameters
    

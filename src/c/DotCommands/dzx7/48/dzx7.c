@@ -38,6 +38,8 @@
 
 #include "user_interaction.h"
 
+#define RTM_28MHZ       3
+
 #define BUFFER_SIZE     16384   // must be > MAX_OFFSET, must remain consistent with dzx7.asm
 #define BUFFER_ADDR    (65536 - BUFFER_SIZE*2)
 
@@ -261,7 +263,7 @@ int main(int argc, char **argv)
    if (mode_zxnext)
    {
       old_cpu_speed = ZXN_READ_REG(REG_TURBO_MODE);
-      ZXN_NEXTREG(REG_TURBO_MODE, RTM_14MHZ);
+      ZXN_NEXTREG(REG_TURBO_MODE, RTM_28MHZ);
    }
    
    atexit(cleanup);

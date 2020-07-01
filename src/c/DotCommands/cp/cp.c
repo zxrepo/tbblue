@@ -14,6 +14,8 @@
 #include <arch/zxn.h>
 #include <arch/zxn/esxdos.h>
 
+#define RTM_28MHZ       3
+
 unsigned char fin = 0xff;
 unsigned char fout = 0xff;
 
@@ -72,7 +74,7 @@ int main(int argc, char **argv)
    // initialization
    
    old_cpu_speed = ZXN_READ_REG(REG_TURBO_MODE);
-   ZXN_NEXTREG(REG_TURBO_MODE, RTM_14MHZ);
+   ZXN_NEXTREG(REG_TURBO_MODE, RTM_28MHZ);
    
    atexit(cleanup);
 

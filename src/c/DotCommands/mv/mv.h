@@ -4,6 +4,8 @@
 #include <time.h>
 #include <alloc/obstack.h>
 
+#define RTM_28MHZ       3
+
 #define FLAG_OVERWRITE_NO   0
 #define FLAG_OVERWRITE_YES  1
 #define FLAG_OVERWRITE_ASK  2
