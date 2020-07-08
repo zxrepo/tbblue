@@ -1,3 +1,12 @@
+v2.06M 2020-07-08
+=================
+* Fixed PLOT/POINT TO/DRAW/CIRCLE to operate on the backbuffer for layer2 instead
+  of the frontbuffer.
+* Fixed NEXT % to generate NEXT without FOR if current loop doesn't match
+  the provided variable (previously it would silently continue).
+* Fixed TILE..AT to accept tilemap coordinates > 255.
+
+
 v2.06L 2020-06-19
 =================
 * Added .UNZIP dot command for extracting files from .zip archives.
