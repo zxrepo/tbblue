@@ -86,8 +86,12 @@ filemap_size            equ     4
 ; ***************************************************************************
 
 ; Next, obtain the map of card addresses for the file.
-; Note that this call (DISK_FILEMAP) must be made directly after opening the
+; Note that this call (DISK_FILEMAP) should be made directly after opening the
 ; file - no other file access calls should be made first.
+; (If the file has been accessed, the filepointer should be reset to the start
+; using F_SEEK, and a single byte read (with F_READ) before making this call.
+; This will ensure that the current sector information maintained by the OS
+; is correctly pointing to the first sector of the file.)
 ;
 ; A buffer must be provided to hold the card addresses.
 ;

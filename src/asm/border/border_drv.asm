@@ -24,16 +24,15 @@ relocs  equ     (reloc_end-reloc_start)/2
 ; ***************************************************************************
 ; * .DRV file header                                                        *
 ; ***************************************************************************
-; The driver id must be unique, so current documentation on other drivers
-; should be sought before deciding upon an id. This example uses $7f as a
-; fairly meaningless value. A network driver might want to identify as 'N'
-; for example.
+; The driver id must be unique, so please consult the list of existing
+; driver ids (c:/docs/nextzxos/DriverIDs.txt) for information on obtaining
+; a suitable id for your driver.
 
         org     $0000
 
         defm    "NDRV"          ; .DRV file signature
 
-        defb    $7f+$80         ; 7-bit unique driver id in bits 0..6
+        defb    $01+$80         ; 7-bit unique driver id in bits 0..6
                                 ; bit 7=1 if to be called on IM1 interrupts
 
         defb    relocs          ; number of relocation entries (0..255)
