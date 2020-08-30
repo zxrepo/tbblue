@@ -321,15 +321,15 @@ unsigned char videoTestMode()
 
 	// Display mode information.
 	l2_setcolours(l2black, l2white);
-	l2_gotoxy(7*8, 2*8-5);
+	l2_gotoxy(7*8, 19*8);
 	//////////////////123456
 	l2_prints("Cycling      modes");
 
 	modeName_x = 14*8 + ((6-strlen(modeName[vidtestmode]))*8/2);
-	l2_gotoxy(modeName_x, 2*8-5);
+	l2_gotoxy(modeName_x, 19*8);
 	l2_prints(modeName[vidtestmode]);
 
-	l2_gotoxy(7*8,19*8);
+	l2_gotoxy(7*8,2*8-5);
 	l2_prints("Mode ");
 	l2_putchar('0' + curtestmode.timing);
 	if (curtestmode.freq)
@@ -396,8 +396,8 @@ unsigned char videoTestMode()
 			if ((l & 0x1000) == 0)
 			{
 				l2_prints("ENTER selects mode");
-				l2_gotoxy(8*8+4,21*8+4);
-				l2_prints("N skips to next");
+				l2_gotoxy(7*8+4,21*8+4);
+				l2_prints(" N skips to next ");
 			}
 			else
 			{
@@ -423,28 +423,53 @@ unsigned char videoTestMode()
 		// Select this mode if ENTER is pressed.
 		if ((HROW6 & 0x01) == 0)
 		{
-			// Turn off AY, layer 2 and tilemap,
-			// and set border back to black.
 			ayOff();
-			vdp_cls();
-			L2PORT = 0x00;
-			REG_NUM = REG_TILEMAP_CTRL;
-			REG_VAL = 0x00;
-			ULAPORT = 0x00;
-		
-			// Reset the layer 2 palette to defaults.
-			setOrderedPalette(PALETTE_L2_0);
+			l2_gotoxy(7*8,19*8);
+			l2_prints("Select mode? (Y/N)");
+			l2_gotoxy(7*8,20*8+4);
+			if (curtestmode.freq)
+			{
+				l2_prints("NOTE:Compatibility");
+				l2_gotoxy(7*8+4,21*8+4);
+				l2_prints("is better at 50Hz");
+			}
+			else
+			{
+				l2_prints("                  ");
+				l2_gotoxy(7*8,21*8+4);
+				l2_prints("                 ");
+			}
 
-			// Turn off video mode cycling.
-			videoTestInit(eVidTestNone);
+			while ( ((HROW5 & 0x10) == 0x10)
+				&& ((HROW7 & 0x08) == 0x08) );
 
-			// Update config.ini with current mode settings.
-			settings[eSettingTiming] = curtestmode.timing;
-			settings[eSettingFreq5060] = curtestmode.freq;
-			settings[eSettingScandoubler] = curtestmode.doubler;
-			save_config();
+			if ((HROW5 & 0x10) == 0)
+			{
+				// Turn off AY, layer 2 and tilemap,
+				// and set border back to black.
+				ayOff();
+				vdp_cls();
+				L2PORT = 0x00;
+				REG_NUM = REG_TILEMAP_CTRL;
+				REG_VAL = 0x00;
+				ULAPORT = 0x00;
+			
+				// Reset the layer 2 palette to defaults.
+				setOrderedPalette(PALETTE_L2_0);
 
-			return 1;
+				// Turn off video mode cycling.
+				videoTestInit(eVidTestNone);
+
+				// Update config.ini with current mode settings.
+				settings[eSettingTiming] = curtestmode.timing;
+				settings[eSettingFreq5060] = curtestmode.freq;
+				settings[eSettingScandoubler] = curtestmode.doubler;
+				save_config();
+
+				return 1;
+			}
+
+			break;
 		}
 
 		// Skip this mode if N is pressed.

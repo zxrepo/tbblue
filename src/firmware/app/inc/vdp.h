@@ -56,6 +56,7 @@ unsigned char vdp_getx();
 unsigned char vdp_gety();
 void vdp_putchar(unsigned char c);
 void vdp_prints(const char *str);
+void vdp_clear(unsigned char x, unsigned char y, unsigned char n);
 void puthex8(unsigned char v);
 void puthex16(unsigned int v);
 

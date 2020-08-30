@@ -43,10 +43,10 @@ const char DPIMODE[4][7] = {"Low   ","Normal","Medium","High  "};
 
 unsigned char * help_joy[] =
 				{ // 12345678901234567890123456789012
-					"Maps to keys 6,7,8,9 and 0     ",
+					"Maps to keys 1,2,3,4 and 5     ",
 					"Kempston at port 31            ",
 					"Maps to keys 5,6,7,8 and 0     ",
-					"Maps to keys 1,2,3,4 and 5     ",
+					"Maps to keys 6,7,8,9 and 0     ",
 					"Kempston at port 55            ",
 					"3 or 6 button joypad at port 31",
 					"3 or 6 button joypad at port 55"

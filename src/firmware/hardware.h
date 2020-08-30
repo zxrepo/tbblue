@@ -61,6 +61,9 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define MF1_FILE            "mf1.rom"
 #define MF3_FILE            "mf3.rom"
 #define MF128_FILE          "mf128.rom"
+#define MF128_V1_FILE       "mf128v1.rom"
+#define MF128_V12_FILE      "mf128v12.rom"
+#define MF128_V2_FILE       "mf128v2.rom"
 #define KEYMAP_FILE         "keymap.bin"
 
 /* Hardware IDs */

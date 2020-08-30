@@ -208,6 +208,18 @@ void vdp_prints(const char *str)
 	}
 }
 
+/*******************************************************************************/
+void vdp_clear(unsigned char x, unsigned char y, unsigned char n)
+{
+	unsigned char i;
+	vdp_gotoxy(x, y);
+
+	for (i = 0; i < n; i++)
+	{
+		vdp_putchar(' ');
+	}
+}
+
 //------------------------------------------------------------------------------
 void puthex(unsigned char nibbles, unsigned int v)
 {

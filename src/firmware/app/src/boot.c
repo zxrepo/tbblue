@@ -35,35 +35,48 @@ FATFS		FatFs;		/* FatFs work area needed for each volume */
 FIL		Fil;		/* File object needed for each open file */
 FRESULT		res;
 
-unsigned char * FW_version = "1.29c";
+unsigned char * FW_version = "1.29e";
 
 // minimal required for this FW
-unsigned long minimal = 0x030105; // 03 01 05 = 3.01.05
+unsigned long minimal = 0x030108; // 03 01 08 = 3.01.08
 unsigned long current = 0;
 
 const char *filename;
 static unsigned char	mach_id, l;
-static unsigned char	opc = 0;
+static unsigned char	opc = 0, mftype = 0;
 static unsigned int	bl = 0, cont, i;
 
-void error_loading(char e)
+void error_loading(unsigned char *s)
 {
-	switch (e)
-	{
-		case 'O':
-			vdp_prints("unable to open!");
-			break;
-		case 'R':
-			vdp_prints("error reading!");
-			break;
-		default:
-			vdp_prints("unknown error!");
-			break;
-	}
+	vdp_prints(s);
 
 	ULAPORT = COLOR_RED;
 	for(;;);
 }
+
+void loadFile(unsigned char destpage, unsigned char numpages, unsigned int blocklen)
+{
+	vdp_prints(filename);
+	vdp_prints("...");
+	strcpy(line, NEXT_DIRECTORY);
+	strcat(line, filename);
+	res = f_open(&Fil, line, FA_READ);
+	if (res != FR_OK) {
+		error_loading("unable to open!");
+	}
+
+	while (numpages--)
+	{
+		REG_VAL = destpage++;
+		res = f_read(&Fil, (unsigned char *)0, blocklen, &bl);
+		if (res != FR_OK || bl != blocklen) {
+			error_loading("error reading!");
+		}
+	}
+
+	f_close(&Fil);
+	vdp_prints("OK!\n");
+}	
 
 void switchModule(unsigned char m)
 {
@@ -113,27 +126,15 @@ void load_roms()
 
 	if (filename) {
 		vdp_prints("Loading ESXMMC:\n");
-		vdp_prints(filename);
-		vdp_prints("...");
-		strcpy(line, NEXT_DIRECTORY);
-		strcat(line, filename);
-		res = f_open(&Fil, line, FA_READ);
-		if (res != FR_OK) {
-			error_loading('O');
-		}
-		REG_VAL = RAMPAGE_ROMDIVMMC;
-		res = f_read(&Fil, (unsigned char *)0, 8192, &bl);
-		if (res != FR_OK || bl != 8192) {
-			error_loading('R');
-		}
-		f_close(&Fil);
-		vdp_prints("OK!\n");
-		REG_VAL = RAMPAGE_RAMDIVMMC;
-		__asm__("ld hl, #0\n");		// Zeroing RAM DivMMC
-		__asm__("ld de, #1\n");
-		__asm__("ld bc, #16383\n");
-		__asm__("ld (hl), l\n");
-		__asm__("ldir\n");
+		loadFile(RAMPAGE_ROMDIVMMC, 1, 8192);
+
+		// NOTE: Shouldn't be needed
+		//REG_VAL = RAMPAGE_RAMDIVMMC;
+		//__asm__("ld hl, #0\n");		// Zeroing RAM DivMMC
+		//__asm__("ld de, #1\n");
+		//__asm__("ld bc, #16383\n");
+		//__asm__("ld (hl), l\n");
+		//__asm__("ldir\n");
 	}
 
 	filename = 0;
@@ -141,18 +142,23 @@ void load_roms()
 	if (settings[eSettingMF] == 1) {
 		switch ( pMenu->mode ) {
 			case 0:
+				mftype = 3;
 				filename = MF1_FILE;
 			break;
 
 			case 1:
+				// MF128 87.2 ROMs are type 1 (ports BF/3F)
+				mftype = 1;
 				filename = MF128_FILE;
 			break;
 
 			case 2:
+				mftype = 0;
 				filename = MF3_FILE;
 			break;
 
 			case 3: // Pentagon
+				mftype = 1;
 				filename = MF128_FILE;
 			break;
 		}
@@ -164,66 +170,39 @@ void load_roms()
 	}
 
 	if (filename) {
+		if ( (strncmp(filename, MF128_V1_FILE, strlen(MF128_V1_FILE)) == 0)
+		   ||(strncmp(filename, MF128_V12_FILE, strlen(MF128_V12_FILE)) == 0)
+		   )
+		{
+			// MF128 87.1 and 87.12 ROMs are type 2 (ports 9F/1F)
+			mftype = 2;
+		}
+
 		vdp_prints("Loading Multiface ROM:\n");
-		vdp_prints(filename);
-		vdp_prints("...");
-		strcpy(line, NEXT_DIRECTORY);
-		strcat(line, filename);
-		res = f_open(&Fil, line, FA_READ);
-		if (res != FR_OK) {
-			error_loading('O');
-		}
-		REG_VAL = RAMPAGE_ROMMF;
-		res = f_read(&Fil, (unsigned char *)0, 8192, &bl);
-		if (res != FR_OK || bl != 8192) {
-			error_loading('R');
-		}
-		f_close(&Fil);
-		vdp_prints("OK!\n");
+		loadFile(RAMPAGE_ROMMF, 1, 8192);
 	}
 
 	filename = pMenu->romfile;
 
 	vdp_prints("Loading ROM:\n");
-	vdp_prints(filename);
-	vdp_prints("...");
 
-	// Load 16K
-	strcpy(line, NEXT_DIRECTORY);
-	strcat(line, filename);
-	res = f_open(&Fil, line, FA_READ);
-	if (res != FR_OK) {
-		error_loading('O');
+	switch (pMenu->mode)
+	{
+		case 0:
+			// 48K: 1 x 16K block
+			i = 1;
+			break;
+		case 2:
+			// +2A/+3e: 4 x 16K blocks
+			i = 4;
+			break;
+		default:
+			// 128K, Pentagon: 2 x 16K blocks
+			i = 2;
+			break;
 	}
-	REG_VAL = RAMPAGE_ROMSPECCY;
-	res = f_read(&Fil, (unsigned char *)0, 16384, &bl);
-	if (res != FR_OK || bl != 16384) {
-		error_loading('R');
-	}
-	// If Speccy > 48K, load more 16K
-	if (pMenu->mode > 0) {
-		REG_VAL = RAMPAGE_ROMSPECCY+1;
-		res = f_read(&Fil, (unsigned char *)0, 16384, &bl);
-		if (res != FR_OK || bl != 16384) {
-			error_loading('R');
-		}
-	}
-	// If +2/+3e, load more 32K
-	if (pMenu->mode == 2) {
 
-		REG_VAL = RAMPAGE_ROMSPECCY+2;
-		res = f_read(&Fil, (unsigned char *)0, 16384, &bl);
-		if (res != FR_OK || bl != 16384) {
-			error_loading('R');
-		}
-		REG_VAL = RAMPAGE_ROMSPECCY+3;
-		res = f_read(&Fil, (unsigned char *)0, 16384, &bl);
-		if (res != FR_OK || bl != 16384) {
-			error_loading('R');
-		}
-	}
-	f_close(&Fil);
-	vdp_prints("OK!\n");
+	loadFile(RAMPAGE_ROMSPECCY, i, 16384);
 }
 
 void check_coreversion()
@@ -386,6 +365,7 @@ void init_registers()
 	REG_NUM = REG_PERIPH5;
 	opc = settings[eSettingMouseDPI] & 3;			// bits 1-0
 	if (settings[eSettingMouseBtnSwap])	opc |= 0x04;	// bit 2
+	opc |= mftype << 6;					// bits 6-7
 	REG_VAL = opc;
 	
 	// NOTE: With bit 31 of hwenables[3] set to 0, the internal port
@@ -475,34 +455,23 @@ void init_registers()
 void load_keymap()
 {
 	// Read and send Keymap
-	strcpy(line, NEXT_DIRECTORY);
-	strcat(line, KEYMAP_FILE);
 	vdp_prints("Loading keymap:\n");
-	vdp_prints(KEYMAP_FILE);
-	vdp_prints("...");
-	res = f_open(&Fil, line, FA_READ);
-	if (res != FR_OK) {
-		error_loading('O');
-	}
+	filename = KEYMAP_FILE;
+
+	// NOTE: Keymap must be loaded before ROMs as it uses the same SRAM.
+	loadFile(RAMPAGE_ROMSPECCY, 1, 1024);
+
 	REG_NUM = REG_KMHA;
 	REG_VAL = 0;
 	REG_NUM = REG_KMLA;
 	REG_VAL = 0;
-	for (l = 0; l < 4; l++) {
-		res = f_read(&Fil, line, 256, &bl);
-		if (res != FR_OK || bl != 256) {
-			error_loading('R');
-		}
-		cont = 0;
-		while (cont < 256) {
-			REG_NUM = REG_KMHD;
-			REG_VAL = line[cont++];
-			REG_NUM = REG_KMLD;
-			REG_VAL = line[cont++];
-		}
+	cont = 0;
+	while (cont < 1024) {
+		REG_NUM = REG_KMHD;
+		REG_VAL = *((unsigned char *)cont++);
+		REG_NUM = REG_KMLD;
+		REG_VAL = *((unsigned char *)cont++);
 	}
-	f_close(&Fil);
-	vdp_prints("OK!\n");
 }
 
 void main()
@@ -543,18 +512,17 @@ void main()
 	{
 		if ((cont & 0x7ff) == 0)
 		{
-			vdp_gotoxy(5, 11);
 			if ((cont & 0x800) == 0)
 			{
+			        vdp_gotoxy(5, 11);
 				vdp_prints("Press SPACEBAR for menu\n");
 				vdp_gotoxy(5, 13);
 				vdp_prints("Press C for extra cores\n");
 			}
 			else
 			{
-				vdp_prints("                       \n");
-				vdp_gotoxy(5, 13);
-				vdp_prints("                       \n");
+	                        vdp_clear(5, 11, 23);
+				vdp_clear(5, 13, 23);
 			}
 		}
 
@@ -591,10 +559,8 @@ void main()
 	}
 
 	// Clear off the video mode selection prompts.
-	vdp_gotoxy(1, 16);
-	vdp_prints("                               ");
-	vdp_gotoxy(1, 17);
-	vdp_prints("                               ");
+	vdp_clear(1, 16, 31);
+	vdp_clear(1, 17, 31);
 	vdp_gotoxy(0, 10);
 
 	// Perform remaining boot operations at 14MHz
@@ -628,6 +594,7 @@ void main()
 		}
 	}
 
+	// NOTE: Keymap must be loaded before ROMs as it uses the same SRAM.
 	load_keymap();
 	load_roms();
 	init_registers();
