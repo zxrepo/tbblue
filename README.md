@@ -8,7 +8,7 @@ Current versions
 |*System/Next*| **1.3.2** |  
 |*NextZXOS*|**2.06I**|  
 |*Core*|**3.01.08**	|  
-|*Firmware*|**1.29c**|  
+|*Firmware*|**1.29e**|  
   
   
 Contributor Requests
