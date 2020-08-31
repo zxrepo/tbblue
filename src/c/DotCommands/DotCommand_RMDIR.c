@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 				while (1)
 				{
 					if (*path == '.' || *path == 0
-						|| ((path[1] = ':') && strlen(path) == 2))
+						|| ((path[1] == ':') && strlen(path) == 2))
 					{
 						break;
 					}
