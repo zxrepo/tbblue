@@ -56,6 +56,7 @@ BORDCR          equ     $5c48
 ; * Data                                                                    *
 ; ***************************************************************************
 
+saved_BORDCR:   defb    0       ; system BORDER colour
 wrapped:        defb    0       ; Did the last character cause a line wrap?
 linefed:        defb    0       ; Did a LF occur?
 curflg:         defb    0       ; 0=cursor disabled, <>0=cursor enabled
@@ -650,7 +651,8 @@ save_tilemap:
         ; drop through to disable_tilemap
 
 disable_tilemap:
-        ld      a,(BORDCR)
+        ld      a,(saved_BORDCR)
+        ld      (BORDCR),a
         rrca
         rrca
         rrca
@@ -665,6 +667,8 @@ restore_tilemap:
 
 ; Enable tilemap.
 enable_tilemap:
+        ld      a,(BORDCR)
+        ld      (saved_BORDCR),a
         call    tilemap_setpalette      ; set the border back to match palette
         nxtregn nxr_tilemap_ctrl,%11000011
                                         ; enable, 80x32, 512 tiles, over ULA
@@ -860,6 +864,10 @@ tilemap_set_default_ink_and_paper:
 tilemap_setpalette:
         ld      a,(tilemap_index_paper)
         out     (254),a                 ; set border to current paper colour
+        rlca
+        rlca
+        rlca
+        ld      (BORDCR),a              ; set as current system border colour
         nxtregn nxr_palette_control,%00110000   ; select tilemap palette 0
         ld      hl,palette_defs
         ld      bc,$1000                ; 16 palette defs, first at index 0

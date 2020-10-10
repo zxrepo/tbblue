@@ -157,6 +157,11 @@ does not claim compliance with it, because it does not implement Unicode
 support.
 
 
+Bugfixes in v1.15d
+==================
+* [NX] Ensure border colour is correctly restored after screensaver exits.
+
+
 Enhancements in v1.15c
 ======================
 * [NX] Now runs at 28MHz rather than 14MHz.
