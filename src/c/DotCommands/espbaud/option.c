@@ -4,7 +4,7 @@
 
 #include "option.h"
 
-struct flag flags = { 0, 0, 0, 0, 0, 0UL };
+struct flag flags = { 0, 0, 0, 0, 0, 0, 0UL };
 
 void option_parse(unsigned char *s)
 {
@@ -32,6 +32,10 @@ void option_parse(unsigned char *s)
                
             case 'v':
                flags.version = 1;
+               break;
+            
+            case 'f':
+               flags.force = 1;
                break;
             
             default:

@@ -6,7 +6,6 @@
 // MESSAGES
 
 extern unsigned char STRING_ESP_TX_AT[];
-extern unsigned char STRING_ESP_TX_AT_BPS_QUERY[];
 extern unsigned char STRING_ESP_TX_AT_GMR[];
 
 extern unsigned char STRING_ESP_RX_OK[];

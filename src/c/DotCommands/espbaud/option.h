@@ -10,6 +10,7 @@ struct flag
    unsigned char detect;
    unsigned char quiet;
    unsigned char permanent;
+   unsigned char force;
    uint32_t      set_bps;   // non-zero indicates valid
 };
 

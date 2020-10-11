@@ -1,5 +1,5 @@
-// ESPBAUD 1.0
-// Allen Albright, thanks to Tim Gilerts and Robin Verhagen-Guest
+// ESPBAUD
+// Allen Albright, thanks to Tim Gilberts and Robin Verhagen-Guest
 
 #include <stdio.h>
 #include <arch/zxn.h>
@@ -35,6 +35,22 @@ int m_printf(char *fmt, ...)
    }
 
    return 0;
+}
+
+// ESP DETECT BPS
+
+void main_esp_detect_bps(void)
+{
+   m_printf("Detecting ESP baud rate\n");
+   
+   if (!esp_detect_bps())
+   {
+      esp_bps = 115200UL;
+      m_printf("\n  Failed, selecting default");
+   }
+
+   m_printf("\n  Setting uart to %lu\n", esp_bps);
+   uart_set_prescaler(uart_compute_prescaler(esp_bps));
 }
 
 // MAIN AND CLEANUP
@@ -75,13 +91,14 @@ int main(int argc, char **argv)
    
    if (!flags.reset_hard && !flags.version && !flags.detect && !flags.set_bps)
    {
-      puts("ESPBAUD V1.0\n\n"
-           "-R  = ESP Hard Reset\n"
+      puts("ESPBAUD V1.1 (zx next)\n\n"
+           "-R  = ESP Hard Reset\n\n"
            "-d  = Detect ESP bps\n"
-           "-v  = AT+GMR\n"
-           "-p  = Change ESP bps permanent\n"
-           "-q  = quiet mode\n"
-           "num = Set baud rate\n\n"
+           "bps = Set bps and finetune\n"
+           "-v  = ESP version test\n\n"
+           "-p  = ESP bps change permanent\n"
+           "-f  = Set bps exactly\n"
+           "-q  = quiet mode\n\n"
            "Z88DK.ORG");
       
       exit(0);
@@ -104,29 +121,23 @@ int main(int argc, char **argv)
 
    if (flags.detect)
    {
-      m_printf("Detecting ESP baud rate\n");
-      
-      if (!esp_detect_bps())
-      {
-         esp_bps = 115200UL;
-         m_printf("\n  Failed, selecting default");
-      }
-
-      m_printf("\n  Setting uart to %lu\n", esp_bps);
-      uart_set_prescaler(uart_compute_prescaler(esp_bps));
+      esp_bps = 0UL;
+      main_esp_detect_bps();
    }
    
    esp_response_time_ms = 66 + ESP_FW_RESPONSE_TIME_MS;   // two bit periods at 300bps
    
    if (flags.set_bps)
    {
+      static unsigned char ret;
+      
       m_printf("Setting ESP to %lu", flags.set_bps);
       
       // verify that communication is established
       
       uart_tx("\r\nAT\r\n");
       
-      if (esp_response_ok() == ET_OK)
+      if ((ret = esp_response_ok()) == ET_OK)
       {
          // beware different versions of esp firmware
          
@@ -135,7 +146,7 @@ int main(int argc, char **argv)
             sprintf(buffer, "\r\nAT+UART_CUR=%lu,8,1,0,0\r\n", flags.set_bps);
             uart_tx(buffer);
             
-            if (esp_response_ok() != ET_OK)
+            if ((ret = esp_response_ok()) != ET_OK)
             {
                m_printf("\n  Trying perm change");
                flags.permanent = 1;
@@ -147,12 +158,12 @@ int main(int argc, char **argv)
             sprintf(buffer, "\r\nAT+UART_DEF=%lu,8,1,0,0\r\n", flags.set_bps);
             uart_tx(buffer);
             
-            if (esp_response_ok() != ET_OK)
+            if ((ret = esp_response_ok()) != ET_OK)
             {
                sprintf(buffer, "\r\nAT+UART=%lu,8,1,0,0\r\n", flags.set_bps);
                uart_tx(buffer);
                
-               if (esp_response_ok() != ET_OK)
+               if ((ret = esp_response_ok()) != ET_OK)
                {
                   m_printf(" (fail)");
                }
@@ -166,10 +177,20 @@ int main(int argc, char **argv)
          m_printf(" (fail)");
       }
       
-      // set uart to indicated baud rate no matter what
+      if ((ret == ET_OK) && !flags.force)
+      {
+         m_printf("\n");
+         
+         esp_bps = flags.set_bps;
+         main_esp_detect_bps();
+      }
+      else
+      {
+         // set uart to indicated baud rate no matter what
       
-      m_printf("\n  Setting uart to %lu\n", flags.set_bps);
-      uart_set_prescaler(uart_compute_prescaler(flags.set_bps));
+         m_printf("\n  Setting uart to %lu\n", flags.set_bps);
+         uart_set_prescaler(uart_compute_prescaler(flags.set_bps));
+      }
    }
 
    if (flags.version)

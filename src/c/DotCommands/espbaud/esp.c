@@ -9,8 +9,13 @@
 unsigned char esp_test(void);
 
 unsigned char STRING_ESP_TX_AT[] = "AT\r\n";
-unsigned char STRING_ESP_TX_AT_BPS_QUERY[] = "AT+UART_CUR?\r\n";
 unsigned char STRING_ESP_TX_AT_GMR[] = "AT+GMR\r\n";
+
+unsigned char STRING_ESP_TX_AT_BPS_Q1[] = "AT+UART_CUR?\r\n";
+unsigned char STRING_ESP_RX_AT_BPS_R1[] = "+UART_CUR:%lu";
+
+unsigned char STRING_ESP_TX_AT_BPS_Q2[] = "AT+UART?\r\n";
+unsigned char STRING_ESP_RX_AT_BPS_R2[] = "+UART:%lu";
 
 unsigned char STRING_ESP_RX_OK[] = "OK\r\n";
 
@@ -88,19 +93,49 @@ void esp_binary_search_bps(void)
 
    m_printf("    High end        ");   // bps is inverse of prescaler
    
-   esp_prescaler_endpoint = (esp_prescaler * 9UL) / 10UL;   // ~10% below found
+   esp_prescaler_endpoint = (esp_prescaler * 4UL) / 5UL;   // ~20% below found
    uart_prescaler_lo = esp_bsearch();
    
    // find high end of working range
 
    m_printf("\n    Low end         ");   // bps is inverse of prescaler
    
-   esp_prescaler_endpoint = (esp_prescaler * 10UL) / 9UL;   // ~10% above found
+   esp_prescaler_endpoint = (esp_prescaler * 5UL) / 4UL;   // ~20% above found
    uart_prescaler_hi = esp_bsearch();
    
    // computing bps from prescaler is the same function as computing prescaler from bps with prescaler arg
    
    esp_bps = uart_compute_prescaler((uart_prescaler_lo + uart_prescaler_hi)/2);
+}
+
+unsigned char esp_bps_query(unsigned char *send, unsigned char *respond)
+{
+   static uint32_t temp;
+   
+   // clear Rx buffer
+   
+   uart_rx_readline_last(buffer, sizeof(buffer)-1);
+
+   // transmit query
+   
+   uart_tx(send);
+   
+   // parse responses
+   
+   do
+   {
+      *buffer = 0;
+      uart_rx_readline(buffer, sizeof(buffer)-1);
+      
+      if (sscanf(buffer, respond, &temp) == 1)
+      {
+         esp_bps = temp;
+         return 1;
+      }
+   }
+   while (*buffer);
+   
+   return 0;
 }
 
 void esp_finetune_bps(void)
@@ -109,11 +144,9 @@ void esp_finetune_bps(void)
 
    m_printf("\n  Fine tune working baud rate\n");
    
-   uart_tx(STRING_ESP_TX_AT_BPS_QUERY);
-
-   if ((uart_rx_readline(buffer, sizeof(buffer)-1) == URR_OK) && (sscanf(buffer, "+UART_CUR:%lu", &temp) == 1))
+   if ((esp_bps_query(STRING_ESP_TX_AT_BPS_Q1, STRING_ESP_RX_AT_BPS_R1)) || 
+       (esp_bps_query(STRING_ESP_TX_AT_BPS_Q2, STRING_ESP_RX_AT_BPS_R2)))
    {
-      esp_bps = temp;
       m_printf("  ESP reports %lu", esp_bps);
    }
    else
@@ -143,6 +176,19 @@ unsigned char esp_detect_bps(void)
    static unsigned char i;
    
    m_printf("  Trying        ");
+   
+   // try passed in baud rate
+   
+   if (esp_bps)
+   {
+      uart_set_prescaler(uart_compute_prescaler(esp_bps));
+      
+      if (esp_test() == ET_OK)
+      {
+         esp_finetune_bps();
+         return 1;
+      }
+   }
    
    // try common bps
    
