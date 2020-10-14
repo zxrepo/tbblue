@@ -1,3 +1,12 @@
+v2.06N 2020-10-14
+=================
+* Reverted attempted fix for Calculator issues in v2.06J, which caused a
+  regression in the main NextBASIC editor (issue #35).
+* Properly fixed Calculator issues (#18 & #28).
+* VERIFY now uses same drive as SAVE (issue #32).
+* Fixed syntax error with VERIFY..DATA on disk drives (issue #32).
+
+
 v2.06M 2020-07-08
 =================
 * Fixed PLOT/POINT TO/DRAW/CIRCLE to operate on the backbuffer for layer2 instead
