@@ -23,11 +23,11 @@ Next.  Rather than viewing a linear plain text file, NextGuide can display
 section of documentation in isolation and have hyperlinks to connect the
 various nodes up.
 
-Below are the hyperlinks found on this node (called "MAIN" as you can see
-in the bottom-right corner).  You can click on these links with the mouse or
-navigate them with the keyboard.  @{i}Right Arrow@{ui} cycles forward through the links
-and @{i}Left Arrow@{ui} cycles backwards.  Pressing @{i}ENTER@{ui} will activate that link.  To 
-get back to the previous link, press @{i}B@{ui}.
+Below are the hyperlinks found on this node (called "MAIN" as you can see in
+the bottom-right corner).  You can click on these links with the navigate them
+with the keyboard.  @{i}Right Arrow@{ui} cycles forward through the links and
+@{i}Left Arrow@{ui} cycles backwards.  Pressing @{i}ENTER@{ui} will activate
+that link.  To get back to the previous link, press @{i}B@{ui}.
 
  @{" Copyright " LINK COPYRIGHT}
  @{" Using the Guide " LINK GUIDE}
@@ -51,7 +51,6 @@ Use the @{i}Up@{ui} and @{i}Down@{ui} arrows to scroll, @{i}SPACE@{ui} to page d
  @{" Keyboard shortcuts " LINK KEYBOARD}
  @{" Limits " LINK Limits}
  @{" Links Actions " LINK Link_Actions}
- @{" Mouse support " LINK UI}
  @{" Nodal commands " LINK NodalCommands}
  @{" Nodes " LINK CONCEPTS}
  @{" Status bar " LINK UI}
