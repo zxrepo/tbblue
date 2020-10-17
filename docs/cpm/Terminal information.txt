@@ -135,7 +135,7 @@ ESC M          delete line
 ESC N          delete character under cursor
 ESC O          leave insert mode
 
-ESC Y l c      set cursor position to line l, column c
+ESC Y l c      set cursor position to line l, column c (1,1 is top-left)
                (l and c are ASCII characters: add 32 to the desired value)
                eg to set cursor to line 1, column 50: ESC Y ! R
 
