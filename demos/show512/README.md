@@ -22,6 +22,7 @@ Then small copper code is alternating the palettes for upper/bottom half of the 
 
 ## thanks, author, license, ...
 
+The font is "Envious" by DamienG https://damieng.com/zx-origins  
 (C) Peter Helcmanovsky 2020, license: https://opensource.org/licenses/MIT
 
 v1.2 of example released at 2020-11-15.
