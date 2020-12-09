@@ -1,7 +1,6 @@
 /*
-TBBlue / ZX Spectrum Next project
-
-videotest: Garry Lancaster
+ZX Spectrum Next Firmware
+Copyright 2020 Garry Lancaster
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,505 +26,471 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #include "fwfile.h"
 #include "layers.h"
+#include "videomagic.h"
 #include "videotest.h"
 
-unsigned char * strVidMagic = "VideoTest";
-
-#define VIDMAGIC_OFFSET 0
-#define VIDMAGIC_LEN 9
-#define VIDMODE_OFFSET (VIDMAGIC_OFFSET + VIDMAGIC_LEN)
-#define VIDITER_OFFSET (VIDMODE_OFFSET + 1)
-#define VIDBLACK_OFFSET (VIDITER_OFFSET + 1)
-#define VIDWHITE_OFFSET (VIDBLACK_OFFSET + 1)
-
-unsigned char *pVidMagic = (unsigned char *)VIDMAGIC_OFFSET;
-unsigned char *pVidTestMode = (unsigned char *)VIDMODE_OFFSET;
-unsigned char *pVidTestIter = (unsigned char *)VIDITER_OFFSET;
-unsigned char *pVidTestBlack = (unsigned char *)VIDBLACK_OFFSET;
-unsigned char *pVidTestWhite = (unsigned char *)VIDWHITE_OFFSET;
+FATFS           FatFs;          /* FatFs work area needed for each volume */
+FIL             Fil;            /* File object needed for each open file */
+FRESULT         res;
 
 const testmodeitem modesDigital[] =
 {
-	{ 7, 0, 1 },
-	{ 7, 1, 1 },
+        { 7, 0, 1 },
+        { 7, 1, 1 },
 
-	// End marker
-	{ 255, 255, 255 }
+        // End marker
+        { 255, 255, 255 }
 };
 
 const testmodeitem modesRGB[] =
-{`
-	{ 0, 0, 0 },
-	{ 0, 1, 0 },
+{
+        { 0, 0, 0 },
+        { 0, 1, 0 },
 
-	// End marker
-	{ 255, 255, 255 }
+        // End marker
+        { 255, 255, 255 }
 };
 
 const testmodeitem modesVGA[] =
 {
-	{ 0, 0, 1 },
-	{ 0, 1, 1 },
-	{ 1, 0, 1 },
-	{ 1, 1, 1 },
-	{ 2, 0, 1 },
-	{ 2, 1, 1 },
-	{ 3, 0, 1 },
-	{ 3, 1, 1 },
-	{ 4, 0, 1 },
-	{ 4, 1, 1 },
-	{ 5, 0, 1 },
-	{ 5, 1, 1 },
-	{ 6, 0, 1 },
-	{ 6, 1, 1 },
+        { 0, 0, 1 },
+        { 0, 1, 1 },
+        { 1, 0, 1 },
+        { 1, 1, 1 },
+        { 2, 0, 1 },
+        { 2, 1, 1 },
+        { 3, 0, 1 },
+        { 3, 1, 1 },
+        { 4, 0, 1 },
+        { 4, 1, 1 },
+        { 5, 0, 1 },
+        { 5, 1, 1 },
+        { 6, 0, 1 },
+        { 6, 1, 1 },
 
-	// End marker
-	{ 255, 255, 255 }
+        // End marker
+        { 255, 255, 255 }
 };
 
 const testmodeitem modesAll[] =
 {
-	// Digital first
-	{ 7, 0, 1 },
-	{ 7, 1, 1 },
+        // Digital first
+        { 7, 0, 1 },
+        { 7, 1, 1 },
 
-	// RGB next
-	{ 0, 0, 0 },
-	{ 0, 1, 0 },
+        // RGB next
+        { 0, 0, 0 },
+        { 0, 1, 0 },
 
-	// VGA last
-	{ 0, 0, 1 },
-	{ 0, 1, 1 },
-	{ 1, 0, 1 },
-	{ 1, 1, 1 },
-	{ 2, 0, 1 },
-	{ 2, 1, 1 },
-	{ 3, 0, 1 },
-	{ 3, 1, 1 },
-	{ 4, 0, 1 },
-	{ 4, 1, 1 },
-	{ 5, 0, 1 },
-	{ 5, 1, 1 },
-	{ 6, 0, 1 },
-	{ 6, 1, 1 },
+        // VGA last
+        { 0, 0, 1 },
+        { 0, 1, 1 },
+        { 1, 0, 1 },
+        { 1, 1, 1 },
+        { 2, 0, 1 },
+        { 2, 1, 1 },
+        { 3, 0, 1 },
+        { 3, 1, 1 },
+        { 4, 0, 1 },
+        { 4, 1, 1 },
+        { 5, 0, 1 },
+        { 5, 1, 1 },
+        { 6, 0, 1 },
+        { 6, 1, 1 },
 
-	// End marker
-	{ 255, 255, 255 }
+        // End marker
+        { 255, 255, 255 }
 };
 
 const testmodeitem *modeTables[] =
 {
-	0,			// eVidTestNone
-	modesAll,		// eVidTestAll
-	modesDigital,		// eVidTestDigital
-	modesRGB,		// eVidTestRGB
-	modesVGA,		// eVidTestVGA
+        0,                      // eVidTestNone
+        modesAll,               // eVidTestAll
+        modesDigital,           // eVidTestDigital
+        modesRGB,               // eVidTestRGB
+        modesVGA,               // eVidTestVGA
 };
 
-const char *modeName[] =
+char *modeName[] =
 {
-	"",			// eVidTestNone
-	"ALL",			// eVidTestAll
-	"DIGI",			// eVidTestDigital
-	"RGB",			// eVidTestRGB
-	"VGA",			// eVidTestVGA
+        "",                     // eVidTestNone
+        "ALL",                  // eVidTestAll
+        "DIGI",                 // eVidTestDigital
+        "RGB",                  // eVidTestRGB
+        "VGA",                  // eVidTestVGA
 };
 
-unsigned char vidtestmode;
 unsigned char l2black, l2white;
 testmodeitem curtestmode;
+
+unsigned char copybuf[2048];
 
 
 void aySend(unsigned char ayreg, unsigned char data)
 {
-	AY_REG = ayreg;
-	AY_DATA = data;
+        AY_REG = ayreg;
+        AY_DATA = data;
 }
 
 void ayOff()
 {
-	aySend(AY_REG_MIXER, 0xff);
-	aySend(AY_REG_VOLUME_A, 0x00);
+        aySend(AY_REG_MIXER, 0xff);
+        aySend(AY_REG_VOLUME_A, 0x00);
 }
 
 void videoTestInit(unsigned char mode)
 {
-	unsigned int i, l;
-	unsigned int *pPalette;
+        unsigned int i, j;
+        unsigned int *pPalette;
 
-	if (mode == eVidTestNone)
-	{
-		// Overwrite the magic to disable testing.
-		REG_NUM = REG_RAMPAGE;
-		REG_VAL = RAMPAGE_ROMSPECCY;
-		*pVidMagic = 0;
-	}
-	else
-	{
-		// Load the L2 test card into RAM (at 14MHz)
-		REG_NUM = REG_TURBO;
-		REG_VAL = 2;
+        // viddata_page is the first 16K bank of 5 x 16K banks
+        // which are safe from corruption across resets.
+        // We use the last 5 banks of DivMMC RAM - the first
+        // 3 are used by switchModule().
+        const unsigned int viddata_page = RAMPAGE_RAMDIVMMC + 3;
 
-		fwOpenAndSeek(FW_BLK_TESTCARD_SCR);
+        REG_NUM = REG_RAMPAGE;
+        REG_VAL = RAMPAGE_ROMSPECCY + 2;
 
-		for (i = 0; i < 3; i++)
-		{
-			REG_NUM = REG_RAMPAGE;
-			REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + i;
-			fwRead((unsigned char *)0, 0x4000);	
-		}
+        if (mode == eVidTestNone)
+        {
+                // Overwrite the magic to disable testing.
+                *pVidMagic = 0;
+        }
+        else
+        {
+                if (strncmp(pVidMagic, strVidMagic, VIDMAGIC_LEN) == 0)
+                {
+                        // The testcard data is already present, so just
+                        // change the mode.
+                        if (*pVidTestMode != mode)
+                        {
+                                *pVidTestMode = mode;
+                                *pVidTestIter = 0;
+                        }
+                }
+                else
+                {
+                        // Load the L2 test card into RAM (at 14MHz)
+                        fwOpenAndSeek(FW_BLK_SCREENS);
 
-#if (FW_BLK_TESTCARD_L2PAL != (FW_BLK_TESTCARD_SCR + 1))
-#error "FW_BLK_TESTCARD_L2PAL must follow FW_BLK_TESTCARD_SCR"
-#endif
-#if (FW_BLK_TESTCARD_TMPAL != (FW_BLK_TESTCARD_L2PAL + 1))
-#error "FW_BLK_TESTCARD_TMPAL must follow FW_BLK_TESTCARD_L2PAL"
-#endif
+                        // The L2 screen, tilemap, and l2/tilemap palettes
+                        // are all read in to RAM which is stable across
+                        // resets. This means it can simply be copied back
+                        // from memory after each reboot without needing to
+                        // be reloaded.
+                        for (i = 0; i < 3; i++)
+                        {
+                                REG_NUM = REG_RAMPAGE;
+                                REG_VAL = viddata_page + i;
+                                fwRead((unsigned char *)0, 0x4000);     
+                        }
 
-		// Read the L2 & tilemap palettes into the following bank
-		// so they can be set from memory after each reboot
-		// without needing to be reloaded.
-		REG_NUM = REG_RAMPAGE;
-		REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + 3;
-		fwRead((unsigned char *)0, 0x400);
+                        REG_NUM = REG_RAMPAGE;
+                        REG_VAL = viddata_page + 3;
 
-		// Find the layer2 palette indices for black and white.
-		pPalette = (unsigned int *)0;
+                        // Erase the unused palette entries
+                        memset(0x0000, 0, 0x400);
 
-		for (i = 0; i < 256; i++)
-		{
-			if (pPalette[i] == 0x0000)
-			{
-				l2black = i;
-			}
+                        // Read the L2 palette data
+                        fwRead((unsigned char *)0x0000, FW_L2_PAL_SIZE);
 
-			if (pPalette[i] == 0x01ff)
-			{
-				l2white = i;
-			}
-		}
+                        fwSeek((FSIZE_t)FW_L2_PAL_SIZE+(FSIZE_t)0x1d600);
 
-#if (FW_BLK_TESTCARD_TMDATA != (FW_BLK_TESTCARD_TMPAL + 1))
-#error "FW_BLK_TESTCARD_TMDATA must follow FW_BLK_TESTCARD_TMPAL"
-#endif
+                        // Read the tilemap palette data
+                        fwRead((unsigned char *)0x0200, FW_TILEMAP_PAL_SIZE);
 
-		// Similarly, read the tilemap data into the next bank.
-		REG_NUM = REG_RAMPAGE;
-		REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + 4;
-		l = fwBlockLength(FW_BLK_TESTCARD_TMDATA);
-		fwRead((unsigned char *)0, l * 512);
+                        // Find the layer2 palette indices for black and white.
+                        pPalette = (unsigned int *)0;
 
-		fwClose();
+                        for (i = 0; i < 256; i++)
+                        {
+                                if (pPalette[i] == 0x0000)
+                                {
+                                        l2black = i;
+                                }
 
-		REG_NUM = REG_TURBO;
-		REG_VAL = 0;
+                                if (pPalette[i] == 0x01ff)
+                                {
+                                        l2white = i;
+                                }
+                        }
 
-		// Initialise the testing data and signal in progress.
-		REG_NUM = REG_RAMPAGE;
-		REG_VAL = RAMPAGE_ROMSPECCY;
-		strncpy(pVidMagic, strVidMagic, VIDMAGIC_LEN);
+                        // Similarly, read the tilemap data into the next bank.
+                        REG_NUM = REG_RAMPAGE;
+                        REG_VAL = viddata_page + 4;
+                        fwRead((unsigned char *)0, FW_TILEMAP_DAT_SIZE);
 
-		*pVidTestMode = mode;
-		*pVidTestIter = 0;
-		*pVidTestBlack = l2black;
-		*pVidTestWhite = l2white;
-	}
-}
+                        fwClose();
 
-unsigned char videoTestReselect()
-{
-	unsigned char mode = eVidTestNone;
+                        // Initialise the testing data and signal in progress.
+                        REG_NUM = REG_RAMPAGE;
+                        REG_VAL = RAMPAGE_ROMSPECCY + 2;
+                        strncpy(pVidMagic, strVidMagic, VIDMAGIC_LEN);
 
-	if ((HROW0 & 0x10) == 0)	// "V"
-	{
-		mode = eVidTestVGA;
-	}
-	else if ((HROW1 & 0x01) == 0)	// "A"
-	{
-		mode = eVidTestAll;
-	}
-	else if ((HROW2 & 0x08) == 0)	// "R"
-	{
-		mode = eVidTestRGB;
-	}
-	else if ((HROW1 & 0x04) == 0)	// "D"
-	{
-		mode = eVidTestDigital;
-	}
+                        *pVidTestMode = mode;
+                        *pVidTestIter = 0;
 
-	if ((mode != eVidTestNone)
-	    && (mode != vidtestmode))
-	{
-		vidtestmode = mode;
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
-}
+                        *pVidTestBlack = l2black;
+                        *pVidTestWhite = l2white;
+                }
 
-unsigned char videoTestActive()
-{
-	REG_NUM = REG_RAMPAGE;
-	REG_VAL = RAMPAGE_ROMSPECCY;
+                // Copy the layer2 & tilemap data from DivMMC RAM.
+                for (i = 0; i < 5; i++)
+                {
+                        for (j = 0; j < 8; j++)
+                        {
+                                REG_NUM = REG_RAMPAGE;
+                                REG_VAL = viddata_page + i;
 
-	if (strncmp(pVidMagic, strVidMagic, VIDMAGIC_LEN) == 0)
-	{
-		// Video mode testing is already in progress.
-		vidtestmode = *pVidTestMode;
-	}
-	else
-	{
-		vidtestmode = eVidTestNone;
-	}
+                                memcpy(copybuf, (unsigned char *)(j*2048), 2048);
 
-	if (videoTestReselect())
-	{
-		// Initialise or re-initialise if new mode chosen.
-		videoTestInit(vidtestmode);
-	}
-	else if ((vidtestmode == eVidTestNone)
-		&& (settings[eSettingTiming] == 8))
-	{
-		// Force testing if timing=8 in config.ini.
-		vidtestmode = eVidTestAll;
-		videoTestInit(vidtestmode);
-	}
+                                REG_NUM = REG_RAMPAGE;
+                                REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + i;
 
-	return (vidtestmode != eVidTestNone);
+                                memcpy((unsigned char *)(j*2048), copybuf, 2048);
+                        }
+                }
+        }
 }
 
 unsigned char videoTestMode()
 {
-	// Set the current mode.
-	// NOTE: If the timing register contents are changed, a power-on
-	//       reboot will occur, but we will then be returned to this
-	//       point since the details of the current video mode cycle
-	//       state are stored in RAM.
-	unsigned long l;
-	unsigned char opc = 0;
-	unsigned char modeName_x;
+        // Set the current mode.
+        // NOTE: If the timing register contents are changed, a power-on
+        //       reboot will occur, but we will then be returned to this
+        //       point since the details of the current video mode cycle
+        //       state are stored in RAM.
+        unsigned long l;
+        unsigned char opc = 0;
+        unsigned char modeName_x;
 
-	REG_NUM = REG_VIDEOT;
-	REG_VAL = curtestmode.timing | 0x80;
+        REG_NUM = REG_VIDEOT;
+        REG_VAL = curtestmode.timing | 0x80;
 
-	if (curtestmode.freq)		opc |= 0x04;
-	if (curtestmode.doubler)	opc |= 0x01;
-	REG_NUM = REG_PERIPH1;
-	REG_VAL = opc;
+        if (curtestmode.freq)           opc |= 0x04;
+        if (curtestmode.doubler)        opc |= 0x01;
+        REG_NUM = REG_PERIPH1;
+        REG_VAL = opc;
 
-	// Set layer2 start bank.
-	REG_NUM = REG_L2BANK;
-	REG_VAL = L2_BANK;
+        // Set layer2 start bank.
+        REG_NUM = REG_L2BANK;
+        REG_VAL = L2_BANK;
 
-	// Display mode information.
-	l2_setcolours(l2black, l2white);
-	l2_gotoxy(7*8, 19*8);
-	//////////////////123456
-	l2_prints("Cycling      modes");
+        // Display mode information.
+        l2_setcolours(l2black, l2white);
+        l2_gotoxy(7*8, 19*8);
+        //////////////////123456
+        l2_prints("Cycling      modes");
 
-	modeName_x = 14*8 + ((6-strlen(modeName[vidtestmode]))*8/2);
-	l2_gotoxy(modeName_x, 19*8);
-	l2_prints(modeName[vidtestmode]);
+        modeName_x = 14*8 + ((6-strlen(modeName[vidtestmode]))*8/2);
+        l2_gotoxy(modeName_x, 19*8);
+        l2_prints(modeName[vidtestmode]);
 
-	l2_gotoxy(7*8,2*8-5);
-	l2_prints("Mode ");
-	l2_putchar('0' + curtestmode.timing);
-	if (curtestmode.freq)
-	{
-		l2_prints("/60Hz");
-	}
-	else
-	{
-		l2_prints("/50Hz");
-	}
-	if (curtestmode.doubler)
-	{
-		l2_prints("/scan*2");
-	}
-	else
-	{
-		l2_prints("/scan*1");
-	}
+        l2_gotoxy(7*8,2*8-5);
+        l2_prints("Mode ");
+        l2_putchar('0' + curtestmode.timing);
+        if (curtestmode.freq)
+        {
+                l2_prints("/60Hz");
+        }
+        else
+        {
+                l2_prints("/50Hz");
+        }
+        if (curtestmode.doubler)
+        {
+                l2_prints("/scan*2");
+        }
+        else
+        {
+                l2_prints("/scan*1");
+        }
 
-	// Set the layer2 and tilemap palettes for the testcard
-	REG_NUM = REG_RAMPAGE;
-	REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + 3;
-	setPalette(PALETTE_L2_0, (unsigned char *)0);
-	setPalette(PALETTE_TILEMAP_0, (unsigned char *)0x200);
+        // Set the layer2 and tilemap palettes for the testcard
+        REG_NUM = REG_RAMPAGE;
+        REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + 3;
+        setPalette(PALETTE_L2_0, (unsigned char *)0);
+        setPalette(PALETTE_TILEMAP_0, (unsigned char *)0x200);
 
-	// Copy the tilemap data up to RAM5.
-	REG_NUM = REG_RAMPAGE;
-	REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + 4;
-	memcpy((unsigned char*)0x4000, (unsigned char)0, 0x2000);
+        // Copy the tilemap data up to RAM5.
+        REG_NUM = REG_RAMPAGE;
+        REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + 4;
+        memcpy((unsigned char*)0x4000, (unsigned char)0, 0x2000);
 
-	// Set up and enable the tilemap.
-	REG_NUM = REG_TILEMAP_ATTR;
-	REG_VAL = 0x00;
+        // Set up and enable the tilemap.
+        REG_NUM = REG_TILEMAP_ATTR;
+        REG_VAL = 0x00;
 
-	REG_NUM = REG_TILEMAP_BASE;
-	REG_VAL = 0x40;
+        REG_NUM = REG_TILEMAP_BASE;
+        REG_VAL = 0x40;
 
-	REG_NUM = REG_TILEDEF_BASE;
-	REG_VAL = 0x45;
+        REG_NUM = REG_TILEDEF_BASE;
+        REG_VAL = 0x45;
 
-	REG_NUM = REG_TILEMAP_CTRL;
-	REG_VAL = 0xa1;		// enable, no attribs, no ULA
+        REG_NUM = REG_TILEMAP_CTRL;
+        REG_VAL = 0xa1;         // enable, no attribs, no ULA
 
-	// Set transparency and fallback to black so that the magentas show up.
-	REG_NUM = REG_TRANSPARENCY;
-	REG_VAL = 0;
-	REG_NUM = REG_FALLBACK;
-	REG_VAL = 0;
+        // Set transparency and fallback to black so that the magentas show up.
+        REG_NUM = REG_TRANSPARENCY;
+        REG_VAL = 0;
+        REG_NUM = REG_FALLBACK;
+        REG_VAL = 0;
 
-	// Make layer 2 visible.
-	L2PORT = 0x02;
+        // Make layer 2 visible.
+        L2PORT = 0x02;
 
-	// Show border around the outside.
-	ULAPORT = 0x04;
+        // Show border around the outside.
+        ULAPORT = 0x04;
 
-	// If "N" is still being held from previous mode, wait until released.
-	while ((HROW7 & 0x08) == 0);
+        // If "N" is still being held from previous mode, wait until released.
+        while ((HROW7 & 0x08) == 0);
 
-	for (l = 0; l < 0x17fff; l++)
-	{
-		if ((l & 0xfff) == 0)
-		{
-        		l2_gotoxy(7*8,20*8+4);
-			if ((l & 0x1000) == 0)
-			{
-				l2_prints("ENTER selects mode");
-				l2_gotoxy(7*8+4,21*8+4);
-				l2_prints(" N skips to next ");
-			}
-			else
-			{
-				l2_prints("                  ");
-				l2_gotoxy(8*8+4,21*8+4);
-				l2_prints("               ");
-			}
-		}
+        for (l = 0; l < 0x7ffff; l++)
+        {
+                if ((l & 0x7fff) == 0)
+                {
+                        l2_gotoxy((unsigned char)(7*8),(unsigned char)(20*8+4));
+                        if ((l & 0x8000) == 0)
+                        {
+                                l2_prints("ENTER selects mode");
+                                l2_gotoxy((unsigned char)(7*8+4),(unsigned char)(21*8+4));
+                                l2_prints(" N skips to next ");
+                        }
+                        else
+                        {
+                                l2_prints("                  ");
+                                l2_gotoxy((unsigned char)(8*8+4),(unsigned char)(21*8+4));
+                                l2_prints("               ");
+                        }
+                }
 
-		if (l == 5000)
-		{
-			aySend(AY_REG_TONE_COARSE_A, 0x00);
-			aySend(AY_REG_TONE_FINE_A, 0xfc); // 0x7e
-			aySend(AY_REG_MIXER, 0xfe);
-			aySend(AY_REG_VOLUME_A, 0x0f);
-		}
+                if (l == 30000)
+                {
+                        aySend(AY_REG_TONE_COARSE_A, 0x00);
+                        aySend(AY_REG_TONE_FINE_A, 0xfc); // 0x7e
+                        aySend(AY_REG_MIXER, 0xfe);
+                        aySend(AY_REG_VOLUME_A, 0x0f);
+                }
 
-		if (l == 18000)
-		{
-			ayOff();
-		}
+                if (l == 110000)
+                {
+                        ayOff();
+                }
 
-		// Select this mode if ENTER is pressed.
-		if ((HROW6 & 0x01) == 0)
-		{
-			ayOff();
-			l2_gotoxy(7*8,19*8);
-			l2_prints("Select mode? (Y/N)");
-			l2_gotoxy(7*8,20*8+4);
-			if (curtestmode.freq)
-			{
-				l2_prints("NOTE:Compatibility");
-				l2_gotoxy(7*8+4,21*8+4);
-				l2_prints("is better at 50Hz");
-			}
-			else
-			{
-				l2_prints("                  ");
-				l2_gotoxy(7*8,21*8+4);
-				l2_prints("                 ");
-			}
+                // Select this mode if ENTER is pressed.
+                if ((HROW6 & 0x01) == 0)
+                {
+                        ayOff();
+                        l2_gotoxy((unsigned char)(7*8),(unsigned char)(19*8));
+                        l2_prints("Select mode? (Y/N)");
+                        l2_gotoxy((unsigned char)(7*8),(unsigned char)(20*8+4));
+                        if (curtestmode.freq)
+                        {
+                                l2_prints("NOTE:Compatibility");
+                                l2_gotoxy((unsigned char)(7*8+4),(unsigned char)(21*8+4));
+                                l2_prints("is better at 50Hz");
+                        }
+                        else
+                        {
+                                l2_prints("                  ");
+                                l2_gotoxy((unsigned char)(7*8),(unsigned char)(21*8+4));
+                                l2_prints("                 ");
+                        }
 
-			while ( ((HROW5 & 0x10) == 0x10)
-				&& ((HROW7 & 0x08) == 0x08) );
+                        while ( ((HROW5 & 0x10) == 0x10)
+                                && ((HROW7 & 0x08) == 0x08) );
 
-			if ((HROW5 & 0x10) == 0)
-			{
-				// Turn off AY, layer 2 and tilemap,
-				// and set border back to black.
-				ayOff();
-				vdp_cls();
-				L2PORT = 0x00;
-				REG_NUM = REG_TILEMAP_CTRL;
-				REG_VAL = 0x00;
-				ULAPORT = 0x00;
-			
-				// Reset the layer 2 palette to defaults.
-				setOrderedPalette(PALETTE_L2_0);
+                        if ((HROW5 & 0x10) == 0)
+                        {
+                                // Turn off AY, layer 2 and tilemap,
+                                // and set border back to black.
+                                ayOff();
+                                vdp_cls();
+                                L2PORT = 0x00;
+                                REG_NUM = REG_TILEMAP_CTRL;
+                                REG_VAL = 0x00;
+                                ULAPORT = 0x00;
 
-				// Turn off video mode cycling.
-				videoTestInit(eVidTestNone);
+                                // Reset the layer 2 palette to defaults.
+                                setOrderedPalette(PALETTE_L2_0);
 
-				// Update config.ini with current mode settings.
-				settings[eSettingTiming] = curtestmode.timing;
-				settings[eSettingFreq5060] = curtestmode.freq;
-				settings[eSettingScandoubler] = curtestmode.doubler;
-				save_config();
+                                // Turn off video mode cycling.
+                                videoTestInit(eVidTestNone);
 
-				return 1;
-			}
+                                // Update config.ini with current mode settings.
+                                settings[eSettingTiming] = curtestmode.timing;
+                                settings[eSettingFreq5060] = curtestmode.freq;
+                                settings[eSettingScandoubler] = curtestmode.doubler;
+                                save_config();
 
-			break;
-		}
+                                return 1;
+                        }
 
-		// Skip this mode if N is pressed.
-		if ((HROW7 & 0x08) == 0)
-		{
-			return 0;
-		}
+                        break;
+                }
 
-		// Exit with new mode range if chosen with key A/V/H/S.
-		if (videoTestReselect())
-		{
-			REG_NUM = REG_RAMPAGE;
-			REG_VAL = RAMPAGE_ROMSPECCY;
+                // Skip this mode if N is pressed.
+                if ((HROW7 & 0x08) == 0)
+                {
+                        return 0;
+                }
 
-			*pVidTestMode = vidtestmode;
-			*pVidTestIter = 0xff;	// will be incremented
-			return 0;
-		}
-	}
+                // Exit with new mode range if chosen with key A/V/H/S.
+                if (videoTestReselect())
+                {
+                        REG_NUM = REG_RAMPAGE;
+                        REG_VAL = RAMPAGE_ROMSPECCY + 2;
 
-	// No need to reset anything as this func will shortly be re-run.
-	return 0;
+                        *pVidTestMode = vidtestmode;
+                        *pVidTestIter = 0xff;   // will be incremented to 0
+                        return 0;
+                }
+        }
+
+        // No need to reset anything as this func will shortly be re-run.
+        return 0;
 }
 
-void videoTestCycle()
+void main()
 {
-	while (1)
-	{
-		REG_NUM = REG_RAMPAGE;
-		REG_VAL = RAMPAGE_ROMSPECCY;
+        vdp_init();
+        load_config();
+        videoTestActive();
+        videoTestInit(vidtestmode);
 
-		vidtestmode = *pVidTestMode;
-		l2black = *pVidTestBlack;
-		l2white = *pVidTestWhite;
+        while (1)
+        {
+                REG_NUM = REG_RAMPAGE;
+                REG_VAL = RAMPAGE_ROMSPECCY + 2;
 
-		curtestmode = (modeTables[vidtestmode])[*pVidTestIter];
+                vidtestmode = *pVidTestMode;
 
-		if (curtestmode.timing != 255)
-		{
-			if (videoTestMode())
-			{
-				// Exit if mode successfully selected.
-				return;
-			}
+                l2black = *pVidTestBlack;
+                l2white = *pVidTestWhite;
 
-			// Re-select test mode data RAM page.
-			REG_NUM = REG_RAMPAGE;
-			REG_VAL = RAMPAGE_ROMSPECCY;
+                curtestmode = (modeTables[vidtestmode])[*pVidTestIter];
 
-			// If not selected, step to next mode.
-			*pVidTestIter = *pVidTestIter + 1;
-		}
-		else
-		{
-			// Look back to table start if end reached.
-			*pVidTestIter = 0;
-		}
-	}
+                if (curtestmode.timing != 255)
+                {
+                        if (videoTestMode())
+                        {
+                                // Exit if mode successfully selected.
+                                REG_NUM = REG_RESET;
+                                REG_VAL = RESET_HARD;
+                        }
+
+                        // Re-select test mode data RAM page.
+                        REG_NUM = REG_RAMPAGE;
+                        REG_VAL = RAMPAGE_ROMSPECCY + 2;
+
+                        // If not selected, step to next mode.
+                        *pVidTestIter = *pVidTestIter + 1;
+                }
+                else
+                {
+                        // Look back to table start if end reached.
+                        *pVidTestIter = 0;
+                }
+        }
 }

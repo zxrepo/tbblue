@@ -1,11 +1,7 @@
-;  TBBlue / ZX Spectrum Next project
 ;--------------------------------------------------------------------------
 ;  crt0.s - Generic crt0.s for a Z80
 ;
 ;  Copyright (C) 2000, Michael Hope
-;  Copyright (C) 2015, Fabio Belavenuto & Victor Trucco
-;
-;  Fixes and enhancements since v1.05: Garry Lancaster
 ;
 ;  This library is free software; you can redistribute it and/or modify it
 ;  under the terms of the GNU General Public License as published by the
@@ -30,69 +26,69 @@
 ;   might be covered by the GNU General Public License.
 ;--------------------------------------------------------------------------
 
-	.module crt0
-	.globl	_main
-	.globl  l__INITIALIZER
-	.globl  s__INITIALIZED
-	.globl  s__INITIALIZER
-	.globl	l__DATA
-	.globl	s__DATA
+        .module crt0
+        .globl  _main
+        .globl  l__INITIALIZER
+        .globl  s__INITIALIZED
+        .globl  s__INITIALIZER
+        .globl  l__DATA
+        .globl  s__DATA
 
-	.area	_HEADER (ABS)
-	;; Reset vector
-	.org 	0x6000
-	;; Stack at the top of memory.
-	ld		sp, #0xFFFF
-	di
-	;; Initialise global variables
-	call    gsinit
-	call	_main
-	jp		_exit
+        .area   _HEADER (ABS)
+        ;; Reset vector
+        .org    0x6000
+        ;; Stack at the top of memory.
+        ld              sp, #0xFFFF
+        di
+        ;; Initialise global variables
+        call    gsinit
+        call    _main
+        jp              _exit
 
-	;; Ordering of segments for the linker.
-	.area	_HOME
-	.area	_CODE
-	.area	_INITIALIZER
+        ;; Ordering of segments for the linker.
+        .area   _HOME
+        .area   _CODE
+        .area   _INITIALIZER
 
-	.area   _GSINIT
-	.area   _GSFINAL
+        .area   _GSINIT
+        .area   _GSFINAL
 
-	.area	_DATA
-	.area	_INITIALIZED
+        .area   _DATA
+        .area   _INITIALIZED
 
-	.area	_BSEG
-	.area   _BSS
-	.area   _HEAP
+        .area   _BSEG
+        .area   _BSS
+        .area   _HEAP
 
-	.area   _CODE
+        .area   _CODE
 
 _exit::
 1$:
-	halt
-	jr		1$
+        halt
+        jr              1$
 
-	.area	_GSINIT
+        .area   _GSINIT
 gsinit::
-	ld		bc, #l__DATA
-	ld		a, b
-	or		a, c
-	jr		z,gsinit_initialized
-	ld		hl, #s__DATA
-	ld		de, #s__DATA+1
-	ld		(hl), #0
-	dec		bc
-	ld		a, b
-	or		a, c
-	jr		z,gsinit_initialized
-	ldir
+        ld              bc, #l__DATA
+        ld              a, b
+        or              a, c
+        jr              z,gsinit_initialized
+        ld              hl, #s__DATA
+        ld              de, #s__DATA+1
+        ld              (hl), #0
+        dec             bc
+        ld              a, b
+        or              a, c
+        jr              z,gsinit_initialized
+        ldir
 gsinit_initialized:
-	ld		bc, #l__INITIALIZER
-	ld		a, b
-	or		a, c
-	jr z,	gsinit_next
-	ld		de, #s__INITIALIZED
-	ld		hl, #s__INITIALIZER
-	ldir
+        ld              bc, #l__INITIALIZER
+        ld              a, b
+        or              a, c
+        jr z,   gsinit_next
+        ld              de, #s__INITIALIZED
+        ld              hl, #s__INITIALIZER
+        ldir
 gsinit_next:
-	.area   _GSFINAL
-	ret
+        .area   _GSFINAL
+        ret

@@ -1,9 +1,6 @@
 /*
-TBBlue / ZX Spectrum Next project
-
-Copyright (c) 2015 Fabio Belavenuto & Victor Trucco
-
-Fixes and enhancements since v1.05: Garry Lancaster
+ZX Spectrum Next Firmware
+Copyright 2020 Garry Lancaster, Fabio Belavenuto & Victor Trucco
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,69 +20,83 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hardware.h"
 #include "vdp.h"
 #include "misc.h"
+#include "ff.h"
+#include "spi.h"
 
 //                    12345678901234567890123456789012
 const char TITLE[] = " ZX Spectrum Next Configuration ";
 static unsigned char mach_version_major, mach_version_minor, mach_version_sub;
+char line[256];
 
 void display_error(const unsigned char *msg)
 {
-	unsigned char l = 16 - strlen(msg)/2;
+        unsigned char l = 16 - strlen(msg)/2;
 
-	vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
-	vdp_cls();
-	vdp_setcolor(COLOR_RED, COLOR_BLUE, COLOR_WHITE);
-	vdp_setflash(0);
-	vdp_prints(TITLE);
-	vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
-	vdp_setflash(1);
-	vdp_gotoxy(l, 12);
-	vdp_prints(msg);
-	ULAPORT = COLOR_RED;
-	for(;;);
+        vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
+        vdp_cls();
+        vdp_setcolor(COLOR_RED, COLOR_BLUE, COLOR_WHITE);
+        vdp_setflash(0);
+        vdp_prints(TITLE);
+        vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
+        vdp_setflash(1);
+        vdp_gotoxy(l, 12);
+        vdp_prints(msg);
+        ULAPORT = COLOR_RED;
+        for(;;);
 }
 
 void disable_bootrom()
 {
-	REG_NUM = REG_MACHTYPE;
-	REG_VAL = 0;
+        REG_NUM = REG_MACHTYPE;
+        REG_VAL = 0;
 }
 
 unsigned long get_core_ver()
 {
-	REG_NUM = REG_VERSION;
-	mach_version_major = REG_VAL;
+        REG_NUM = REG_VERSION;
+        mach_version_major = REG_VAL;
 
-	mach_version_minor = mach_version_major & 0x0F;
-	mach_version_major = (mach_version_major >> 4) & 0x0F;
+        mach_version_minor = mach_version_major & 0x0F;
+        mach_version_major = (mach_version_major >> 4) & 0x0F;
 
-	REG_NUM = REG_VERSION_SUB;
-	mach_version_sub = REG_VAL;
+        REG_NUM = REG_VERSION_SUB;
+        mach_version_sub = REG_VAL;
 
         return  (mach_version_major*65536) + (mach_version_minor*256) + mach_version_sub;
 }
 
 unsigned long get_fattime()
 {
-	return 0x44210000UL;
+        return 0x44210000UL;
 }
 
 unsigned char getCoreBoot()
 {
-	unsigned int j;
-	unsigned char sum = 0;
-	coreboot *pCoreBoot = (coreboot *)0x0000;
+        unsigned int j;
+        unsigned char sum = 0;
+        coreboot *pCoreBoot = (coreboot *)0x0000;
 
-	REG_NUM = REG_RAMPAGE;
-	REG_VAL = RAMPAGE_ALTROM0;
+        REG_NUM = REG_RAMPAGE;
+        REG_VAL = RAMPAGE_ALTROM0;
 
-	if (strncmp(pCoreBoot->magic, COREBOOT_MAGIC, COREBOOT_MAGIC_SIZE) == 0)
-	{
-		for (j = 0; j < COREBOOT_STRUCT_SIZE; j++)
-		{
-			sum += *(((unsigned char *)(pCoreBoot)) + j);
-		}
-	}
+        if (strncmp(pCoreBoot->magic, COREBOOT_MAGIC, COREBOOT_MAGIC_SIZE) == 0)
+        {
+                for (j = 0; j < COREBOOT_STRUCT_SIZE; j++)
+                {
+                        sum += *(((unsigned char *)(pCoreBoot)) + j);
+                }
+        }
 
-	return (sum == COREBOOT_CHECKSUM);
+        return (sum == COREBOOT_CHECKSUM);
+}
+
+void readFlash(unsigned int startPage, unsigned char offset, unsigned char *pBuffer, unsigned int pages)
+{
+        pBuffer[0] = cmd_read_bytes;
+        pBuffer[1] = startPage >> 8;
+        pBuffer[2] = startPage & 0xFF;
+        pBuffer[3] = offset;
+        SPI_send4bytes(pBuffer);
+        SPI_receive(pBuffer, pages);
+        SPI_cshigh();
 }

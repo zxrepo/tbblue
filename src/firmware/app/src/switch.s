@@ -1,8 +1,5 @@
-;
-;  TBBlue / ZX Spectrum Next project
-;  Copyright (c) 2015 Fabio Belavenuto & Victor Trucco
-;
-;  Fixes and enhancements since v1.05: Garry Lancaster
+;ZX Spectrum Next Firmware
+;Copyright 2020 Garry Lancaster, Fabio Belavenuto & Victor Trucco
 ;
 ;This program is free software: you can redistribute it and/or modify
 ;it under the terms of the GNU General Public License as published by
@@ -18,47 +15,47 @@
 ;along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;
 
-	.module switch
-	.optsdcc -mz80
+        .module switch
+        .optsdcc -mz80
 
-	.area	_CODE
+        .area   _CODE
 
 _switch_routine::
-	ld	hl, #_switch_start
-	ld	de, # 0x4000
-	ld	bc, #(_switch_end-_switch_start)
-	ldir
-	jp	0x4000
+        ld      hl, #_switch_start
+        ld      de, # 0x4000
+        ld      bc, #(_switch_end-_switch_start)
+        ldir
+        jp      0x4000
 _switch_start:
-	ld	bc, # 0x243B
-	ld	a, # 0x04
-	out	(c),a
-	inc	b
-	xor	a
-	out	(c),a
-	ld	hl, # 0x0000
-	ld	de, # 0x6000
-	ld	bc, # 0x4000
-	ldir
-	ld	bc, # 0x243B
-	ld	a, # 0x04
-	out	(c),a
-	inc	b
-	ld      a, # 1
-	out	(c),a
-	ld	hl, # 0x0000
-	ld	de, # 0xa000
-	ld	bc, # 0x4000
-	ldir
-	ld	bc, # 0x243B
-	ld	a, # 0x04
-	out	(c),a
-	inc	b
-	ld      a, # 2
-	out	(c),a
-	ld	hl, # 0x0000
-	ld	de, # 0xe000
-	ld	bc, # 0x2000
-	ldir
-	jp	0x6000
+        ld      bc, # 0x243B
+        ld      a, # 0x04
+        out     (c),a
+        inc     b
+        ld      a, # 8          ; RAM_DIVMMC
+        out     (c),a
+        ld      hl, # 0x0000
+        ld      de, # 0x6000
+        ld      bc, # 0x4000
+        ldir
+        ld      bc, # 0x243B
+        ld      a, # 0x04
+        out     (c),a
+        inc     b
+        ld      a, # 9          ; RAM_DIVMMC + 1
+        out     (c),a
+        ld      hl, # 0x0000
+        ld      de, # 0xa000
+        ld      bc, # 0x4000
+        ldir
+        ld      bc, # 0x243B
+        ld      a, # 0x04
+        out     (c),a
+        inc     b
+        ld      a, # 10         ; RAM_DIVMMC + 2
+        out     (c),a
+        ld      hl, # 0x0000
+        ld      de, # 0xe000
+        ld      bc, # 0x2000
+        ldir
+        jp      0x6000
 _switch_end:

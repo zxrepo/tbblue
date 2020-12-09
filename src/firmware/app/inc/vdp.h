@@ -1,7 +1,6 @@
 /*
-TBBlue / ZX Spectrum Next project
-
-Copyright (c) 2015 Fabio Belavenuto & Victor Trucco
+ZX Spectrum Next Firmware
+Copyright 2020 Garry Lancaster, Fabio Belavenuto & Victor Trucco
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,26 +20,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define _VDP_H
 
 #define MEM_BASE 0x4000
-#define PIX_BASE (MEM_BASE + 0)				// 4000 a 57FF
-#define CT_BASE  (MEM_BASE + 0x1800)		// 5800 a 5B00
+#define PIX_BASE (MEM_BASE + 0)                 // 4000 a 57FF
+#define CT_BASE  (MEM_BASE + 0x1800)            // 5800 a 5B00
 
 enum {
-	COLOR_BLACK		= 0,
-	COLOR_BLUE,
-	COLOR_RED,
-	COLOR_MAGENTA,
-	COLOR_GREEN,
-	COLOR_CYAN,
-	COLOR_YELLOW,
-	COLOR_GRAY,
-	COLOR_BLACK2,
-	COLOR_LBLUE,
-	COLOR_LRED,
-	COLOR_LMAGENTA,
-	COLOR_LGREEN,
-	COLOR_LCYAN,
-	COLOR_LYELLOW,
-	COLOR_WHITE,
+        COLOR_BLACK             = 0,
+        COLOR_BLUE,
+        COLOR_RED,
+        COLOR_MAGENTA,
+        COLOR_GREEN,
+        COLOR_CYAN,
+        COLOR_YELLOW,
+        COLOR_GRAY,
+        COLOR_BLACK2,
+        COLOR_LBLUE,
+        COLOR_LRED,
+        COLOR_LMAGENTA,
+        COLOR_LGREEN,
+        COLOR_LCYAN,
+        COLOR_LYELLOW,
+        COLOR_WHITE,
 };
 
 void vdp_init();
@@ -59,5 +58,6 @@ void vdp_prints(const char *str);
 void vdp_clear(unsigned char x, unsigned char y, unsigned char n);
 void puthex8(unsigned char v);
 void puthex16(unsigned int v);
+void vdp_reveal(unsigned int load, unsigned int startandhalfpage);
 
-#endif	/* _VDP_H */
+#endif  /* _VDP_H */

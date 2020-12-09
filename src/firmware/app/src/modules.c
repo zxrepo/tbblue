@@ -16,10 +16,38 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SWITCH_H
-#define SWITCH_H
+#include <string.h>
+#include "hardware.h"
+#include "vdp.h"
+#include "misc.h"
+#include "modules.h"
+#include "ff.h"
+#include "fwfile.h"
+#include "switch.h"
+#include "config.h"
 
-void switch_routine(void);
+void switchModule(unsigned char m)
+{
+        unsigned int bl, i, l;
 
-#endif
+        memset((unsigned char *)0x4000, 0, 6912);
 
+        fwOpenAndSeek(m);
+        i = fwBlockLength(m);
+        bl = 0;
+
+        while (i)
+        {
+                REG_NUM = REG_RAMPAGE;
+                REG_VAL = RAMPAGE_RAMDIVMMC + bl;
+
+                l = (i > 32) ? 32 : i;
+                fwRead((unsigned char *)0x0, l * 512);
+                i = i - l;
+                bl++;
+        }
+
+        fwClose();
+
+        switch_routine();
+}

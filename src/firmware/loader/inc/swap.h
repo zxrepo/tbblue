@@ -50,7 +50,7 @@
 #define SwapBB(x)    ({ typeof(x) _x = (x); ((_x&0x00ff)<<8)      | ((_x&0xff00)>>8); })
 #define SwapWW(x)    ({ typeof(x) _x = (x); ((_x&0x0000ffff)<<16) | ((_x&0xffff0000)>>16); })
 
-#else	// SWAP_MACROS
+#else   // SWAP_MACROS
 
 //// function declarations ////
 unsigned long SwapBBBB (unsigned long i);
@@ -59,7 +59,7 @@ unsigned long SwapWW   (unsigned long i);
 
 #endif // SWAP_MACROS
 
-#else	// SWAP
+#else   // SWAP
 
 #define SwapBBBB(x)  (x)
 #define SwapBB(x)    (x)

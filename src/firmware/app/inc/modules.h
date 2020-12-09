@@ -1,6 +1,6 @@
 /*
 ZX Spectrum Next Firmware
-Copyright 2020 Garry Lancaster
+Copyright 2020 Garry Lancaster, Fabio Belavenuto & Victor Trucco
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,16 +16,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _LAYERS_H
-#define _LAYERS_H
+#ifndef _MODULES_H
+#define _MODULES_H
 
-#define L2_BANK 8
+void switchModule(unsigned char m);
 
-void l2_gotoxy(unsigned char x, unsigned char y);
-void l2_setcolours(unsigned char i, unsigned char p);
-void l2_putchar(unsigned char ch);
-void l2_prints(unsigned char *str);
-void setPalette(unsigned char palId, unsigned char * pData);
-void setOrderedPalette(unsigned char palId);
-
-#endif // _LAYERS_H
+#endif // _MODULES_H

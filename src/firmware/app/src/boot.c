@@ -1,9 +1,6 @@
 /*
-TBBlue / ZX Spectrum Next project
-
-Copyright (c) 2015 Fabio Belavenuto & Victor Trucco
-
-Fixes and enhancements since v1.05: Garry Lancaster
+ZX Spectrum Next Firmware
+Copyright 2020 Garry Lancaster, Fabio Belavenuto & Victor Trucco
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,585 +23,534 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "vdp.h"
 #include "ff.h"
 #include "misc.h"
+#include "modules.h"
 #include "config.h"
 #include "fwfile.h"
+#include "videomagic.h"
 #include "videotest.h"
 #include "switch.h"
 
-FATFS		FatFs;		/* FatFs work area needed for each volume */
-FIL		Fil;		/* File object needed for each open file */
-FRESULT		res;
+FATFS           FatFs;          /* FatFs work area needed for each volume */
+FIL             Fil;            /* File object needed for each open file */
+FRESULT         res;
 
-unsigned char * FW_version = "1.29e";
+unsigned char * FW_version = "1.30 ";
 
 // minimal required for this FW
 unsigned long minimal = 0x030108; // 03 01 08 = 3.01.08
+unsigned long l = 0;
 unsigned long current = 0;
 
 const char *filename;
-static unsigned char	mach_id, l;
-static unsigned char	opc = 0, mftype = 0;
-static unsigned int	bl = 0, cont, i;
+static unsigned char    mach_id = 0;
+static unsigned char    opc = 0, mftype = 0;
+static unsigned int     bl = 0, cont, i;
+
+unsigned char s[] = { 2, 0, 0, 0, 0, 0, 0, 0, 0, 7, 1, 3, 5, 6, 4, 0, };
 
 void error_loading(unsigned char *s)
 {
-	vdp_prints(s);
+        vdp_prints(s);
 
-	ULAPORT = COLOR_RED;
-	for(;;);
+        ULAPORT = COLOR_RED;
+        for(;;);
 }
 
 void loadFile(unsigned char destpage, unsigned char numpages, unsigned int blocklen)
 {
-	vdp_prints(filename);
-	vdp_prints("...");
-	strcpy(line, NEXT_DIRECTORY);
-	strcat(line, filename);
-	res = f_open(&Fil, line, FA_READ);
-	if (res != FR_OK) {
-		error_loading("unable to open!");
-	}
+        vdp_prints(filename);
+        vdp_prints("...");
+        strcpy(line, NEXT_DIRECTORY);
+        strcat(line, filename);
+        res = f_open(&Fil, line, FA_READ);
+        if (res != FR_OK) {
+                error_loading("unable to open!");
+        }
 
-	while (numpages--)
-	{
-		REG_VAL = destpage++;
-		res = f_read(&Fil, (unsigned char *)0, blocklen, &bl);
-		if (res != FR_OK || bl != blocklen) {
-			error_loading("error reading!");
-		}
-	}
+        while (numpages--)
+        {
+                REG_VAL = destpage++;
+                res = f_read(&Fil, (unsigned char *)0, blocklen, &bl);
+                if (res != FR_OK || bl != blocklen) {
+                        error_loading("error reading!");
+                }
+        }
 
-	f_close(&Fil);
-	vdp_prints("OK!\n");
-}	
-
-void switchModule(unsigned char m)
-{
-	REG_NUM = REG_TURBO;
-	REG_VAL = 3;
-
-	memset((unsigned char *)0x4000, 0, 6912);
-
-	fwOpenAndSeek(m);
-	i = fwBlockLength(m);
-	bl = 0;
-	
-	while (i)
-	{
-		REG_NUM = REG_RAMPAGE;
-		REG_VAL = RAMPAGE_ROMSPECCY + bl;
-
-		l = (i > 32) ? 32 : i;
-		fwRead((unsigned char *)0x0, l * 512);
-		i = i - l;
-		bl++;
-	}
-
-	fwClose();
-
-	switch_routine();
+        f_close(&Fil);
+        vdp_prints("OK!\n");
 }
 
 void load_roms()
 {
-	//turn off the debug led
-	LED = 1;
+        //turn off the debug led
+        LED = 1;
 
-	REG_NUM = REG_RAMPAGE;
+        REG_NUM = REG_RAMPAGE;
 
-	filename = 0;
+        filename = 0;
 
-	if (settings[eSettingDivMMC] == 1)
-	{
-		filename = ESXMMC_FILE;
-	}
+        if (settings[eSettingDivMMC] == 1)
+        {
+                filename = ESXMMC_FILE;
+        }
 
-	if (pMenu->divmmc_romfile[0])
-	{
-		filename = pMenu->divmmc_romfile;
-	}
+        if (pMenu->divmmc_romfile[0])
+        {
+                filename = pMenu->divmmc_romfile;
+        }
 
-	if (filename) {
-		vdp_prints("Loading ESXMMC:\n");
-		loadFile(RAMPAGE_ROMDIVMMC, 1, 8192);
+        if (filename) {
+                vdp_prints("Loading ESXMMC:\n");
+                loadFile(RAMPAGE_ROMDIVMMC, 1, 8192);
+        }
 
-		// NOTE: Shouldn't be needed
-		//REG_VAL = RAMPAGE_RAMDIVMMC;
-		//__asm__("ld hl, #0\n");		// Zeroing RAM DivMMC
-		//__asm__("ld de, #1\n");
-		//__asm__("ld bc, #16383\n");
-		//__asm__("ld (hl), l\n");
-		//__asm__("ldir\n");
-	}
+        filename = 0;
 
-	filename = 0;
+        if (settings[eSettingMF] == 1) {
+                switch ( pMenu->mode ) {
+                        case 0:
+                                mftype = 3;
+                                filename = MF1_FILE;
+                        break;
 
-	if (settings[eSettingMF] == 1) {
-		switch ( pMenu->mode ) {
-			case 0:
-				mftype = 3;
-				filename = MF1_FILE;
-			break;
+                        case 1:
+                                // MF128 87.2 ROMs are type 1 (ports BF/3F)
+                                mftype = 1;
+                                filename = MF128_FILE;
+                        break;
 
-			case 1:
-				// MF128 87.2 ROMs are type 1 (ports BF/3F)
-				mftype = 1;
-				filename = MF128_FILE;
-			break;
+                        case 2:
+                                mftype = 0;
+                                filename = MF3_FILE;
+                        break;
 
-			case 2:
-				mftype = 0;
-				filename = MF3_FILE;
-			break;
+                        case 3: // Pentagon
+                                mftype = 1;
+                                filename = MF128_FILE;
+                        break;
+                }
+        }
 
-			case 3: // Pentagon
-				mftype = 1;
-				filename = MF128_FILE;
-			break;
-		}
-	}
+        if (pMenu->mf_romfile[0])
+        {
+                filename = pMenu->mf_romfile;
+        }
 
-	if (pMenu->mf_romfile[0])
-	{
-		filename = pMenu->mf_romfile;
-	}
+        if (filename) {
+                if ( (strncmp(filename, MF128_V1_FILE, strlen(MF128_V1_FILE)) == 0)
+                   ||(strncmp(filename, MF128_V12_FILE, strlen(MF128_V12_FILE)) == 0)
+                   )
+                {
+                        // MF128 87.1 and 87.12 ROMs are type 2 (ports 9F/1F)
+                        mftype = 2;
+                }
 
-	if (filename) {
-		if ( (strncmp(filename, MF128_V1_FILE, strlen(MF128_V1_FILE)) == 0)
-		   ||(strncmp(filename, MF128_V12_FILE, strlen(MF128_V12_FILE)) == 0)
-		   )
-		{
-			// MF128 87.1 and 87.12 ROMs are type 2 (ports 9F/1F)
-			mftype = 2;
-		}
+                vdp_prints("Loading Multiface ROM:\n");
+                loadFile(RAMPAGE_ROMMF, 1, 8192);
+        }
 
-		vdp_prints("Loading Multiface ROM:\n");
-		loadFile(RAMPAGE_ROMMF, 1, 8192);
-	}
+        filename = pMenu->romfile;
 
-	filename = pMenu->romfile;
+        vdp_prints("Loading ROM:\n");
 
-	vdp_prints("Loading ROM:\n");
+        switch (pMenu->mode)
+        {
+                case 0:
+                        // 48K: 1 x 16K block
+                        i = 1;
+                        break;
+                case 2:
+                        // +2A/+3e: 4 x 16K blocks
+                        i = 4;
+                        break;
+                default:
+                        // 128K, Pentagon: 2 x 16K blocks
+                        i = 2;
+                        break;
+        }
 
-	switch (pMenu->mode)
-	{
-		case 0:
-			// 48K: 1 x 16K block
-			i = 1;
-			break;
-		case 2:
-			// +2A/+3e: 4 x 16K blocks
-			i = 4;
-			break;
-		default:
-			// 128K, Pentagon: 2 x 16K blocks
-			i = 2;
-			break;
-	}
-
-	loadFile(RAMPAGE_ROMSPECCY, i, 16384);
+        loadFile(RAMPAGE_ROMSPECCY, i, 16384);
 }
 
 void check_coreversion()
 {
-	REG_NUM = REG_MACHID;
-	mach_id = REG_VAL;
+        REG_NUM = REG_MACHID;
+        mach_id = REG_VAL;
 
-	if (mach_id == HWID_EMULATORS)
-	{
-		return;
-	}
+        if (mach_id == HWID_EMULATORS)
+        {
+                return;
+        }
+
+        REG_NUM = REG_RAMPAGE;
+        REG_VAL = RAMPAGE_ROMSPECCY + 1;
+        l = (FSIZE_t)8896*s[mach_id >> 4];
+        readFlash(0x07dd, 0x40, 0x0000, 16*4);
 
         current = get_core_ver();
 
-	if (current < minimal)
-	{
+        if (current < minimal)
+        {
 
-		vdp_cls();
-		vdp_setcolor(COLOR_BLACK, COLOR_BLUE, COLOR_WHITE);
-		vdp_prints(TITLE);
+                vdp_cls();
+                vdp_setcolor(COLOR_BLACK, COLOR_BLUE, COLOR_WHITE);
+                vdp_prints(TITLE);
 
-		vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_LGREEN);
+                vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_LGREEN);
 
-		if (current == 0)
-		{
-			vdp_gotoxy(11, 3);
-			vdp_prints("Anti-Brick\n\n\n");
+                if (current == 0)
+                {
+                        vdp_gotoxy(11, 3);
+                        vdp_prints("Anti-Brick\n\n\n");
 
-			vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
-			vdp_prints("No " NEXT_UPDATE_FILE2 " update file found!");
+                        vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
+                        vdp_prints("No " NEXT_UPDATE_FILE2 " update file found!");
 
-			for (;;);
-		}
+                        for (;;);
+                }
 
-		vdp_gotoxy(4, 3);
-		vdp_prints ("Please update your core!\n\n\n");
-		vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
+                vdp_gotoxy(4, 3);
+                vdp_prints ("Please update your core!\n\n\n");
+                vdp_setcolor(COLOR_RED, COLOR_BLACK, COLOR_WHITE);
 
-		vdp_prints(  "You need at least core  v");
-		sprintf(line, "%lu.%02lu.%02lu", (minimal >> 16) & 0xff, (minimal >> 8) & 0xff, minimal & 0xff);
-		vdp_prints(line);
+                vdp_prints(  "You need at least core  v");
+                sprintf(line, "%lu.%02lu.%02lu", (minimal >> 16) & 0xff, (minimal >> 8) & 0xff, minimal & 0xff);
+                vdp_prints(line);
 
-		vdp_prints("\nYou currently have core v");
-		sprintf(line, "%lu.%02lu.%02lu", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
-		vdp_prints(line);
+                vdp_prints("\nYou currently have core v");
+                sprintf(line, "%lu.%02lu.%02lu", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
+                vdp_prints(line);
 
-		if (mach_id != HWID_ZXNEXT)
-		{
-			for (;;) ;
-		}
+                if (mach_id != HWID_ZXNEXT)
+                {
+                        for (;;) ;
+                }
 
-		vdp_prints("\n\n\nHold U to enter the updater now\n");
-		vdp_prints(      " if you have copied the latest\n");
-		vdp_prints(      "  TBBLUE.TBU to your SD card\n");
+                vdp_prints("\n\n\nHold U to enter the updater now\n");
+                vdp_prints(      " if you have copied the latest\n");
+                vdp_prints(      "  TBBLUE.TBU to your SD card\n");
 
-		ULAPORT = COLOR_RED;
-		for(;;)
-		{
-			if ((HROW5 & 0x08) == 0)
-			{
-				REG_NUM = REG_RESET;
-				REG_VAL = 0x02;	// hard reset to loader
-			}
-		}
-	}
+                ULAPORT = COLOR_RED;
+                for(;;)
+                {
+                        if ((HROW5 & 0x08) == 0)
+                        {
+                                REG_NUM = REG_RESET;
+                                REG_VAL = 0x02; // hard reset to loader
+                        }
+                }
+        }
 }
 
 void display_bootscreen()
 {
-	// Load TBBLUE.FW at 14MHz
-	REG_NUM = REG_TURBO;
-	REG_VAL = 2;
+        fwOpenAndSeek(FW_BLK_SCREENS);
+        REG_NUM = REG_RAMPAGE;
+        REG_VAL = RAMPAGE_ROMSPECCY;
+        fwSeek((FSIZE_t)49152+FW_L2_PAL_SIZE+l);
+        fwRead((unsigned char *)0x0000, 0x2800);
+        REG_NUM = REG_RAMPAGE;
+        REG_VAL = RAMPAGE_ROMSPECCY + 1;
+        fwRead((unsigned char *)0x3f00, 0x0100);
+        fwClose();
 
-	// Load the boot screen.
-	switch (mach_id)
-	{
-		case HWID_ZXNEXT:
-			l = FW_BLK_NEXT_SCR;
-			break;
-		case HWID_UNAMIGA:
-			l = FW_BLK_UNAMIGA_SCR;
-			break;
-		case HWID_SIDI:
-			l = FW_BLK_SIDI_SCR;
-			break;
-		case HWID_ZXDOS:
-			l = FW_BLK_ZXDOS_SCR;
-			break;
-		default:
-			l = FW_BLK_TBBLUE_SCR;
-			break;
-	}
+        current = get_core_ver();
 
-	fwOpenAndSeek(l);
-	fwRead((unsigned char *)0x4000, 6912);
-	fwClose();
+        vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
+        vdp_reveal(0x4000, 'z' + ((RAMPAGE_ROMSPECCY >> 1) << 8));
 
-	current = get_core_ver();
+        vdp_gotoxy(1, 16);
+        vdp_prints("For video mode selection press:");
+        vdp_gotoxy(1, 17);
+        vdp_prints("A=All, D=Digital, V=VGA, R=RGB");
 
-	vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
+        vdp_gotoxy(15, 21);
+        vdp_prints("Firmware v");
+        vdp_prints(FW_version);
 
-	vdp_gotoxy(1, 16);
-	vdp_prints("For video mode selection press:");
-	vdp_gotoxy(1, 17);
-	vdp_prints("A=All, D=Digital, V=VGA, R=RGB");
-
-	vdp_gotoxy(15, 21);
-	vdp_prints("Firmware v");
-	vdp_prints(FW_version);
-
-	vdp_gotoxy(19, 22);
-	vdp_prints("Core v");
-	sprintf(line, "%lu.%02lu.%02lu", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
-	vdp_prints(line);
-
-	// Revert to standard 3.5MHz
-	REG_NUM = REG_TURBO;
-	REG_VAL = 0;
+        vdp_gotoxy(19, 22);
+        vdp_prints("Core v");
+        sprintf(line, "%lu.%02lu.%02lu", (current >> 16) & 0xff, (current >> 8) & 0xff, current & 0xff);
+        vdp_prints(line);
 }
 
 void init_registers()
 {
-	unsigned char hwenables[4];
-	unsigned int i;
+        unsigned char hwenables[4];
+        unsigned int i;
 
-	// Set peripheral config.
-	REG_NUM = REG_PERIPH1;
-	opc = ((settings[eSettingJoystick1] & 3) << 6)
-		| ((settings[eSettingJoystick2] & 3) << 4);	// bits 7-6 and 5-4 (joysticks LSBs)
-	if (settings[eSettingJoystick1] & 4)	opc |= 0x08;	// bit 3 = joystick 1 MSB
-	if (settings[eSettingFreq5060])		opc |= 0x04;	// bit 2
-	if (settings[eSettingJoystick2] & 4)	opc |= 0x02;	// bit 1 = joystick 2 MSB
-	if (settings[eSettingScandoubler])	opc |= 0x01;	// bit 0
-	REG_VAL = opc;
+        // Set peripheral config.
+        REG_NUM = REG_PERIPH1;
+        opc = ((settings[eSettingJoystick1] & 3) << 6)
+                | ((settings[eSettingJoystick2] & 3) << 4);     // bits 7-6 and 5-4 (joysticks LSBs)
+        if (settings[eSettingJoystick1] & 4)    opc |= 0x08;    // bit 3 = joystick 1 MSB
+        if (settings[eSettingFreq5060])         opc |= 0x04;    // bit 2
+        if (settings[eSettingJoystick2] & 4)    opc |= 0x02;    // bit 1 = joystick 2 MSB
+        if (settings[eSettingScandoubler])      opc |= 0x01;    // bit 0
+        REG_VAL = opc;
 
-	REG_NUM = REG_PERIPH2;
-	opc = settings[eSettingPSGMode]; 			// bits 1-0
-	if (settings[eSettingTurboKey])		opc |= 0x80;	// bit 7
-	if (settings[eSettingBEEPMode])		opc |= 0x40;	// bit 6
-	if (settings[eSettingDivMMC])		opc |= 0x10;	// bit 4
-	if (settings[eSettingMF])		opc |= 0x08;	// bit 3
-	if (settings[eSettingPS2])		opc |= 0x04;	// bit 2
-	REG_VAL = opc;
+        REG_NUM = REG_PERIPH2;
+        opc = settings[eSettingPSGMode];                        // bits 1-0
+        if (settings[eSettingTurboKey])         opc |= 0x80;    // bit 7
+        if (settings[eSettingBEEPMode])         opc |= 0x40;    // bit 6
+        if (settings[eSettingDivMMC])           opc |= 0x10;    // bit 4
+        if (settings[eSettingMF])               opc |= 0x08;    // bit 3
+        if (settings[eSettingPS2])              opc |= 0x04;    // bit 2
+        REG_VAL = opc;
 
-	REG_NUM = REG_PERIPH3;
-	opc = 0;
-	if (settings[eSettingStereoMode])	opc |= 0x20;	// bit 5
-	if (settings[eSettingSpeakerMode])	opc |= 0x10;	// bit 4
-	if (settings[eSettingDAC])		opc |= 0x08;	// bit 3
-	if (settings[eSettingTimex])		opc |= 0x04;	// bit 2
-	if (settings[eSettingTurboSound])	opc |= 0x02;	// bit 1
-	if (settings[eSettingIss23])		opc |= 0x01;	// bit 0
-	REG_VAL = opc;
+        REG_NUM = REG_PERIPH3;
+        opc = 0;
+        if (settings[eSettingStereoMode])       opc |= 0x20;    // bit 5
+        if (settings[eSettingSpeakerMode])      opc |= 0x10;    // bit 4
+        if (settings[eSettingDAC])              opc |= 0x08;    // bit 3
+        if (settings[eSettingTimex])            opc |= 0x04;    // bit 2
+        if (settings[eSettingTurboSound])       opc |= 0x02;    // bit 1
+        if (settings[eSettingIss23])            opc |= 0x01;    // bit 0
+        REG_VAL = opc;
 
-	REG_NUM = REG_PERIPH4;
-	opc = settings[eSettingScanlines] & 3;			// bits 1-0
-	if (settings[eSettingHDMISound] == 0)	opc |= 0x04;	// bit 2
-	REG_VAL = opc;
+        REG_NUM = REG_PERIPH4;
+        opc = settings[eSettingScanlines] & 3;                  // bits 1-0
+        if (settings[eSettingHDMISound] == 0)   opc |= 0x04;    // bit 2
+        REG_VAL = opc;
 
-	REG_NUM = REG_PERIPH5;
-	opc = settings[eSettingMouseDPI] & 3;			// bits 1-0
-	if (settings[eSettingMouseBtnSwap])	opc |= 0x04;	// bit 2
-	opc |= mftype << 6;					// bits 6-7
-	REG_VAL = opc;
-	
-	// NOTE: With bit 31 of hwenables[3] set to 0, the internal port
-	//       hw disables won't be reinitialised on a soft reset.
-	hwenables[3] = 0x00;
-	if (settings[eSettingULAplus] != 0)
-	{
-		hwenables[3] |= 0x01;
-	}
-	if (settings[eSettingDMA] != 0)
-	{
-		hwenables[3] |= 0x02;
-	}
+        REG_NUM = REG_PERIPH5;
+        opc = settings[eSettingMouseDPI] & 3;                   // bits 1-0
+        if (settings[eSettingMouseBtnSwap])     opc |= 0x04;    // bit 2
+        opc |= mftype << 6;                                     // bits 6-7
+        REG_VAL = opc;
+        
+        // NOTE: With bit 31 of hwenables[3] set to 0, the internal port
+        //       hw disables won't be reinitialised on a soft reset.
+        hwenables[3] = 0x00;
+        if (settings[eSettingULAplus] != 0)
+        {
+                hwenables[3] |= 0x01;
+        }
+        if (settings[eSettingDMA] != 0)
+        {
+                hwenables[3] |= 0x02;
+        }
 
-	if (settings[eSettingDAC] != 0)
-	{
-		// If DACs requested, enable AY and all DACs.
-		hwenables[2] = 0xff;
-	}
-	else
-	{
-		// Otherwise just enable AY.
-		hwenables[2] = 0x01;
-	}
+        if (settings[eSettingDAC] != 0)
+        {
+                // If DACs requested, enable AY and all DACs.
+                hwenables[2] = 0xff;
+        }
+        else
+        {
+                // Otherwise just enable AY.
+                hwenables[2] = 0x01;
+        }
 
-	hwenables[1] = 0x00;
-	if (settings[eSettingDivPorts] != 0)
-	{
-		hwenables[1] |= 0x09;
-	}
-	if (settings[eSettingMF] != 0)
-	{
-		hwenables[1] |= 0x02;
-	}
-	if (settings[eSettingUARTI2C] != 0)
-	{
-		hwenables[1] |= 0x14;
-	}
-	if (settings[eSettingKMouse] != 0)
-	{
-		hwenables[1] |= 0x20;
-	}
+        hwenables[1] = 0x00;
+        if (settings[eSettingDivPorts] != 0)
+        {
+                hwenables[1] |= 0x09;
+        }
+        if (settings[eSettingMF] != 0)
+        {
+                hwenables[1] |= 0x02;
+        }
+        if (settings[eSettingUARTI2C] != 0)
+        {
+                hwenables[1] |= 0x14;
+        }
+        if (settings[eSettingKMouse] != 0)
+        {
+                hwenables[1] |= 0x20;
+        }
 
-	// Disable main hardware ports according to machine type.
-	switch (pMenu->mode)
-	{
-		// 48K
-		case 0:
-			// Disable: ff/7ffd/dffd/1ffd/+3 FB/6b
-			hwenables[0] = 0xc0;
+        // Disable main hardware ports according to machine type.
+        switch (pMenu->mode)
+        {
+                // 48K
+                case 0:
+                        // Disable: ff/7ffd/dffd/1ffd/+3 FB/6b
+                        hwenables[0] = 0xc0;
 
-			if (settings[eSettingAY48] == 0)
-			{
-				// Disable AY if not requested for 48K mode.
-				hwenables[2] &= 0xfe;
-			}
-		break;
+                        if (settings[eSettingAY48] == 0)
+                        {
+                                // Disable AY if not requested for 48K mode.
+                                hwenables[2] &= 0xfe;
+                        }
+                break;
 
-		// 128K
-		case 1:
-			// Disable: ff/dffd/1ffd/+3 FB/6b
-			hwenables[0] = 0xc2;
-		break;
+                // 128K
+                case 1:
+                        // Disable: ff/dffd/1ffd/+3 FB/6b
+                        hwenables[0] = 0xc2;
+                break;
 
-		// +3
-		case 2:
-			// Disable: ff/dffd/6b
-			hwenables[0] = 0xda;
-		break;
+                // +3
+                case 2:
+                        // Disable: ff/dffd/6b
+                        hwenables[0] = 0xda;
+                break;
 
-		// Pentagon
-		case 3:
-			// Disable: ff/1ffd/+3 FB/6b
-			hwenables[0] = 0xc6;
-			// Disable: Soundrive 2 DAC
-			hwenables[2] &= 0xfb;
-		break;
-	}
+                // Pentagon
+                case 3:
+                        // Disable: ff/1ffd/+3 FB/6b
+                        hwenables[0] = 0xc6;
+                        // Disable: Soundrive 2 DAC
+                        hwenables[2] &= 0xfb;
+                break;
+        }
 
-	for (i = 0; i < 4; i++)
-	{
-		REG_NUM = REG_DECODE_INT0 + i;
-		REG_VAL = hwenables[i];
-	}
+        for (i = 0; i < 4; i++)
+        {
+                REG_NUM = REG_DECODE_INT0 + i;
+                REG_VAL = hwenables[i];
+        }
 }
 
 void load_keymap()
 {
-	// Read and send Keymap
-	vdp_prints("Loading keymap:\n");
-	filename = KEYMAP_FILE;
+        // Read and send Keymap
+        vdp_prints("Loading keymap:\n");
+        filename = KEYMAP_FILE;
 
-	// NOTE: Keymap must be loaded before ROMs as it uses the same SRAM.
-	loadFile(RAMPAGE_ROMSPECCY, 1, 1024);
+        // NOTE: Keymap must be loaded before ROMs as it uses the same SRAM.
+        loadFile(RAMPAGE_ROMSPECCY, 1, 1024);
 
-	REG_NUM = REG_KMHA;
-	REG_VAL = 0;
-	REG_NUM = REG_KMLA;
-	REG_VAL = 0;
-	cont = 0;
-	while (cont < 1024) {
-		REG_NUM = REG_KMHD;
-		REG_VAL = *((unsigned char *)cont++);
-		REG_NUM = REG_KMLD;
-		REG_VAL = *((unsigned char *)cont++);
-	}
+        REG_NUM = REG_KMHA;
+        REG_VAL = 0;
+        REG_NUM = REG_KMLA;
+        REG_VAL = 0;
+        cont = 0;
+        while (cont < 1024) {
+                REG_NUM = REG_KMHD;
+                REG_VAL = *((unsigned char *)cont++);
+                REG_NUM = REG_KMLD;
+                REG_VAL = *((unsigned char *)cont++);
+        }
 }
 
 void main()
 {
-	vdp_init();
-	disable_bootrom();
+        // Always run at 28MHz.
+        REG_NUM = REG_TURBO;
+        REG_VAL = 3;
 
-	// Read config.ini
-	load_config();
-	pMenu = &(menus[settings[eSettingMenuDefault]]);
+        vdp_init();
+        disable_bootrom();
 
-	// Cycle through the modes if necessary
-	if (videoTestActive())
-	{
-		// If a mode is chosen at this point it will also
-		// override any menu line "override" for this boot. This
-		// is useful if the default line won't display because of
-		// an override.
-		videoTestCycle();
-	}
-	else
-	{
-		// Honour the current scandoubler, 50/60Hz and scanline settings.
-		update_video_settings();
-	}
+        // Read config.ini
+        load_config();
+        pMenu = &(menus[settings[eSettingMenuDefault]]);
 
-	if (getCoreBoot())
-	{
-		// Switch to cores module if alternative core requested.
-		switchModule(FW_BLK_CORES);
-	}
+        // Cycle through the modes if necessary
+        if (videoTestActive())
+        {
+                // If a mode is chosen at this point it will also
+                // override any menu line "override" for this boot. This
+                // is useful if the default line won't display because of
+                // an override.
+                switchModule(FW_BLK_TESTCARD);
+        }
+        else
+        {
+                // Honour the current scandoubler, 50/60Hz and scanline settings.
+                update_video_settings();
+        }
 
-	// Show the boot screen
-	check_coreversion();
-	display_bootscreen();
+        if (getCoreBoot())
+        {
+                // Switch to cores module if alternative core requested.
+                switchModule(FW_BLK_CORES);
+        }
 
-	for(cont=0;cont<0x1fff;cont++)
-	{
-		if ((cont & 0x7ff) == 0)
-		{
-			if ((cont & 0x800) == 0)
-			{
-			        vdp_gotoxy(5, 11);
-				vdp_prints("Press SPACEBAR for menu\n");
-				vdp_gotoxy(5, 13);
-				vdp_prints("Press C for extra cores\n");
-			}
-			else
-			{
-	                        vdp_clear(5, 11, 23);
-				vdp_clear(5, 13, 23);
-			}
-		}
+        // Show the boot screen
+        check_coreversion();
+        display_bootscreen();
 
-		if (((HROW7 & 0x01) == 0) && ((HROW0 & 0x01) ==1))
-		{
-			switchModule(FW_BLK_EDITOR);
-		}
+        for(cont=0; cont < 0xffff; cont++)
+        {
+                if ((cont & 0x1fff) == 0)
+                {
+                        if ((cont & 0x2000) == 0)
+                        {
+                                vdp_gotoxy(5, 11);
+                                vdp_prints("Press SPACEBAR for menu\n");
+                                vdp_gotoxy(5, 13);
+                                vdp_prints("Press C for extra cores\n");
+                        }
+                        else
+                        {
+                                vdp_clear(5, 11, 23);
+                                vdp_clear(5, 13, 23);
+                        }
+                }
 
-		if ((HROW0 & 0x08) == 0)
-		{
-			switchModule(FW_BLK_CORES);
-		}
+                if (((HROW7 & 0x01) == 0) && ((HROW0 & 0x01) ==1))
+                {
+                        switchModule(FW_BLK_EDITOR);
+                }
 
-		if (videoTestActive())
-		{
-			// Enter video test if A/V/D/R pressed.
-			videoTestCycle();
-			break;
-		}
+                if ((HROW0 & 0x08) == 0)
+                {
+                        switchModule(FW_BLK_CORES);
+                }
 
-		if ( ((HROW0 & 0x04) == 0) &&
-		     ((HROW7 & 0x08) == 0) )
-		{
-			// If N,X held down, reset config.ini to defaults.
-			reset_settings();
-			save_config();
-			vdp_cls();
-			vdp_gotoxy(3, 3);
-			vdp_prints("Settings reset to defaults!\n\n");
-			vdp_gotoxy(7, 7);
-			vdp_prints("Turn the power off");
-			for (;;);
-		}
-	}
+                if (videoTestActive())
+                {
+                        // Enter video test if A/V/D/R pressed.
+                        switchModule(FW_BLK_TESTCARD);
+                }
 
-	// Clear off the video mode selection prompts.
-	vdp_clear(1, 16, 31);
-	vdp_clear(1, 17, 31);
-	vdp_gotoxy(0, 10);
+                if ( ((HROW0 & 0x04) == 0) &&
+                     ((HROW7 & 0x08) == 0) )
+                {
+                        // If N,X held down, reset config.ini to defaults.
+                        switchModule(FW_BLK_RESET);
+                }
+        }
 
-	// Perform remaining boot operations at 14MHz
-	REG_NUM = REG_TURBO;
-	REG_VAL = 2;
+        // Clear off the video mode selection prompts.
+        vdp_clear(1, 16, 31);
+        vdp_clear(1, 17, 31);
+        vdp_gotoxy(0, 10);
 
-	// Force MF and/or DivMMC if ROMs were specified.
-	if (pMenu->mf_romfile[0])
-	{
-		if (strncmp(pMenu->mf_romfile, "<none>", 6) == 0)
-		{
-			settings[eSettingMF] = 0;
-			pMenu->mf_romfile[0] = 0;
-		}
-		else
-		{
-			settings[eSettingMF] = 1;
-		}
-	}
+        // Force MF and/or DivMMC if ROMs were specified.
+        if (pMenu->mf_romfile[0])
+        {
+                if (strncmp(pMenu->mf_romfile, "<none>", 6) == 0)
+                {
+                        settings[eSettingMF] = 0;
+                        pMenu->mf_romfile[0] = 0;
+                }
+                else
+                {
+                        settings[eSettingMF] = 1;
+                }
+        }
 
-	if (pMenu->divmmc_romfile[0])
-	{
-		if (strncmp(pMenu->divmmc_romfile,"<none>", 6) == 0)
-		{
-			settings[eSettingDivMMC] = 0;
-			pMenu->divmmc_romfile[0] = 0;
-		}
-		else
-		{
-			settings[eSettingDivMMC] = 1;
-		}
-	}
+        if (pMenu->divmmc_romfile[0])
+        {
+                if (strncmp(pMenu->divmmc_romfile,"<none>", 6) == 0)
+                {
+                        settings[eSettingDivMMC] = 0;
+                        pMenu->divmmc_romfile[0] = 0;
+                }
+                else
+                {
+                        settings[eSettingDivMMC] = 1;
+                }
+        }
 
-	// NOTE: Keymap must be loaded before ROMs as it uses the same SRAM.
-	load_keymap();
-	load_roms();
-	init_registers();
-	
-	// Set machine type
-	REG_NUM = REG_MACHTYPE;
-	REG_VAL = 0x80 | (pMenu->mode + 1) << 4 | (pMenu->mode + 1);
+        // NOTE: Keymap must be loaded before ROMs as it uses the same SRAM.
+        load_keymap();
+        load_roms();
+        init_registers();
 
-	REG_NUM = REG_RESET;
-	REG_VAL = RESET_SOFT;				// Soft-reset
+        // Set machine type
+        REG_NUM = REG_MACHTYPE;
+        REG_VAL = 0x80 | (pMenu->mode + 1) << 4 | (pMenu->mode + 1);
 
-	for(;;);
+        // Pause.
+        for (cont = 0; cont < 0xffff; cont++);
+
+        REG_NUM = REG_RESET;
+        REG_VAL = RESET_SOFT;                           // Soft-reset
+
+        for(;;);
 }

@@ -1,7 +1,6 @@
 /*
 Copyright 2005, 2006, 2007 Dennis van Weeren
 Copyright 2008, 2009 Jakub Bednarski
-Copyright 2015 Fabio Belavenuto & Victor Trucco
 
 This file is part of Minimig
 
@@ -53,16 +52,16 @@ typedef struct
 
 struct PartitionEntry
 {
-	unsigned char geometry[8];		// ignored
-	unsigned long startlba;
-	unsigned long sectors;
+        unsigned char geometry[8];              // ignored
+        unsigned long startlba;
+        unsigned long sectors;
 };// __attribute__ ((packed));
 
 struct MasterBootRecord
 {
-	unsigned char bootcode[446];	// ignored
-	struct PartitionEntry Partition[4];	// We copy these (and byteswap if need be)
-	unsigned short Signature;		// This lets us detect an MBR (and the need for byteswapping).
+        unsigned char bootcode[446];    // ignored
+        struct PartitionEntry Partition[4];     // We copy these (and byteswap if need be)
+        unsigned short Signature;               // This lets us detect an MBR (and the need for byteswapping).
 };// __attribute__ ((packed));
 
 typedef struct

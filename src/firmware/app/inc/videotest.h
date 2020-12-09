@@ -1,7 +1,6 @@
 /*
-TBBlue / ZX Spectrum Next project
-
-videotest: Garry Lancaster
+ZX Spectrum Next Firmware
+Copyright 2020 Garry Lancaster, Fabio Belavenuto & Victor Trucco
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,21 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef _VIDEOTEST_H
 #define _VIDEOTEST_H
 
-enum {
-	eVidTestNone = 0,
-	eVidTestAll,
-	eVidTestDigital,
-	eVidTestRGB,
-	eVidTestVGA,
-};
-
 typedef struct {
-	unsigned char timing;
-	unsigned char freq;
-	unsigned char doubler;
+        unsigned char timing;
+        unsigned char freq;
+        unsigned char doubler;
 } testmodeitem;
-
-unsigned char videoTestActive();
-void videoTestCycle();
 
 #endif // _VIDEOTEST_H

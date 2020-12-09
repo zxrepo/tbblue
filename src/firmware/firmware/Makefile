@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2015 Fabio Belavenuto & Victor Trucco
+# ZX Spectrum Next Firmware
+# Copyright 2020 Garry Lancaster, Fabio Belavenuto & Victor Trucco
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+RM=rm -rf
+MKDIR=mkdir -p
 CC=gcc
 CPP=g++
 CFLAGS=-g -Wall
@@ -23,7 +26,7 @@ LDFLAGS=
 SOURCES=main.c
 OBJECTS=$(addprefix obj/, $(SOURCES:.c=.o))
 
-all: makefirmware
+all: dir makefirmware
 
 makefirmware: $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
@@ -34,7 +37,10 @@ obj/%.o : src/%.c
 obj/%.o : src/%.cpp
 	$(CPP) $(CFLAGS) -c $< -o $@
 
-clean:
-	rm -f makefirmware.exe *.o obj/*.o core *~
+.PHONY: dir clean
 
-# DO NOT DELETE
+dir:
+	$(MKDIR) obj
+
+clean:
+	$(RM) makefirmware *.o obj core *~

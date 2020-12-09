@@ -1,5 +1,6 @@
 #
-# Copyright (c) 2015 Fabio Belavenuto & Victor Trucco
+# ZX Spectrum Next Firmware
+# Copyright 2020 Garry Lancaster, Fabio Belavenuto & Victor Trucco
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,9 +21,11 @@ RM = rm -f
 CC = sdcc
 AS = sdasz80
 LD = sdcc
+MKDIR = mkdir -p
 MKBIN = makebin
 H2B = hex2bin
 ROMGEN = romgen
+TRUNCATE = truncate
 
 SDIR = src
 IDIR = inc
@@ -34,11 +37,11 @@ LDFLAGS = -mz80 --code-loc 0x0100 --data-loc 0xF800 --no-std-crt0
 _OBJS = crt0.rel main.rel mmc.rel fat.rel vdp.rel
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 
-all: loader
+all: dir loader
 
 loader: loader.bin
-	fillfile $< 8192
-	$(ROMGEN) $< bootrom 13 a r > ../../../src/rom/bootrom.vhd
+	$(TRUNCATE) -s 8K $<
+	$(ROMGEN) $< bootrom a r > bootrom.vhd
 
 loader.bin: loader.ihx
 
@@ -48,10 +51,10 @@ loader.ihx: $(OBJS)
 .PHONY: clean dir
 
 dir:
-	if not exist obj mkdir obj
+	$(MKDIR) obj
 
 clean:
-	$(RM) $(ODIR)/* *.map *.lk *.noi *.bin *.ihx *.mif
+	$(RM) -rf $(ODIR) *.map *.lk *.noi *.bin *.ihx *.mif *.vhd
 
 $(ODIR)/%.rel: $(SDIR)/%.s
 	$(AS) -o $@ $<

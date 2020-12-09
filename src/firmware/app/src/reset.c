@@ -1,6 +1,6 @@
 /*
 ZX Spectrum Next Firmware
-Copyright 2020 Garry Lancaster, Fabio Belavenuto & Victor Trucco
+Copyright 2020 Garry Lancaster
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,32 +17,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include "hardware.h"
 #include "vdp.h"
 #include "ff.h"
 #include "misc.h"
 #include "config.h"
+#include "fwfile.h"
 
-void save_config()
+FATFS           FatFs;          /* FatFs work area needed for each volume */
+FIL             Fil;            /* File object needed for each open file */
+FRESULT         res;
+
+void main()
 {
-        unsigned int i;
+        vdp_init();
 
-        res = f_open(&Fil, CONFIG_FILE, FA_CREATE_ALWAYS | FA_OPEN_EXISTING | FA_WRITE);
+        // Read config.ini (sets up drive etc)
+        load_config();
 
-        for (i = 0; i < eSettingMAX; i++)
-        {
-                ERR_CHECK_PF(f_printf(&Fil, "%s=%d\n", settingName[i], settings[i]));
-        }
-
-        // Delete any further part of the file that we haven't overwritten
-        ERR_CHECK(f_sync(&Fil));
-        ERR_CHECK(f_truncate(&Fil));
-        ERR_CHECK(f_close(&Fil));
-
-        if (res != FR_OK)
-        {
-                //             12345678901234567890123456789012
-                display_error("Error saving configuration!");
-        }
+        reset_settings();
+        save_config();
+        vdp_cls();
+        vdp_gotoxy(3, 3);
+        vdp_prints("Settings reset to defaults!\n\n");
+        vdp_gotoxy(7, 7);
+        vdp_prints("Turn the power off");
+        for (;;);
 }

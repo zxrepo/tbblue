@@ -3,8 +3,6 @@
 // Endianness swap functions                                                  //
 //                                                                            //
 // Copyright 2012-     Christian Vogelgsang, A.M. Robinson, Rok Krajnc        //
-// TBBlue / ZX Spectrum Next project                                          //
-// Copyright 2015 Fabio Belavenuto & Victor Trucco                            //
 //                                                                            //
 // This file is part of Minimig                                               //
 //                                                                            //

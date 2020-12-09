@@ -1,5 +1,6 @@
 /*
-Copyright (c) 2015 Fabio Belavenuto & Victor Trucco
+ZX Spectrum Next Firmware
+Copyright 2020 Garry Lancaster, Fabio Belavenuto & Victor Trucco
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

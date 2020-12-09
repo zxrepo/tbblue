@@ -1,9 +1,6 @@
 /*
-TBBlue / ZX Spectrum Next project
-
-Copyright (c) 2015 Fabio Belavenuto & Victor Trucco
-
-Fixes and enhancements since v1.05: Garry Lancaster
+ZX Spectrum Next Firmware
+Copyright 2020 Garry Lancaster, Fabio Belavenuto & Victor Trucco
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 void fwOpenAndSeek(unsigned int startblk);
 unsigned int fwBlockLength(unsigned int startblk);
 void fwRead(unsigned char *pDest, unsigned int length);
+void fwSeek(FSIZE_t pos);
 void fwClose();
 
 #endif // _FIRMWARE_H

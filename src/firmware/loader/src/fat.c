@@ -3,7 +3,6 @@ TBBlue / ZX Spectrum Next project
 
 Copyright 2005, 2006, 2007 Dennis van Weeren
 Copyright 2008, 2009 Jakub Bednarski
-Copyright 2015 Fabio Belavenuto & Victor Trucco
 
 This file is part of Minimig
 
@@ -65,7 +64,7 @@ unsigned long fat_size;                 // size of fat
 unsigned char sector_buffer[512];       // sector buffer
 //unsigned char *sector_buffer=0xEE00;
 
-//struct PartitionEntry partitions[4]; 	// [4];	// lbastart and sectors will be byteswapped as necessary
+//struct PartitionEntry partitions[4];  // [4]; // lbastart and sectors will be byteswapped as necessary
 int partitioncount;
 
 #define fat_buffer (*(FATBUFFER*)&sector_buffer) // Don't need a separate buffer for this.
@@ -76,96 +75,96 @@ unsigned long buffered_fat_index;       // index of buffered FAT sector
 #define putserial(x) puts(x)
 #define BootPrint(x) puts(x);
 
-#else	// DEBUG
+#else   // DEBUG
 
 #define puts(x)
 #define printf(...)
 #define putserial(x)
 #define BootPrint(x) puts(x);
 
-#endif	// DEBUG
+#endif  // DEBUG
 
 /*******************************************************************************/
 static unsigned long GetCluster(unsigned long cluster)
 {
-	unsigned long i;
-	unsigned long sb;
-	if (fat32) {
-		sb = cluster >> 7; // calculate sector number containing FAT-link
-		i = cluster & 0x7F; // calculate link offsset within sector
-	} else {
-		sb = cluster >> 8; // calculate sector number containing FAT-link
-		i = cluster & 0xFF; // calculate link offsset within sector
-	}
+        unsigned long i;
+        unsigned long sb;
+        if (fat32) {
+                sb = cluster >> 7; // calculate sector number containing FAT-link
+                i = cluster & 0x7F; // calculate link offsset within sector
+        } else {
+                sb = cluster >> 8; // calculate sector number containing FAT-link
+                i = cluster & 0xFF; // calculate link offsset within sector
+        }
 
-	// read sector of FAT if not already in the buffer
-	if (sb != buffered_fat_index) {
-		if (!MMC_Read(fat_start + sb, (unsigned char*)&fat_buffer)) {
-			return 0;
-		}
-		// remember current buffer index
-		buffered_fat_index = sb;
-	}
-	i = fat32 ? SwapBBBB(fat_buffer.fat32[i]) & 0x0FFFFFFF : SwapBB(fat_buffer.fat16[i]); // get FAT link for 68000 
-	return i;
+        // read sector of FAT if not already in the buffer
+        if (sb != buffered_fat_index) {
+                if (!MMC_Read(fat_start + sb, (unsigned char*)&fat_buffer)) {
+                        return 0;
+                }
+                // remember current buffer index
+                buffered_fat_index = sb;
+        }
+        i = fat32 ? SwapBBBB(fat_buffer.fat32[i]) & 0x0FFFFFFF : SwapBB(fat_buffer.fat16[i]); // get FAT link for 68000 
+        return i;
 }
 
 /*******************************************************************************/
 int compare(const char *s1, const char *s2, int b) {
-	int i;
+        int i;
 
-	for(i = 0; i < b; ++i) {
-		if(*s1++ != *s2++)
-			return 1;
-	}
-	return 0;
+        for(i = 0; i < b; ++i) {
+                if(*s1++ != *s2++)
+                        return 1;
+        }
+        return 0;
 }
 
 /*******************************************************************************/
 // FindDrive() checks if a card is present and contains FAT formatted primary partition
 unsigned char FindDrive(void)
 {
-	unsigned long boot_sector;              // partition boot sector
+        unsigned long boot_sector;              // partition boot sector
     buffered_fat_index = 0xFFFFFFFF;
-	fat32=0;
+        fat32=0;
 
     if (!MMC_Read(0, sector_buffer)) // read MBR
         return(0);
 
-	boot_sector=0;
-	partitioncount=1;
+        boot_sector=0;
+        partitioncount=1;
 
-	// If we can identify a filesystem on block 0 we don't look for partitions
+        // If we can identify a filesystem on block 0 we don't look for partitions
     if (compare((const char*)&sector_buffer[0x36], "FAT16   ",8)==0) // check for FAT16
-		partitioncount=0;
+                partitioncount=0;
     if (compare((const char*)&sector_buffer[0x52], "FAT32   ",8)==0) // check for FAT32
-		partitioncount=0;
+                partitioncount=0;
 
-	if(partitioncount)
-	{
-		// We have at least one partition, parse the MBR.
-		struct MasterBootRecord *mbr=(struct MasterBootRecord *)sector_buffer;
+        if(partitioncount)
+        {
+                // We have at least one partition, parse the MBR.
+                struct MasterBootRecord *mbr=(struct MasterBootRecord *)sector_buffer;
 
-		boot_sector = mbr->Partition[0].startlba;
-		if(mbr->Signature==0x55aa)
-				boot_sector=SwapBBBB(mbr->Partition[0].startlba);
-		else if(mbr->Signature!=0xaa55)
-		{
-				BootPrint("No partition signature found\n");
-				return(0);
-		}
-		if (!MMC_Read(boot_sector, sector_buffer)) // read discriptor
-		    return(0);
-		BootPrint("Read boot sector from first partition\n");
-	}
+                boot_sector = mbr->Partition[0].startlba;
+                if(mbr->Signature==0x55aa)
+                                boot_sector=SwapBBBB(mbr->Partition[0].startlba);
+                else if(mbr->Signature!=0xaa55)
+                {
+                                BootPrint("No partition signature found\n");
+                                return(0);
+                }
+                if (!MMC_Read(boot_sector, sector_buffer)) // read discriptor
+                    return(0);
+                BootPrint("Read boot sector from first partition\n");
+        }
 
     if (compare(sector_buffer+0x52, "FAT32   ",8)==0) // check for FAT32
-		fat32=1;
-	else if (compare(sector_buffer+0x36, "FAT16   ",8)!=0) // check for FAT16
-	{
+                fat32=1;
+        else if (compare(sector_buffer+0x36, "FAT16   ",8)!=0) // check for FAT16
+        {
         printf("Unsupported partition type!\r");
-		return(0);
-	}
+                return(0);
+        }
 
     if (sector_buffer[510] != 0x55 || sector_buffer[511] != 0xaa)  // check signature
         return(0);
@@ -185,7 +184,7 @@ unsigned char FindDrive(void)
     cluster_mask = cluster_size - 1;
 
     fat_start = boot_sector + sector_buffer[0x0E] + (sector_buffer[0x0F] << 8); // reserved sector count before FAT table (usually 32 for FAT32)
-	fat_number = sector_buffer[0x10];
+        fat_number = sector_buffer[0x10];
 
     if (fat32)
     {
@@ -229,7 +228,7 @@ unsigned char FileOpen(fileTYPE *file, const char *name)
     unsigned long  iEntry;               // entry index in directory cluster or FAT16 root directory
     unsigned long  nEntries;             // number of entries per cluster or FAT16 root directory size
 
-	buffered_fat_index = 0xFFFFFFFF;
+        buffered_fat_index = 0xFFFFFFFF;
 
     iDirectoryCluster = root_directory_cluster;
     iDirectorySector = root_directory_start;
@@ -241,7 +240,7 @@ unsigned char FileOpen(fileTYPE *file, const char *name)
         {
             if ((iEntry & 0x0F) == 0) // first entry in sector, load the sector
             {
-				printf("Reading directory sector %d\n",iDirectorySector);
+                                printf("Reading directory sector %d\n",iDirectorySector);
                 MMC_Read(iDirectorySector++, sector_buffer); // root directory is linear
                 pEntry = (DIRENTRY*)sector_buffer;
             }
@@ -253,10 +252,10 @@ unsigned char FileOpen(fileTYPE *file, const char *name)
             {
                 if (!(pEntry->Attributes & (ATTR_VOLUME | ATTR_DIRECTORY))) // not a volume nor directory
                 {
-                	printf("Entrada '%s'\n", (const char*)pEntry->Name);
+                        printf("Entrada '%s'\n", (const char*)pEntry->Name);
                     if (compare((const char*)pEntry->Name, name, 11) == 0)
                     {
-                        file->size = SwapBBBB(pEntry->FileSize); 		// for 68000
+                        file->size = SwapBBBB(pEntry->FileSize);                // for 68000
                         file->cluster = SwapBB(pEntry->StartCluster) + (fat32 ? ((unsigned long)(SwapBB(pEntry->HighCluster) & 0x0FFF)) << 16 : 0);
                         file->sector = 0;
 
@@ -271,7 +270,7 @@ unsigned char FileOpen(fileTYPE *file, const char *name)
         if (fat32) // subdirectory is a linked cluster chain
         {
             iDirectoryCluster = GetCluster(iDirectoryCluster); // get next cluster in chain
-			printf("GetFATLink returned %d\n",iDirectoryCluster);
+                        printf("GetFATLink returned %d\n",iDirectoryCluster);
 
 //            if (fat32 ? (iDirectoryCluster & 0x0FFFFFF8) == 0x0FFFFFF8 : (iDirectoryCluster & 0xFFF8) == 0xFFF8) // check if end of cluster chain
             if ((iDirectoryCluster & 0x0FFFFFF8) == 0x0FFFFFF8) // check if end of cluster chain
@@ -289,22 +288,22 @@ unsigned char FileOpen(fileTYPE *file, const char *name)
 /*******************************************************************************/
 unsigned char FileRead(fileTYPE *file, unsigned char *pBuffer)
 {
-	unsigned long sb;
+        unsigned long sb;
 
-	sb = data_start;							// start of data in partition
-	sb += cluster_size * (file->cluster-2);		// cluster offset
-	sb += file->sector & cluster_mask;			// sector offset in cluster
+        sb = data_start;                                                        // start of data in partition
+        sb += cluster_size * (file->cluster-2);         // cluster offset
+        sb += file->sector & cluster_mask;                      // sector offset in cluster
 
-	if (!MMC_Read(sb, pBuffer)) {				// read sector from drive
-		return 0;
-	} else {
-		// increment sector index
-		file->sector++;
-	
-		// cluster's boundary crossed?
-		if ((file->sector & cluster_mask) == 0) {
-			file->cluster = GetCluster(file->cluster);
-		}
-	}
-	return 1;
+        if (!MMC_Read(sb, pBuffer)) {                           // read sector from drive
+                return 0;
+        } else {
+                // increment sector index
+                file->sector++;
+        
+                // cluster's boundary crossed?
+                if ((file->sector & cluster_mask) == 0) {
+                        file->cluster = GetCluster(file->cluster);
+                }
+        }
+        return 1;
 }

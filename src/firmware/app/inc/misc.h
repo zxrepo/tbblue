@@ -1,9 +1,6 @@
 /*
-TBBlue / ZX Spectrum Next project
-
-Copyright (c) 2015 Fabio Belavenuto & Victor Trucco
-
-Fixes and enhancements since v1.05: Garry Lancaster
+ZX Spectrum Next Firmware
+Copyright 2020 Garry Lancaster, Fabio Belavenuto & Victor Trucco
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,26 +19,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef _MISC_H
 #define _MISC_H
 
-#define COREBOOT_MAGIC_SIZE	8
-#define COREBOOT_NAMES_SIZE	16
-#define COREBOOT_STRUCT_SIZE	128
-#define COREBOOT_MAGIC		"COREBOOT"
-#define COREBOOT_CHECKSUM	0xCB
+#define COREBOOT_MAGIC_SIZE     8
+#define COREBOOT_NAMES_SIZE     16
+#define COREBOOT_STRUCT_SIZE    128
+#define COREBOOT_MAGIC          "COREBOOT"
+#define COREBOOT_CHECKSUM       0xCB
 
 typedef struct {
-	char		magic[COREBOOT_MAGIC_SIZE];	// must contain COREBOOT
-	char		dirname[COREBOOT_NAMES_SIZE];	// core directory
-	char		filename[COREBOOT_NAMES_SIZE];	// file to load (null if none)
-	unsigned char	padding[COREBOOT_STRUCT_SIZE-(COREBOOT_MAGIC_SIZE+(COREBOOT_NAMES_SIZE*2)+1)];
-	unsigned char	checkSum;
+        char            magic[COREBOOT_MAGIC_SIZE];     // must contain COREBOOT
+        char            dirname[COREBOOT_NAMES_SIZE];   // core directory
+        char            filename[COREBOOT_NAMES_SIZE];  // file to load (null if none)
+        unsigned char   padding[COREBOOT_STRUCT_SIZE-(COREBOOT_MAGIC_SIZE+(COREBOOT_NAMES_SIZE*2)+1)];
+        unsigned char   checkSum;
 } coreboot;
 
 extern const char TITLE[];
+extern char line[256];
 
 void display_error(const unsigned char *msg);
 void disable_bootrom();
 unsigned long get_core_ver();
 unsigned long get_fattime();
 unsigned char getCoreBoot();
+void readFlash(unsigned int startPage, unsigned char offset, unsigned char *pBuffer, unsigned int pages);
 
 #endif // _MISC_H
