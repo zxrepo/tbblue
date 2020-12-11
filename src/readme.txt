@@ -10,7 +10,7 @@ by its respective authors. Please observe each license in kind.
 
 There are also two special folders:
 
-/src/fw/ contains the c sources of the current FW file
+/src/firmware/ contains the c sources of the current FW file
 /src/vhdl/ contains the VHDL sources of the current core
 
 Both of the latter are released under GPL v.3 however sources may 
