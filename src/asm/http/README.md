@@ -158,7 +158,7 @@ Then include the `http-debug.bin` that was saved on  your Next to help debug the
 - Entry point is main.asm
 - Optional `Makefile` has been included
 
-## License
+## License for .HTTP
 
 It's in the license link, but all the same:
 
