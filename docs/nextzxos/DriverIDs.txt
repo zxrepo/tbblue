@@ -29,6 +29,8 @@ Hex     Dec     ASCII   Driver
 00      0             * Keyboard
 01      1               "Border" example                        Garry Lancaster
 
+25      37      %       Profiler                                Simon N Goodwin
+
 31      49      1       AYFX player                             Remy Sharp
 32      50      2       NDR player (NextDAW)                    Gari Biasillo
 33      51      3       PT3 6-channel player                    David Saphier
