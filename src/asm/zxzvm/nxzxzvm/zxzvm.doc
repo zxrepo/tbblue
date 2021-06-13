@@ -1,6 +1,6 @@
-ZXZVM v1.15   Z-machine for the Spectrum +3 and PCW    John Elliott, 15-05-2016
-(ResiDOS/ZX Spectrum Next ports & misc bug fixes by Garry Lancaster 2006,2019)
-===============================================================================
+ZXZVM v1.16   Z-machine for the Spectrum +3 and PCW    John Elliott, 15-05-2016
+(ResiDOS/ZX Spectrum Next ports & misc bug fixes by Garry Lancaster 2006,2019,2021)
+===================================================================================
 
         I had played a few Infocom games in the late 1980s (running
         under CP/M on a ghastly Amstrad)
@@ -155,6 +155,16 @@ the saved data.
   ZXZVM was written to version 1.0 of the Z-Machine Standards Document. It
 does not claim compliance with it, because it does not implement Unicode
 support.
+
+
+Bugfixes in v1.16
+=================
+* Fixed @get_cursor opcode to write row first then column.
+
+
+Bugfixes in v1.15d
+==================
+* [NX] Ensure border colour is correctly restored after screensaver exits.
 
 
 Enhancements in v1.15c

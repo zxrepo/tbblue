@@ -19,7 +19,6 @@
 ; 2018-03-08, Garry Lancaster: Updated version to v1.13
 ; 2019-05-03, Garry Lancaster: Updated version to v1.14
 ; 2019-05-17, Garry Lancaster: Updated version to v1.15
+; 2021-06-13, Garry Lancaster: Updated version to v1.16
 
-	defb	'ZXZVM v1.15'	; << v1.15 >>
-        ; TODO After updating this to v1.16, remove the temporary "a"
-        ;      sub-version from nxdep.zsm (line 90)
+	defb	'ZXZVM v1.16'	; << v1.16 >>

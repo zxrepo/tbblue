@@ -275,16 +275,16 @@ getcpos:
 	ld	d,0	;DE = Y
 	ld	b,0	;BC = X
 	ld	hl,(v_arg1)
-	ld	a,b
-	call	ZXPOKE
-	inc	hl
-	ld	a,c
-	call	ZXPOKE
-	inc	hl
 	ld	a,d
 	call	ZXPOKE
 	inc	hl
 	ld	a,e
+	call	ZXPOKE
+	inc	hl
+	ld	a,b
+	call	ZXPOKE
+	inc	hl
+	ld	a,c
 	call	ZXPOKE
 	scf
 	ret
