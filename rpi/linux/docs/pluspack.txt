@@ -22,4 +22,4 @@ All pluspacks can add extra CLI tools, stock sounds for use in demos, extra runt
 
 Plus Packs could also (conceptually) be used for games that do not wish to upload a lot of media to the pi, or wish to use custom players or runtimes.  Physical Release games could offer USB keys for accelerated nexts, etc. Or any application that requires more storage that the stock Pi and RAM disks permit.
 
-Example PlusPacks (including premade blank userspaces) can be found at http://zx.xalior.com/NextPi/PlusPack
+Example PlusPacks (including premade blank userspaces) can be found at http://zx.xalior.com/NextPi/PlusPacks/
