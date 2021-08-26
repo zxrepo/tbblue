@@ -88,6 +88,8 @@ inputacc.fnt). It can generate an accented character set (if you don't wish to
 provide your own) and it can generate emphasis fonts using underlining or
 italicising. Full instructions are provided when you run the program.
 
+Thanks to Hugo Labrande for providing improved versions of the default
+accented fonts.
 
 --
 Happy adventuring!

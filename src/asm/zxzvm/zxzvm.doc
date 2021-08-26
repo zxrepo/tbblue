@@ -1,4 +1,4 @@
-ZXZVM v1.16   Z-machine for the Spectrum +3 and PCW    John Elliott, 15-05-2016
+ZXZVM v1.16a   Z-machine for the Spectrum +3 and PCW    John Elliott, 15-05-2016
 (ResiDOS/ZX Spectrum Next ports & misc bug fixes by Garry Lancaster 2006,2019,2021)
 ===================================================================================
 
@@ -155,6 +155,11 @@ the saved data.
   ZXZVM was written to version 1.0 of the Z-Machine Standards Document. It
 does not claim compliance with it, because it does not implement Unicode
 support.
+
+
+Changes in v1.16a
+=================
+* [NX] Replaced accented fonts with improved versions from Hugo Labrande.
 
 
 Bugfixes in v1.16
