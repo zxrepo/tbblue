@@ -32,7 +32,7 @@ endm
 ; * Definitions                                                             *
 ; ***************************************************************************
 
-LOADER_VERSION          equ     $0140           ; v1.4
+LOADER_VERSION          equ     $0150           ; v1.5
 LOADER_HI               equ     '0'+((LOADER_VERSION/$100)&$0f)
 LOADER_MID              equ     '0'+((LOADER_VERSION/$10)&$0f)
 LOADER_LOW              equ     '0'+((LOADER_VERSION)&$0f)
@@ -200,8 +200,9 @@ close_file_loop:
         call    printmsg                ; re-show loader info
         call    load_font_files         ; load the real font files
         ld      de,msg_biosfile
+        ld      a,'C'
         ld      b,0                     ; BIOS is file 0
-        call    open_relfile
+        call    open_drive_relfile
         ld      (bios_size),bc          ; store size of BIOS in bytes
         addbc_N 255                     ; B=size of BIOS in pages (rounded up)
 if ((BIOS_TOP&$ff) != 0)
@@ -648,6 +649,7 @@ load_init_biosext:
         ld      hl,msg_biosext_file
         ld      de,bios_hdr
         ld      bc,BIOSHDR_LENGTH+MAX_BIOS_EXT_SIZE
+        ld      a,'C'
         call    load_file_via_workspace ; load the BIOS extension
         jr      nc,load_support_failure
         ld      hl,(bios_hdr+BIOSHDR_SIZE)
@@ -771,6 +773,7 @@ load_font_failure:
 ; Entry: HL=filename ($ff-terminated)
 ;        DE=destination address
 ;        BC=max length
+;        A=drive letter
 ; Exit:  Fc=1, success
 ;        BC=bytes actually read
 ;        Fc=0, error
@@ -782,7 +785,7 @@ load_font_failure:
 load_file_via_workspace:
         push    de                      ; save ultimate destination
         ld      de,(bufferaddr)
-        call    load_file               ; load to workspace RAM
+        call    load_drive_file         ; load to workspace RAM
         pop     de
         ret     nc                      ; exit if error
         push    bc                      ; save bytes actually read
@@ -798,18 +801,21 @@ load_file_via_workspace:
 ; Entry: HL=filename ($ff-terminated)
 ;        DE=destination address
 ;        BC=max length
+;        A=drive letter (only if entering at load_drive_file)
 ; Exit:  Fc=1, success
 ;        BC=bytes actually read
 ;        Fc=0, error
 
 
 load_file:
+        ld      a,(map_table)           ; use +3DOS drive mapped to CP/M's A:
+load_drive_file:
         push    de
         push    bc
         ex      de,hl                   ; DE=filename
         ld      b,0                     ; file 0
-        ld      hl,msg_loadfroma
-        call    open_cpmfile            ; open the file from the image
+        ld      hl,msg_loading
+        call    open_drive_file         ; open the file from the image
         pop     de                      ; DE=max length
         pop     hl                      ; HL=destination
         ret     nc                      ; exit if any error
@@ -846,20 +852,22 @@ loaded_all:
 ; Entry: HL=opening/loading message
 ;        DE=filename ($ff-terminated)
 ;        B=file number
+;        A=drive letter
 ; Exit:  Fc=1, success
 ;        Fc=0, error opening
 
-open_cpmfile:
+open_drive_file:
         push    bc
+        push    af
         push    de
         call    printmsg                ; print opening/loading message
         pop     hl
         push    hl
         call    printmsg                ; print filename
         pop     hl                      ; HL=filename
+        pop     af                      ; A=drive letter
         ld      de,(bufferaddr)
         push    de
-        ld      a,(map_table)           ; use +3DOS drive mapped to CP/M's A:
         ld      (de),a
         inc     de
         ld      a,':'
@@ -883,12 +891,15 @@ open_cpmfile:
 ; ***************************************************************************
 ; Entry: DE=filespec ($ff-terminated)
 ;        B=file number
+;        A=drive letter (only if entering at open_drive_relfile)
 ; Exit:  BC=program size
 
 open_relfile:
+        ld      a,(map_table)           ; use +3DOS drive mapped to CP/M's A:
+open_drive_relfile:
         push    bc
-        ld      hl,msg_openfroma        ; "Opening A:"
-        call    open_cpmfile
+        ld      hl,msg_opening          ; "Opening "
+        call    open_drive_file
         ld      hl,msg_nofile
         jr      nc,cpm_halt             ; stop if couldn't
         pop     bc
@@ -940,8 +951,8 @@ load_and_relocate:
         push    de
         push    ix
         push    hl
-        ld      hl,msg_relocfroma
-        call    printmsg                ; "Relocating A:"
+        ld      hl,msg_relocating
+        call    printmsg                ; "Relocating "
         pop     hl
         call    printmsg                ; display filename
         pop     hl
@@ -1224,14 +1235,14 @@ msg_unmounting:
 msg_mounting:
         defm    $0d,"Mounting drives for CP/M:",$0d,0
 
-msg_loadfroma:
-        defm    $0d,"Loading A:",0
+msg_loading:
+        defm    $0d,"Loading ",0
 
-msg_openfroma:
-        defm    $0d,$0a,"Opening A:",0
+msg_opening:
+        defm    $0d,$0a,"Opening ",0
 
-msg_relocfroma:
-        defm    $0d,$0a,"Relocating A:",0
+msg_relocating:
+        defm    $0d,$0a,"Relocating ",0
 
 msg_crlf:
         defm    $0d,$0a,0
@@ -1267,7 +1278,7 @@ msg_halted:
 
 ; Filenames of CPM3 system files.
 msg_biosfile:
-        defm    "NEXTBIOS.PRL",$ff
+        defm    "/NEXTZXOS/NEXTBIOS.PRL",$ff
 msg_resfile:
         defm    "RESBDOS3.SPR",$ff
 msg_bnkfile:
@@ -1281,7 +1292,7 @@ msg_font1ital_file:
 msg_font1itun_file:
         defm    "ITAL_UND.FNT",$ff
 msg_biosext_file:
-        defm    "BIOSEXT.BIN",$ff
+        defm    "/NEXTZXOS/BIOSEXT.BIN",$ff
 msg_ccp_file:
         defm    "CCP.COM",$ff
 
