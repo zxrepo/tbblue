@@ -217,18 +217,22 @@ ppr4:   ld      a,(psmask)
         jr      nz,wword
 	pop	de
 	ld	a,e
-        call    ZXPOKE  ;Read the byte
-	scf
-        ret
+	JP	ZXPOKE ;this ALWAYS sets the carry before return anyway. Speed improvement.
+
+;        call    ZXPOKE  ;Read the byte
+;	scf
+;       ret
 
 wword: 	pop	de
 	ld	a,d
 	call	ZXPOKE
 	inc	hl
 	ld	a,e
-	call	ZXPOKE
-	scf
-	ret
+	JP	ZXPOKE ;this ALWAYS sets the carry before return anyway. Speed improvement.
+
+;	call	ZXPOKE
+;	scf
+;	ret
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;

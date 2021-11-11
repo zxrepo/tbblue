@@ -20,5 +20,6 @@
 ; 2019-05-03, Garry Lancaster: Updated version to v1.14
 ; 2019-05-17, Garry Lancaster: Updated version to v1.15
 ; 2021-06-13, Garry Lancaster: Updated version to v1.16
+; 2021-11-11, Garry Lancaster: Updated version to v1.17
 
-	defb	'ZXZVM v1.16a'	; << v1.16a >>
+	defb	'ZXZVM v1.17'	; << v1.17 >>

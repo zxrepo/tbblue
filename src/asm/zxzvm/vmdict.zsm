@@ -15,6 +15,9 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with this program; if not, write to the Free Software
 ;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+;
+; 2021-10-24, Shawn Sijnstra: Optimised tonkenise ZXPEEKs to ZXPKWI, rewrote
+;             cpenc CP Encrypted to use ZPKWI instead of ZXPEEK
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -113,8 +116,9 @@ nt1:	ld	a,(llen)
 	ld	(tokptr),hl
 
 	inc	hl
-	call	dllen
-	ret
+;	call	dllen
+;	ret
+	jp		dllen
 ;
 ; Look for statically defined separators last
 ;
@@ -128,8 +132,9 @@ nt2:	call	cksepa
 	jr	z,nt99	;<< v0.02 >> Skip it, and don't increment length
 
 	inc	hl
-	call	dllen
-	ret
+;	call	dllen
+;	ret
+	jp		dllen
 ;
 ;If 1st token character then remember its position
 ;
@@ -146,16 +151,16 @@ nt99:	inc	hl
 ;
 ;Decrement LLEN
 ;
-dllen:	push	af
+dllen:	;push	af
 	push	hl
 	ld	hl,llen
 	dec	(hl)
 	pop	hl
-	pop	af
+	;pop	af
 	ret
 ;
 ;Tokenise text at Z-address HL to buffer DE. BC->dictionary
-;
+; Uses IX.
 ;Based on tokenise_line() in jzip.
 ;
 tokenise:
@@ -298,12 +303,13 @@ tok99:	push	ix
 	ld	hl,(tokdst)
 	inc	hl
 	ld	a,c
-	call	ZXPOKE
+	JP	ZXPOKE ;this ALWAYS sets the carry before return anyway. Speed improvement.
+;	call	ZXPOKE
 ;
 ;Diagnostic
 ;
-	scf
-	ret	
+;	scf
+;	ret	
 ;
 fwlen:	defb	0
 fwchp:	defw	0

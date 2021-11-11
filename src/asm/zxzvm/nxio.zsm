@@ -126,6 +126,7 @@ NXBFIT:
 ; ***************************************************************************
 
 ; Get X position in L, chars left in H, total screen width in A
+
 NXGETX:
         ld      hl,(uwx)        ;<< v0.04 use UWX/LWX, not XPOS.
         ld      a,(cwin)
@@ -135,6 +136,7 @@ NXGETX:
 getx2:  ld      a,(win_wc)      ;>> v0.04
         sub     l
         ld      h,a
+        inc     l               ; adjust origin from (0,0) to (1,1)
         ld      a,(win_wc)
         scf
         ret
@@ -148,6 +150,7 @@ NXGETY:
         ld      hl,(lwx)
 gety2:  ld      l,h
         ld      h,0
+        inc     l               ; adjust origin from (0,0) to (1,1)
         scf
         ret
 

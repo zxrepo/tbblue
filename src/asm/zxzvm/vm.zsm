@@ -17,6 +17,8 @@
 ;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 ; 2019-05-17, Garry Lancaster: Made VM module relocatable
+; 2021-10-24, Shawn Sijnstra: Minor bug fix + multiple optimisations throughout
+; 2021-10-25    improve v2_inst to fetch word
 
 	include	in_zxzvm.inc
 
@@ -31,6 +33,7 @@ param	equ	VMORG+5Ch	;Where the FCB parameter would be.
 
 	org	VMORG+100h
 main:	ld	(isp),sp	;Save BASIC's SP
+
 	ld	hl,0
 	ld	(cycles),hl
 	ld	de,param
@@ -302,7 +305,8 @@ init_stack:
 	inc	hl		;1st unusable byte
 	ld	(zsp),hl
 	ld	(zstop),hl
-	ld	de,-2048	;2k call stack
+;	ld	de,-2048	;2k call stack
+	ld	de,-4096	;4k stack - lets try that.
 	add	hl,de
 	ld	(rsp),hl	;Routine stack
 	ld	(rstop),hl
@@ -422,12 +426,12 @@ ext_inst:
 	ld	a,(zver)	;Aren't allowed extended opcodes in v1-v4
 	cp	5
 	jp	c,fail
-	call	zpcipeek	;Get real opcode
+	call	zpcipeek	;Get real opcode	;potential again to optimise?
 	ret	nc
 	ld	(inst+1),a
 	call	zpcipeek	;Operand types
 	ret	nc
-	call	parse_var
+	call	parse_var	;Count in argc, args in arg1-arg4
 	ld	a,(inst+1)
 	bit	7,a
 	jp	nz,ext_high
@@ -438,12 +442,24 @@ ext_inst:
 	jp	fail
 
 v2_inst:
-	call	zpcipeek
-	ret	nc
-	ld	b,a
-	call	zpcipeek
-	ret	nc
-	ld	c,a
+;	call	zpcipeek	;Updated to use peekword (as per p_word)
+;	ret	nc
+;	ld	b,a
+;	call	zpcipeek
+;	ret	nc
+;	ld	c,a
+
+	push	hl		;HL,DE seem to need preserving
+	push	de
+	ld	hl,(zpc)
+	ld	de,(zpc+2)
+	call	ZXPKWI
+	ld	(zpc),hl
+	ld	(zpc+2),de
+	pop	de
+	pop	hl
+
+	ret	nc	;is this needed?
 	call	parse_v2
 	jr	var_main
 ;

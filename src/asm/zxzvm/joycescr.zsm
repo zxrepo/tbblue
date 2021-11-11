@@ -377,6 +377,7 @@ getx1:	ld	hl,(uwx)
 getx2:	ld	a,90
 	sub	l
 	ld	h,a
+        inc     l               ; adjust origin from (0,0) to (1,1)
 	ld	a,90
 	scf
 	ret
@@ -390,6 +391,7 @@ gety1:	ld	hl,(uwx)
 	ld	hl,(lwx)
 gety2:	ld	l,h
 	ld	h,0
+        inc     l               ; adjust origin from (0,0) to (1,1)
 	scf
 	ret
 ;

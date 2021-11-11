@@ -297,9 +297,11 @@ z_sa:	ld	de,(v_arg1)
 	call	attradd
 	call	peek64
 	or	b
-	call	ZXPOKE
-	scf
-	ret
+	JP	ZXPOKE ;this ALWAYS sets the carry before return anyway. Speed improvement.
+
+;	call	ZXPOKE
+;	scf
+;	ret
 ;
 z_ca:	ld	de,(v_arg1)
         ld      a,d             ;<< v1.01 Eliminate Object 0 error
@@ -313,9 +315,11 @@ z_ca:	ld	de,(v_arg1)
 	ld	b,a
 	call	peek64
 	and	b
-	call	ZXPOKE
-	scf
-	ret
+	JP	ZXPOKE ;this ALWAYS sets the carry before return anyway. Speed improvement.
+
+;	call	ZXPOKE
+;	scf
+;	ret
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;

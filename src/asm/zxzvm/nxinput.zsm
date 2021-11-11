@@ -825,8 +825,8 @@ str_more:
 str_inputhelp:
         defm    %00010000       ; clear to inverse
         defm    %10010001,2,"Movement: "
-        defm    %10110010,33,%10010010,"left    "
-        defm    %10110010,34,%10010010,"right      "
+        defm    %10110010,33,%10010010," left   "
+        defm    %10110010,34,%10010010," right     "
         defm    %10110010,92,%10010010," home      "
         defm    %10110010,93,%10010010," end"
         defm    %10110001,60,"EXTEND",%10010000,"=help on/off "

@@ -15,7 +15,11 @@
 ;    You should have received a copy of the GNU General Public License
 ;    along with this program; if not, write to the Free Software
 ;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
+;
+;
+; 2021-10-30, Shawn Sijnstra:
+;	Optimised print routine to use word fetch
+;	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ;0OPs
@@ -68,10 +72,23 @@ prret:  call    print		;Print_ret
         call    newln
         jp      rtrue 
 ;
-print: 	call    zpcipeek
-        ld      b,a
-        call    zpcipeek
-        ld      c,a             ;BC=packed word
+print:
+; 	call    zpcipeek
+;        ld      b,a
+;        call    zpcipeek
+;        ld      c,a             ;BC=packed word
+	push	hl
+	push	de
+
+	ld	hl,(zpc)
+	ld	de,(zpc+2)
+	call	ZXPKWI		;Routine preserves A
+	ld	(zpc),hl
+	ld	(zpc+2),de
+	
+	pop	de
+	pop	hl
+
 	call	printwrd
 	bit	7,b
 	jr	z,print
@@ -201,7 +218,7 @@ sstatus:
 	scf
 	ret	nz
 	call	flush_buf
-	ld	a,1		;1 line for status line
+	ld	a,1		;1 line for status line - This means it is overwriting any other split window for Seastalker
 	call	ZXSWND
 	ld	a,1
 	call	ZXUWND
@@ -304,9 +321,11 @@ ostbuf:	push	bc
 	xor	a
 	call	ZXSTYL
 	xor	a
-	call	ZXUWND
-	scf
-	ret
+	JP	ZXUWND ;this ALWAYS sets the carry before return anyway. Speed improvement.
+
+;	call	ZXUWND
+;	scf
+;	ret
 ;
 statsep:
 	defb	'/'

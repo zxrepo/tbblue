@@ -17,6 +17,9 @@
 ;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 ; 2019-05-12, Garry Lancaster: Fix indirect variable references of SP
+; 2021-10-24, Shawn Sijnstra: zapargs - streamlined to reduce stack use
+;			 and made inline using (EXX)
+; 2021-10-25, Shawn Sijnstra: p_word rewritten to fetch word
 
 ;
 ;Code for accessing variables
@@ -39,20 +42,7 @@ g_addr:	defw	0	;Address of global variables
 r_offs:	defw	0	;Offset to routines (v6/7)
 s_offs:	defw	0	;Offset to strings (v6/7)
 ;
-zapargs:
-	push	af	;Set v_arg1 upto v_argc (inclusive) to zero
-	push	bc
-	push	de
-	push	hl
-	ld	hl,v_arg1
-	ld	d,h
-	ld	e,l
-	inc	de
-	ld	bc,v_argc-v_arg1
-	xor	a
-	ld	(hl),b
-	ldir
-	jp	popd
+
 ;
 parse_v2:		;Parse arguments for 8-arg functions. B holds 1st type
 			;byte, C holds second
@@ -72,17 +62,34 @@ parse_var:
 	ld	b,4
 	ld	e,b
 	ld	ix,v_arg1
-	push	af
-	xor	a
-	ld	d,a
-	call	zapargs
-	ld	(v_argc),a
-	pop	af
+	ld	d,0	;new to replace below
+;	push	af
+;	xor	a
+;	ld	d,a
+;	call	zapargs
+;	push	bc
+;	push	de
+;	push	hl
+;Zapargs:
+	EXX
+	ld	hl,v_arg1
+	ld	de,v_arg1+1
+	ld	bc,v_argc-v_arg1
+;;;	xor	a
+	ld	(hl),b	;XXX B is always zero anyway :)
+	ldir
+	EXX
+;DoneZap
+;	pop	hl
+;	POP	DE
+;	POP	BC
+;	ld	(v_argc),a	;Already erased above
+;	pop	af
 parlp:	rlca
 	rlca
 	push	af
 	push	de
-	push	bc
+	push	bc	;required
 	and	3
 	ld	l,a
 	push	hl
@@ -135,11 +142,21 @@ p_byte:	push	af
 	pop	af
 	ret
 ;
-p_word:	push	af
-	call	zpcipeek	;Switch to little-endian
-	ld	(ix+1),a
-	call	zpcipeek
-	ld	(ix+0),a
+p_word:		;only needs to preserve A
+	push	af
+;	call	zpcipeek	;Switch to little-endian
+;	ld	(ix+1),a
+;	call	zpcipeek
+;	ld	(ix+0),a
+
+	ld	hl,(zpc)
+	ld	de,(zpc+2)
+	call	ZXPKWI		;Routine preserves A
+	ld	(ix+1),b	;little-endian conversion
+	ld	(ix+0),c
+	ld	(zpc),hl
+	ld	(zpc+2),de
+
 	pop	af
 	ret
 ;

@@ -869,6 +869,9 @@ ZXRET:	push	hl
 	pop	de
 	call	print7
 	LD	IY,5C3AH	;Spectrum system veriables
+        exx
+        ld      hl,2758H        ;required for return from USR
+        exx
 	EI
 	ld	a,$ff
 	ld	(ERRNO),a

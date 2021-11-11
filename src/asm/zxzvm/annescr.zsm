@@ -944,6 +944,7 @@ getxl:	inc	de	;DE = cursor X position
 	sub	e
 	ld	h,a
 	ld	l,e	
+        inc     l               ; adjust origin from (0,0) to (1,1)
 	ld	a,104
 	scf
 	ret
@@ -974,6 +975,7 @@ getyl:	inc     de      ;DE = cursor X position
         sub     e
         ld      h,a
         ld      l,e
+        inc     l               ; adjust origin from (0,0) to (1,1)
         scf
         ret
 ;

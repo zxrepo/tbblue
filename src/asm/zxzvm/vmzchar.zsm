@@ -17,15 +17,19 @@
 ;    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
 ; 2019-05-12, Garry Lancaster: Ensure ZSCII 0 has no effect on any output stream
+; 2021-10-24, Shawn Sijnstra: some optimisations including replacing
+;				some stack use with EXX
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ;Add termination bit to ENCBUF
 ;
-eterm:	push	af
-	push	bc
-	push	de
-	push	hl
+eterm:;	push	af
+;	push	bc
+;	push	de
+;	push	hl
+	EXX
+	EX	AF,AF'
 	ld	hl,encbuf
 	ld	a,(encptr)	;A = no. of characters in buffer.
 	or	a
@@ -54,10 +58,14 @@ eterm3:	set	7,(hl)		;Set the termination bit at the end.
 	cp	4
 	jr	c,etermz
 	ld	hl,encbuf+4	;Start of 3rd word
-	jr	etermz
+;	jr	etermz		;optimisation opportunity SS M4ZVM
 ;
 etermz: set	7,(hl)	; >> v0.02
-	jp	popd
+;	jp	popdzc
+popdzc:
+	EXX
+	EX	AF,AF'
+	RET
 ;
 ;Append the character in D to ENCBUF
 ;
@@ -249,13 +257,20 @@ op_zchar:
 	cp	3
 	jr	c,nabb1
 	ld	a,c
-	cp	1	;1,2,3 are abbreviation characters
-	jr	z,abbr
-	cp	2
-	jr	z,abbr
+;	cp	1	;1,2,3 are abbreviation characters
+;	jr	z,abbr
+;	cp	2
+;	jr	z,abbr
+;	cp	3
+;	jr	z,abbr
+
+	dec	a	;off by 1 for compare below: C=1,2,3 becomes A=0,1,2
 	cp	3
-	jr	z,abbr
-	jr	nabb2
+	jr	c,abbr	;1,2,3 are abbreviation characters
+;	jr	nabb2   ;moved routine here to avoid a jump
+nabb2:	ld	a,c	;A = packed char
+	call	zchar2
+	jp	popd
 ;
 nabb1:	cp	2
 	jr	c,nabb2
@@ -263,9 +278,7 @@ abbr:	ld	a,c
 	ld	(abbrev),a
 	jp	popd
 ;
-nabb2:	ld	a,c	;A = packed char
-	call	zchar2
-	jp	popd
+
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
@@ -805,16 +818,20 @@ strmon: push	af		;Activate a stream
 ts_on:	ld	hl,11h
 	call	ZXPK64
 	or	1
-	call	ZXPOKE
-	scf
-	ret
+	JP	ZXPOKE ;this ALWAYS sets the carry before return anyway. Speed improvement.
+
+;	call	ZXPOKE
+;	scf
+;	ret
 ;
 ts_off:	ld	hl,11h
 	call	ZXPK64
 	res	0,a
-	call	ZXPOKE
-	scf
-	ret
+	JP	ZXPOKE ;this ALWAYS sets the carry before return anyway. Speed improvement.
+
+;	call	ZXPOKE
+;	scf
+;	ret
 ;
 sets3:	ex	de,hl	;DE = data address
 	ld	a,(strm3)
@@ -882,7 +899,7 @@ s3err:	defb	'O Stream 3 nestin'	;Stream 3 nested too deeply.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;
 ; << v0.04 Validate an input character in A. Invalid characters become " "
-;
+; Replaces invalid characters in specification under 3.8
 valid_char:
 	cp	8
 	ret	z

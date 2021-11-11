@@ -21,6 +21,11 @@
 ;       Ensure resumed input is re-printed unbuffered
 ;       Fix indirect variable references of SP
 ;       Ensure scan_table fails in byte form with search value >= 100h
+; 2021-10-24, Shawn Sijnstra:
+;	Optimise scan_table in word mode to fetch words.
+;	Ensure scan_table returns no match for zero length table.
+; 2021-10-30, Shawn Sijnstra:
+;	Optimise call routine group to fetch words.
 
 ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -41,16 +46,16 @@ call_pv:
 	ld	a,1	  ; Call type 1
 	jr	call_gen
 ;
-callfv2:
-        ld      b,8
-        ld      hl,v_arg1
-lp2:    ld      e,(hl)
-        inc     hl
-        ld      d,(hl)
-        inc     hl
-        inc     hl
-        inc     hl
-        djnz    lp2
+;callfv2:
+;        ld      b,8
+;        ld      hl,v_arg1
+;lp2:    ld      e,(hl)
+;        inc     hl
+;        ld      d,(hl)
+;        inc     hl
+;        inc     hl
+;        inc     hl
+;        djnz    lp2
 
 call_fv:
 	xor	a
@@ -140,10 +145,23 @@ noarg:	ld	hl,(rsp)
 				;initial values)
 	ld	d,a		;D = no. of parameters
 argl:	push	bc
-	call	zpcipeek	;Get default parameter into BC
-	ld	b,a
-	call	zpcipeek
-	ld	c,a
+;	call	zpcipeek	;Get default parameter into BC
+;	ld	b,a
+;	call	zpcipeek
+;	ld	c,a
+;Get default parameter into BC - one fetch
+	push	hl
+	push	de
+
+	ld	hl,(zpc)
+	ld	de,(zpc+2)
+	call	ZXPKWI		;Routine preserves A
+	ld	(zpc),hl
+	ld	(zpc+2),de
+	
+	pop	de
+	pop	hl
+
 	ld	a,d
 	dec	d
 	jr	z,argl1		;Argument was provided. Skip.
@@ -219,9 +237,11 @@ trap_poke:
 	call	ZXUSCR
 	pop	hl
 trap1:	pop	af
-	call	ZXPOKE
-	scf
-	ret
+	JP	ZXPOKE ;this ALWAYS sets the carry before return anyway. Speed improvement.
+
+;	call	ZXPOKE
+;	scf
+;	ret
 ;
 ; >> v0.03
 ;
@@ -285,9 +305,11 @@ getcpos:
 	call	ZXPOKE
 	inc	hl
 	ld	a,c
-	call	ZXPOKE
-	scf
-	ret
+	JP	ZXPOKE ;this ALWAYS sets the carry before return anyway. SPeed improvement.
+
+;	call	ZXPOKE
+;	scf
+;	ret
 ;
 style:	call	flush_buf
 	ld	a,(v_arg1)
@@ -722,6 +744,9 @@ scant1:	bit	7,a
 	ld	e,a
 	ld	d,0	;DE = step between table entries
 	ld	bc,(v_arg3)
+	ld	a,b
+	or	c
+	jr	z,tnmatch	;if it's a zero length table, trivial no-match
 	ld	hl,(v_arg2)
 scanw1:
 	push	de
@@ -748,6 +773,9 @@ scanbyt:
 	ld	e,a
 	ld	d,0		;DE = step between table entries
 	ld	bc,(v_arg3)	;Table length
+	ld	a,b
+	or	c
+	jr	z,tnmatch	;if it's a zero length table, trivial no-match
 	ld	hl,(v_arg2)
 	ld	a,(v_arg1+1)
 	and	a
@@ -893,8 +921,8 @@ doline:	push	de	;<< v1.02 rewritten for lines >256 chars
 	jr	z,doln1	;>> v0.04
 	ld	b,d
 	ld	c,e
-	inc	b
-	inc	c	;1-based
+;	inc	b
+;	inc	c	;1-based - already now returned as 1-based, so reverted back to as-is.
 	push	hl	;<< v1.11 ZXSCUR is allowed to trash HL!
 	call	ZXSCUR
 	pop	hl	;>> v1.11

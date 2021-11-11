@@ -1,5 +1,6 @@
-ZXZVM v1.16a   Z-machine for the Spectrum +3 and PCW    John Elliott, 15-05-2016
+ZXZVM v1.17    Z-machine for the Spectrum +3 and PCW    John Elliott, 15-05-2016
 (ResiDOS/ZX Spectrum Next ports & misc bug fixes by Garry Lancaster 2006,2019,2021)
+(Further bug fixes and optimisations by Shawn Sijnstra 2021)
 ===================================================================================
 
         I had played a few Infocom games in the late 1980s (running
@@ -155,6 +156,12 @@ the saved data.
   ZXZVM was written to version 1.0 of the Z-Machine Standards Document. It
 does not claim compliance with it, because it does not implement Unicode
 support.
+
+
+Changes in v1.17
+================
+* Fixed scan_table opcode to cope with zero-length tables (Shawn Sijnstra).
+* Various VM optimisations (Shawn Sijnstra).
 
 
 Changes in v1.16a
