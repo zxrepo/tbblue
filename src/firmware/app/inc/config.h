@@ -35,8 +35,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX_TURBOSOUND  1
 #define MAX_DIVMMC      1
 #define MAX_MF          1
-#define MAX_JOYSTICK1   6
-#define MAX_JOYSTICK2   6
+#define MAX_JOYSTICK1   7
+#define MAX_JOYSTICK2   7
 #define MAX_PS2         1
 #define MAX_DMA         1
 #define MAX_SCANLINES   3

@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 const char YESNO[2][4] = {"NO ","YES"};
 const char AYYM[4][4]  = {"YM ","AY ","---","OFF"};
-const char JOYS[7][7]  = {"Sincl2","Kemps1","Cursor","Sincl1","Kemps2","MD 1  ","MD 2  "};
+const char JOYS[8][7]  = {"Sincl2","Kemps1","Cursor","Sincl1","Kemps2","MD 1  ","MD 2  ","Keyjoy"};
 const char PS_2[2][6]  = {"Keyb.","Mouse"};
 const char STEREO[2][4] = {"ABC","ACB"};
 const char SCANL[4][6] = {"OFF  ","50%  ","25%  ","12.5%"};
@@ -46,7 +46,8 @@ unsigned char * help_joy[] =
                                         "Maps to keys 6,7,8,9 and 0     ",
                                         "Kempston at port 55            ",
                                         "3 or 6 button joypad at port 31",
-                                        "3 or 6 button joypad at port 55"
+                                        "3 or 6 button joypad at port 55",
+                                        "Keys (def: QAOP SPC M ENT SXYZ)"
                                 };
 
 /*
@@ -114,7 +115,7 @@ const char * editName[eSettingMAX] =
         "BEEPer",               // eSettingBEEPMode
         "BtnSwap",              // eSettingMouseBtnSwap
         "MouseDPI",             // eSettingMouseDPI
-};      
+};
 
 // ZX Spectrum Next
 unsigned char peripheralsNext[] =

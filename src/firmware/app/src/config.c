@@ -54,7 +54,7 @@ const char * settingName[eSettingMAX] =
         "beepmode",             // eSettingBEEPMode
         "buttonswap",           // eSettingMouseBtnSwap
         "mousedpi",             // eSettingMouseDPI
-};      
+};
 
 const unsigned char settingMaxValue[eSettingMAX] =
 {
@@ -338,5 +338,15 @@ void load_config()
 
         if (settings[eSettingMenuDefault] >= menu_cont) {
             settings[eSettingMenuDefault] = menu_cont - 1;
+        }
+
+        REG_NUM = REG_PERIPH2;
+        if (settings[eSettingPS2])
+        {
+                REG_VAL = 0xa4;
+        }
+        else
+        {
+                REG_VAL = 0xa0;
         }
 }

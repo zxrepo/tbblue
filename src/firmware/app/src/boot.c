@@ -34,10 +34,10 @@ FATFS           FatFs;          /* FatFs work area needed for each volume */
 FIL             Fil;            /* File object needed for each open file */
 FRESULT         res;
 
-unsigned char * FW_version = "1.30 ";
+unsigned char * FW_version = "1.31 ";
 
 // minimal required for this FW
-unsigned long minimal = 0x030108; // 03 01 08 = 3.01.08
+unsigned long minimal = 0x03010a; // 03 01 0a = 3.01.10
 unsigned long l = 0;
 unsigned long current = 0;
 
@@ -66,6 +66,8 @@ void loadFile(unsigned char destpage, unsigned char numpages, unsigned int block
         if (res != FR_OK) {
                 error_loading("unable to open!");
         }
+
+        REG_NUM = REG_RAMPAGE;
 
         while (numpages--)
         {
@@ -315,10 +317,11 @@ void init_registers()
 
         REG_NUM = REG_PERIPH5;
         opc = settings[eSettingMouseDPI] & 3;                   // bits 1-0
-        if (settings[eSettingMouseBtnSwap])     opc |= 0x04;    // bit 2
+        if (settings[eSettingMouseBtnSwap])     opc |= 0x08;    // bit 3
+        if (settings[eSettingDivMMC])           opc |= 0x10;    // bit 4
         opc |= mftype << 6;                                     // bits 6-7
         REG_VAL = opc;
-        
+
         // NOTE: With bit 31 of hwenables[3] set to 0, the internal port
         //       hw disables won't be reinitialised on a soft reset.
         hwenables[3] = 0x00;
@@ -425,6 +428,39 @@ void load_keymap()
         }
 }
 
+unsigned char keyjoy_default[11] = {
+        0b00101000,     // P
+        0b00101001,     // O
+        0b00001000,     // A
+        0b00010000,     // Q
+        0b00111000,     // SPACE
+        0b00111010,     // M
+        0b00110000,     // ENTER
+        0b00001001,     // S
+        0b00101100,     // Y
+        0b00000001,     // Z
+        0b00000010,     // X
+};
+
+void load_keyjoys()
+{
+        unsigned int i, k;
+
+        for (i = 0; i < 2; i++)
+        {
+                REG_NUM = REG_KMHA;
+                REG_VAL = 0x80;
+                REG_NUM = REG_KMLA;
+                REG_VAL = i << 4;
+
+                for (k = 0; k < 11; k++)
+                {
+                        REG_NUM = REG_KMLD;
+                        REG_VAL = keyjoy_default[k];
+                }
+        }
+}
+
 void main()
 {
         // Always run at 28MHz.
@@ -465,7 +501,7 @@ void main()
 
         for(cont=0; cont < 0xffff; cont++)
         {
-                if ((cont & 0x1fff) == 0)
+                if ((cont & 0xfff) == 0)
                 {
                         if ((cont & 0x2000) == 0)
                         {
@@ -503,6 +539,12 @@ void main()
                         // If N,X held down, reset config.ini to defaults.
                         switchModule(FW_BLK_RESET);
                 }
+
+                if ((HROW5 & 0x08) == 0)
+                {
+                        // If U held down, enter updater.
+                        switchModule(FW_BLK_UPDATER);
+                }
         }
 
         // Clear off the video mode selection prompts.
@@ -539,6 +581,7 @@ void main()
 
         // NOTE: Keymap must be loaded before ROMs as it uses the same SRAM.
         load_keymap();
+        load_keyjoys();
         load_roms();
         init_registers();
 
