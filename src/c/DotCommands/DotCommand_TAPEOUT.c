@@ -102,8 +102,15 @@ int main(int argc, char **argv)
 
 			if (esx_m_tapeout_info(&drive, pathname) == 0)
 			{
-				char letter = 'A'+(drive>>3);
-				printf("%c:%s\n", letter, pathname);
+				if (drive == '*')
+				{
+					printf("%s\n", pathname);
+				}
+				else
+				{
+					char letter = 'A'+(drive>>3);
+					printf("%c:%s\n", letter, pathname);
+				}
 			}
 			else
 			{
@@ -113,7 +120,7 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		printf("TAPEOUT v1.0 by Garry Lancaster\n");
+		printf("TAPEOUT v1.1 by Garry Lancaster\n");
 		printf("Change tape output to .TAP file\n\n");
 		printf("SYNOPSIS:\n .TAPEOUT [OPTION]... [FILE]\n\n");
 		printf("OPTIONS:\n");

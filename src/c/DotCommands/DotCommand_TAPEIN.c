@@ -168,8 +168,15 @@ int main(int argc, char **argv)
 
 			if (esx_m_tapein_info(&drive, pathname) == 0)
 			{
-				char letter = 'A'+(drive>>3);
-				printf("%c:%s\n", letter, pathname);
+				if (drive == '*')
+				{
+					printf("%s\n", pathname);
+				}
+				else
+				{
+					char letter = 'A'+(drive>>3);
+					printf("%c:%s\n", letter, pathname);
+				}
 			}
 			else
 			{
@@ -182,7 +189,7 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		printf("TAPEIN v1.0 by Garry Lancaster\n");
+		printf("TAPEIN v1.1 by Garry Lancaster\n");
 		printf("Change tape input to .TAP file\n\n");
 		printf("SYNOPSIS:\n .TAPEIN [OPTION]... [FILE]\n\n");
 		printf("OPTIONS:\n");
