@@ -3,7 +3,6 @@
 ; * .LFN shortname                                                          *
 ; ***************************************************************************
 
-Z80N    equ     1
 include "macros.def"
 
 macro call48k,address

@@ -94,13 +94,7 @@ ide_bank                equ     $01bd           ; bank allocation
 nxr_mmu1                equ     $51
 div_memctl              equ     $e3
 
-macro nxtregn,reg,val
-        defb    $ed,$91,reg,val
-endm
-
-macro nxtrega,val
-        defb    $ed,$92,val
-endm
+include "macros.def"
 
 
 ; ***************************************************************************
@@ -519,6 +513,9 @@ preload_bc:
 preload_noload:
         pop     de                      ; DE=current bank load address
         pop     hl
+        pop     bc                      ; B=chunk counter, 8192/512-->0
+        push    bc
+;        call    preload_fixup           ; fix up any known driver issues
         ld      a,(hl)                  ; A=bank id
         push    hl
         ld      hl,(preload_addr)
@@ -621,6 +618,106 @@ zx_copy:
         out     (div_memctl),a          ; page back dot command
         ret
 zx_copy_end:
+
+
+if 0
+
+; NOTE: It turns out this is insufficient to deal with all issues in the
+;       NextDAW driver for uninitialised channels. Therefore the DivMMC ROM
+;       is now patched to ensure a zero at address $0019, which is used as a
+;       set of enable flags for uninitialised channels.
+
+; ***************************************************************************
+; * Detection of faulty NextDAW driver                                      *
+; ***************************************************************************
+; v1.40 (and possibly other versions) of nextdaw.drv has a bug where
+; before a song is loaded, each voice patch is in an uninitialised state.
+; However, the routine to update the voices is always called (as this is still
+; needed when stopping a song). Before any song is loaded this routine ends
+; up addressing voice data indexed by IY, with IY set to zero. Since DivMMC
+; ROM is present at address $0000, this can lead to random sounds being
+; generated, depending upon the version of NextZXOS.
+; To fix this, if a song is not loaded we patch the code to skip the routine
+; to update the voices. This change means that stopping a song must use
+; a hard stop rather than relying on the ISR to decay the voices naturally.
+; To do this, we also patch the jump block at the start of the driver.
+
+nextdaw_140_block       equ     8192/512
+nextdaw_140_offset      equ     $01da
+
+nextdaw_140_skip_offset equ     $01df   ; changes:      jp z,$81e7
+nextdaw_140_skip_data   equ     $ea     ; to:           jp z,$81ea
+
+nextdaw_140_vector_dst  equ     $0a     ; patch 4th jump (stop song)
+nextdaw_140_vector_src  equ     $0d     ; to match 5th jump (hard stop)
+
+bad_next
+
+nextdaw_140_data:
+l_81da:
+        ld      a,($806a)               ; checks if .NDR is loaded
+        or      a
+l_81de:
+        jp      z,$81e7
+        call    $8e71
+        call    $8e44
+l_81e7:
+        call    $81f7                   ; this routine updates the voices
+l_81ea:
+nextdaw_140_data_end:
+
+
+; ***************************************************************************
+; * Fixup any known faulty drivers during install                           *
+; ***************************************************************************
+
+preload_fixup:
+        ld      a,(fileheader+4)
+        cp      $b2                     ; NextDAW driver?
+        ret     nz                      ; no other drivers to patch
+        ld      a,b
+        cp      nextdaw_140_block       ; potential bad block of nextdaw.drv?
+        ret     nz                      ; don't have any patches if not
+        push    bc
+        push    de
+        push    hl
+        ld      hl,(preload_addr)
+        addhl_N nextdaw_140_offset
+        ld      de,nextdaw_140_data
+        ld      bc,nextdaw_140_data_end-nextdaw_140_data
+preload_fixup_check_loop:
+        ld      a,(de)                  ; check if the v1.40 code is present
+        inc     de
+        cp      (hl)
+        inc     hl
+        jr      nz,preload_fixup_done   ; exit if it isn't
+        dec     bc
+        ld      a,b
+        or      c
+        jr      nz,preload_fixup_check_loop
+        ld      a,nextdaw_140_skip_data
+        ld      hl,(preload_addr)
+        push    hl
+        addhl_N nextdaw_140_skip_offset
+        ld      (hl),a                  ; patch to skip the voice update
+        pop     hl
+        push    hl
+        addhl_N nextdaw_140_vector_src
+        ld      e,(hl)
+        inc     hl
+        ld      d,(hl)                  ; fetch address of hard stop routine
+        pop     hl
+        addhl_N nextdaw_140_vector_dst
+        ld      (hl),e
+        inc     hl
+        ld      (hl),d                  ; patch standard stop routine
+preload_fixup_done:
+        pop     hl
+        pop     de
+        pop     bc
+        ret
+
+endif
 
 
 ; ***************************************************************************
@@ -775,7 +872,7 @@ msg_initfail:
         defm    "Driver init faile",'d'+$80
 
 msg_help:
-        defm    "INSTALL v1.2 by Garry Lancaster",$0d
+        defm    "INSTALL v1.3 by Garry Lancaster",$0d
         defm    "Installs a NextZXOS driver",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    " .INSTALL NAME.DRV",$0d,0

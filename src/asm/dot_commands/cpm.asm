@@ -3,7 +3,6 @@
 ; * .cpm                                                                    *
 ; ***************************************************************************
 
-Z80N    equ     1
 include "macros.def"
 include "nexthw.def"
 include "cpm.def"
@@ -386,7 +385,7 @@ unmount_inuse:
         ld      a,l
         sub     'A'                     ; A=drive id, 0..15
         ld      hl,dos_table
-        addhl_A()
+        addhl_A_badFc()
         ld      (hl),$ff                ; mark as NextZXOS-specific
 unmount_done:
         pop     hl
@@ -464,8 +463,8 @@ automount_map:
         ld      hl,xdpb_table
         ld      a,c                     ; A=drive letter
         sub     'A'
-        addhl_A()
-        addhl_A()                       ; HL=address of XDPB
+        addhl_A_badFc()
+        addhl_A_badFc()                 ; HL=address of XDPB
         ld      a,(hl)
         inc     hl
         or      (hl)
@@ -526,11 +525,11 @@ automount_fail:
         ld      a,c
         sub     'A'
         ld      hl,map_table
-        addhl_A()
+        addhl_A_badFc()
         ld      (hl),b                  ; insert mapping into table
         add     a,a
         ld      hl,xdpb_table
-        addhl_A()
+        addhl_A_badFc()
         ld      a,ixl
         ld      (hl),a                  ; store XDPB pointer for CP/M drive
         inc     hl
@@ -560,7 +559,7 @@ allocate_dos_drive:
         ld      a,c
         sub     'A'
         ld      hl,dos_table
-        addhl_A()
+        addhl_A_badFc()
         ld      a,(hl)
         and     a                       ; is it available?
         jr      nz,alloc_fail_1to1
@@ -590,7 +589,6 @@ got_unused_drive:
 ; ***************************************************************************
 ; Entry:   HL=filespec to match
 ; Exit(s): Fc=1, B=# matching entries + 1
-;          First entry is at tmp_buff+1024+CATENTRY_SIZE
 ; Exit(f): Fc=0, A=error
 
 get_image_cat:
@@ -1177,12 +1175,12 @@ init_drv_setptrs:                       ; Here: BC=XDPB address, DE=DPH address
         push    af
         add     a,a                     ; A=2*drive id
         ld      hl,DRVTBL_BASE-COMMON_OFFSET
-        addhl_A()
+        addhl_A_badFc()
         ld      (hl),e                  ; store DPH pointer (or zero)
         inc     hl
         ld      (hl),d
         ld      hl,XDPBTBL_BASE-COMMON_OFFSET
-        addhl_A()
+        addhl_A_badFc()
         ld      (hl),c                  ; store XDPB pointer (or zero)
         inc     hl
         ld      (hl),b

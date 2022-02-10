@@ -89,9 +89,6 @@ drv_header_len          equ     8               ; size of .DRV header
 ; +3DOS API calls
 ide_bank                equ     $01bd           ; bank allocation
 
-; Next registers
-div_memctl              equ     $e3
-
 
 ; ***************************************************************************
 ; * Initialisation                                                          *

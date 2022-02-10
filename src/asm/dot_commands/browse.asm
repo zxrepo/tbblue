@@ -2,7 +2,6 @@
 ; * Dot command to show a Browser dialog and return the results             *
 ; ***************************************************************************
 
-Z80N    equ     1
 include "macros.def"
 include "nexthw.def"
 
@@ -47,6 +46,9 @@ BROWSERCAPS_MKDIR       equ     $04
 BROWSERCAPS_ERASE       equ     $08
 BROWSERCAPS_REMOUNT     equ     $10
 BROWSERCAPS_UNMOUNT     equ     $20
+BROWSERCAPS_CAPS2       equ     $40
+
+BROWSERCAPS2_SORT       equ     $08
 
 ; 48K ROM calls
 BC_SPACES_r3            equ     $0030           ; allocate workspace
@@ -64,6 +66,7 @@ TSTACK                  equ     $5bff
 STRMS                   equ     $5c10
 CURCHL                  equ     $5c51
 CH_ADD                  equ     $5c5d
+ATTR_P                  equ     $5c8d
 
 ; Limits
 MAX_FILETYPES           equ     12              ; should be more than enough
@@ -78,9 +81,10 @@ ram_buffer              equ     $6000
 ; Space for "X$=" plus an LFN, and a 128-byte stack
 RAM_BUFFER_SIZE         equ     MAX_LFN_SIZE+3+128
 
-if (RAM_BUFFER_SIZE < (MAX_HELP_SIZE+1+(4*MAX_FILETYPES)+1))
-.ERROR RAM_BUFFER_SIZE not large enough to hold help and filetypes
+if (RAM_BUFFER_SIZE < (MAX_HELP_SIZE+1+(4*MAX_FILETYPES)+(15*2)+1))
+.ERROR RAM_BUFFER_SIZE not large enough to hold help, filetypes and filter*2
 endif
+
 
 ; ***************************************************************************
 ; * Initialisation                                                          *
@@ -105,10 +109,11 @@ browse_init:
         ld      hl,'N'<<8+'X'
         sbc     hl,bc                   ; check NextZXOS signature
         jr      nz,bad_nextzxos
-        ld      hl,$0199
+        ld      hl,$0207
         ex      de,hl
-        sbc     hl,de                   ; check version number >= 1.99
-        jr      c,bad_nextzxos
+        sbc     hl,de                   ; check version number >= 2.07
+        ld      hl,msg_badnextver
+        jr      c,err_custom
         ld      hl,stderr_handler
         callesx m_errh                  ; install error handler to reset turbo
         pop     hl                      ; restore address of arguments
@@ -202,6 +207,16 @@ stderr_handler:
 ; ***************************************************************************
 
 browse_start:
+        ; Check filter is only enabled with a single filetype
+        ld      a,(use_filter)
+        and     a
+        jr      z,numtypes_ok
+        ld      a,(numtypes)
+        dec     a
+        ld      hl,msg_filter1type
+        jr      nz,err_custom
+numtypes_ok:
+
         ; Reserve some workspace for a window definition and for a temporary
         ; store for the final filename before assigning to a string variable.
         ld      bc,MAX_LFN_SIZE
@@ -213,7 +228,7 @@ browse_start:
         callesx m_gethandle
         callesx f_close
 
-        ; Save the current layer/mode and switch to layer 0
+        ; Save the current layer/mode and switch to layer 1,1
         call    get_mode
         push    af
         and     $03
@@ -255,7 +270,7 @@ browse_start:
         ld      hl,(CURCHL)
         ld      (window_curchl),hl      ; and save the channel pointer for it
 
-        ; Save data in the main RAM buffer, and copy in filetypes & help
+        ; Save data in the main RAM buffer
         ; The stack is also relocated into the main RAM buffer so it is
         ; below $c000 and safe for use with +3DOS calls.
         ld      hl,ram_buffer
@@ -263,22 +278,64 @@ browse_start:
         ld      bc,RAM_BUFFER_SIZE
         ldir                            ; save some RAM below $c000
         ld      sp,ram_buffer+RAM_BUFFER_SIZE
+
+        ; Copy filetypes and help into RAM buffer
         ld      hl,filetypes
-        ld      de,ram_buffer
-        push    de                      ; save address of filetypes buffer
-        ld      hl,filetypes
-        ld      bc,4*MAX_FILETYPES+1
-        ldir                            ; copy filetypes buffer into main RAM
+        ld      de,ram_buffer+30        ; allow for 2 x 15-byte filters
         push    de                      ; save address of help
         ld      hl,helptext
         ld      bc,MAX_HELP_SIZE+1
         ldir                            ; copy help text into main RAM
         ld      (de),a                  ; terminate with $ff
+        inc     de
+        push    de                      ; save address of filetypes buffer
+        ld      hl,filetypes
+        ld      bc,4*MAX_FILETYPES+1
+        ldir                            ; copy filetypes buffer into main RAM
+
+        ; Save & replace the current filter if requested
+        ld      a,(use_filter)
+        and     a
+        jr      z,skip_filter_change
+        ld      hl,ram_buffer           ; buffer for current filter
+        ld      de,0                    ; get/set Browser settings
+        ld      a,d                     ; A=0, get current settings
+        exx
+        ld      c,7                     ; RAM 7
+        ld      de,IDE_BROWSER
+        callesx m_p3dos                 ; get current Browser filter & settings
+        ld      (saved_browserflags),bc ; save the settings
+        pop     de                      ; DE=filetypes buffer
+        push    de
+        ld      hl,ram_buffer+15
+        push    hl                      ; save user-filter buffer
+        ld      (hl),'*'                ; filter will be "*.EXT"
+        inc     hl
+        ld      (hl),'.'
+copy_type_to_filter:
+        inc     de                      ; next byte (initial inc skips length)
+        inc     hl
+        ld      a,(de)
+        ld      (hl),a                  ; copy to filter
+        cp      ':'                     ; until ':' found
+        jr      nz,copy_type_to_filter
+        ld      (hl),$ff                ; replace ':' with $ff-terminator
+        pop     hl                      ; buffer for user filter
+        set     6,c                     ; show dirs before files (so dirs not filtered)
+        ld      de,0                    ; get/set Browser settings
+        ld      a,1                     ; A=1, change current settings
+        exx
+        ld      c,7                     ; RAM 7
+        ld      de,IDE_BROWSER
+        callesx m_p3dos                 ; set Browser filter & settings
+skip_filter_change:
 
         ; Show the dialog
-        pop     de                      ; DE=help text
         pop     hl                      ; HL=filetypes buffer
+        pop     de                      ; DE=help text
         ld      a,(browser_caps)        ; A=capabilities
+        or      BROWSERCAPS_CAPS2       ; enable CAPS2
+        ld      b,BROWSERCAPS2_SORT     ; allow sorting
         exx
         ld      c,7                     ; RAM 7
         ld      de,IDE_BROWSER
@@ -298,17 +355,23 @@ browse_error:
 browse_gotselected:
         ld      a,(save_dialog)         ; is this a save dialog?
         and     a
-        jr      z,browse_gotfile
+        jp      z,browse_gotfile
 
         ; Ask the user to edit/enter a filename
         ld      de,saved_filename
         call    copy_RAM7_to_de         ; copy filename from RAM 7 to DivMMC RAM
         ld      (saved_namelen),bc      ; and save its length
+        ld      de,0                    ; get/set Browser settings
+        ld      a,4                     ; reinstate the current Browser palette
+        exx
+        ld      c,7                     ; RAM 7
+        ld      de,IDE_BROWSER
+        callesx m_p3dos                 ; set Browser palette & ATTR_P
         ld      hl,ram_buffer
         push    hl
         ld      (hl),24                 ; "set attributes" code
         inc     hl
-        ld      a,($5aff)               ; use current bottom-right attribute
+        ld      a,(ATTR_P)              ; ATTR_P contains Browser base attributes
         ld      (hl),a
         inc     hl
         ld      (hl),14                 ; "clear window" code
@@ -357,6 +420,12 @@ edit_lengthok:
         ld      d,0                     ; DE=length of returned string
         add     hl,de
         ld      (hl),$ff                ; terminate it
+        ld      de,0                    ; get/set Browser settings
+        ld      a,5                     ; reinstate the previous palette
+        exx
+        ld      c,7                     ; RAM 7
+        ld      de,IDE_BROWSER
+        callesx m_p3dos                 ; set Browser palette
         pop     hl
         jr      browse_gotfile_hl
 
@@ -370,6 +439,20 @@ browse_gotfile_hl:
         ld      de,saved_filename
         call    copy_RAM7_to_de         ; copy filename from RAM 7 to DivMMC RAM
         ld      (saved_namelen),bc      ; and save its length
+
+        ; Restore the original Browser settings if we changed them
+        ld      a,(use_filter)
+        and     a
+        jr      z,skip_filter_restore
+        ld      hl,ram_buffer           ; saved filter
+        ld      bc,(saved_browserflags)
+        ld      de,0                    ; get/set Browser settings
+        ld      a,1                     ; A=1, change current settings
+        exx
+        ld      c,7                     ; RAM 7
+        ld      de,IDE_BROWSER
+        callesx m_p3dos                 ; set Browser filter & settings
+skip_filter_restore:
 
         ; Restore the main RAM that we saved
         ld      sp,temp_stack           ; move SP to temp area in DivMMC RAM
@@ -645,7 +728,7 @@ perform_option_end:
 option_mismatch:
         ld      a,b                     ; A=remaining characters to skip
 skip_option:
-        addhl_A()                       ; skip the option name
+        addhl_A_badFc()                 ; skip the option name
         inc     hl                      ; and the routine address
         inc     hl
         jr      check_next_option
@@ -653,7 +736,7 @@ skip_option:
 invalid_option:
         ld      hl,temparg-1
         ld      a,c
-        addhl_A()
+        addhl_A_badFc()
         set     7,(hl)                  ; set error terminator at end of option
         ld      hl,msg_unknownoption
         jp      err_custom
@@ -760,6 +843,14 @@ opt22_a:defw    option_copy
         defb    opt23_a-opt23
 opt23:  defm    "--copy"
 opt23_a:defw    option_copy
+
+        defb    opt24_a-opt24
+opt24:  defm    "-f"
+opt24_a:defw    option_filter
+
+        defb    opt25_a-opt25
+opt25:  defm    "--filter"
+opt25_a:defw    option_filter
 
         ; End of table
         defb    0
@@ -892,6 +983,16 @@ option_save:
 
 
 ; ***************************************************************************
+; * -f, --filter                                                            *
+; ***************************************************************************
+
+option_filter:
+        ld      a,1
+        ld      (use_filter),a
+        ret
+
+
+; ***************************************************************************
 ; * -r, --rename                                                            *
 ; * -d, --delete                                                            *
 ; * -k, --mkdir                                                             *
@@ -935,7 +1036,7 @@ option_enablecaps:
 
 ; TAB 32 used within help message so it is formatted wide in 64/85 column mode.
 msg_help:
-        defm    "BROWSE v1.2 by Garry Lancaster",$0d
+        defm    "BROWSE v1.5 by Garry Lancaster",$0d
         defm    "Uses Browser to select filename",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    " .BROWSE [OPTION]... VARIABLE$",$0d
@@ -946,6 +1047,9 @@ msg_help:
         defm    "     Add EXT to selectable types",23,32,0
         defm    "     Wildcards * or ? allowed",23,32,0
         defm    "     Multiple -t options allowed",$0d
+        defm    " -f, --filter",23,32,0
+        defm    "     Set filter to type",23,32,0
+        defm    "     Only one -t option allowed",$0d
         defm    " -p, --prompt PROMPT",23,32,0
         defm    "     Custom help prompt",23,32,0
         defm    "     Can include: ",'\',"i inverse on",23,32,0
@@ -967,11 +1071,14 @@ msg_help:
         defm    " -u, --unmount",23,32,0
         defm    "     Allow unmount with U key",$0d
         defm    " -c, --copy",23,32,0
-        defm    "     Allow copy/paste with C/P",$0d
+        defm    "     Allow copy/move with C/V/P",$0d
         defm    $ff
 
 msg_badnextzxos:
         defm    "Requires NextZXOS mod",'e'+$80
+
+msg_badnextver:
+        defm    "Requires NextZXOS v2.07",'+'+$80
 
 msg_unknownoption:
         defm    "Unknown option: "
@@ -983,6 +1090,9 @@ msg_badtype:
 
 msg_toomanytypes:
         defm    "Too many type",'s'+$80
+
+msg_filter1type:
+        defm    "Filter needs single typ",'e'+$80
 
 msg_badprompt:
         defm    "Prompt string too lon",'g'+$80
@@ -1087,10 +1197,16 @@ if (saved_layer != (saved_submode+1))
 .ERROR Incorrect assumption: saved_layer=saved_submode+1
 endif
 
+saved_browserflags:
+        defw    0
+
 return_short:
         defb    0
 
 save_dialog:
+        defb    0
+
+use_filter:
         defb    0
 
 browser_caps:

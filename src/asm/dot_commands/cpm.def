@@ -22,28 +22,6 @@ dpb_phm                 equ     $10
 
 DPB_SIZE                equ     $11
 
-xdpb_flags1             equ     $11
-xdpb_tks                equ     $12
-xdpb_secs               equ     $13
-xdpb_sec1               equ     $14
-xdpb_secsize            equ     $15
-xdpb_gaprw              equ     $17
-xdpb_gapformat          equ     $18
-xdpb_mfm                equ     $19
-xdpb_freeze             equ     $1a
-xdpb_flags2             equ     $1b
-xdpb_letter             equ     $1c
-xdpb_unit               equ     $1d
-xdpb_access             equ     $1e
-xdpb_nfiles             equ     $21
-xdpb_ndirs              equ     $22
-xdpb_dirlast            equ     $24
-xdpb_cksvec             equ     $26
-xdpb_alvec              equ     $28
-xdpb_login              equ     $2a
-xdpb_readsec            equ     $2c
-xdpb_writesec           equ     $2e
-
 
 ; ***************************************************************************
 ; * SCB Layout                                                              *
@@ -174,13 +152,6 @@ BIOS_TOP                equ     DOSTBL_BASE&$ff00
 
 ; Starting page of common memory
 COMMON_PAGE             equ     $c0
-
-
-; ***************************************************************************
-; * Address of MF3 exit routine in page zero                                *
-; ***************************************************************************
-
-CPM_MF3_EXIT            equ     $0042
 
 
 ; ***************************************************************************

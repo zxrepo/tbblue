@@ -2,7 +2,6 @@
 ; * Dot command to return version of NextZXOS running                       *
 ; ***************************************************************************
 
-Z80N    equ     1
 include "macros.def"
 
 macro call48k,address
@@ -356,7 +355,7 @@ perform_option_end:
 option_mismatch:
         ld      a,b                     ; A=remaining characters to skip
 skip_option:
-        addhl_A()                       ; skip the option name
+        addhl_A_badFc()                 ; skip the option name
         inc     hl                      ; and the routine address
         inc     hl
         jr      check_next_option
@@ -364,7 +363,7 @@ skip_option:
 invalid_option:
         ld      hl,temparg-1
         ld      a,c
-        addhl_A()
+        addhl_A_badFc()
         set     7,(hl)                  ; set error terminator at end of option
         ld      hl,msg_unknownoption
         jp      err_custom

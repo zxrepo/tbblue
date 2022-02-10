@@ -1,0 +1,156 @@
+@title NextBASIC Guide
+@author Garry Lancaster
+@version 1.00
+@copyright Copyright (C)2022 Garry Lancaster
+@date 2022/02/19
+@----------------------------------------------------------------------------
+@node MAIN
+@next EDITOR
+@{r}NextBASIC Guide
+@{c}@{h1}NextBASIC
+
+This is a guide for the @{i}NextBASIC@{ui} editor. Information on BASIC commands
+and functions may be added in the future. For now, please see the @{b}ZX Spectrum
+Next User Manual@{ub}.
+
+Further information (readable on PCs and Macs) can also be found on this SD
+card in @{b}/docs/nextzxos@{ub}.
+
+@{"NextBASIC editor" LINK EDITOR}
+@{"Edit options menu" LINK OPTIONS}
+@{"Editing keys" LINK EDITKEYS}
+@----------------------------------------------------------------------------
+@node EDITOR
+@prev MAIN
+@next OPTIONS
+@{r}NextBASIC Guide
+@{c}@{h1}The NextBASIC editor
+
+The editor shows a partial listing of the current NextBASIC program on the
+screen. You can move around the listing using the arrow keys (or the special
+@{"editing keys" LINK EDITKEYS}, and modify or add program lines.
+
+To add a new program line, move the cursor to a blank screen line (pressing
+@{b}ENTER@{ub} will insert a new blank line for you after the current program line),
+then type the line number followed by the commands (these are typed one letter
+at a time, and do not use the "keyword" symbols shown on the Next's keyboard).
+
+To enter a line into the program, press @{b}ENTER@{ub}. If the line is accepted
+there will be an acknowledgement beep and the line will be reformatted and
+displayed using the syntax-highlighting colours of the current colour scheme.
+If there is an error on the line, a lower beep will sound and the cursor will
+move to the location of the error so that you can correct it.
+
+To delete an entire line, just type its number on a blank line and press
+@{b}ENTER@{ub}. The line will then be removed from the listing.
+
+To copy a line, edit its line number to a new number and press @{b}ENTER@{ub}. The
+copy will be added with the new line number, leaving the original line intact.
+
+You can also run commands directly from the NextBASIC editor. To do this,
+simply enter the required commands without a preceding line number.
+
+Pressing @{b}EDIT@{ub} brings up a @{"menu" LINK OPTIONS} for further options.
+@----------------------------------------------------------------------------
+@node OPTIONS
+@prev EDITOR
+@next EDITKEYS
+@{r}NextBASIC Guide
+@{c}@{h1}Edit options menu
+
+The options menu provides further available actions.
+
+@{h2}NextBASIC
+Dismisses the options menu and returns to the NextBASIC editor.
+
+@{h2}Command Line
+Switches to the @{i}Command Line@{ui}.
+
+@{h2}32/64/85
+Cycles between 32/64/85 columns-per-line mode, allowing different amounts of
+information to be shown on screen. Note that syntax highlighting is currently
+only available in 32-column mode.
+
+@{h2}Screen
+Switches between editing the program in the main screen or in the bottom 2
+lines of the screen only. Editing in the bottom 2 lines can be useful if you
+want to be able to edit your program whilst keeping the output from its last
+run visible in the main screen. This option can also be toggled by pressing
+@{b}EXTEND@{ub} and then @{b}EDIT@{ub}.
+
+@{h2}Renumber
+Renumbers the program. Lines will be renumbered in steps of 10, starting at 10.
+For more control over renumbering, you can use the NextBASIC @{b}LINE@{ub} command.
+
+@{h2}Clear
+If you are running very short of memory, attempting to enter a line may fail.
+This option performs a @{b}CLEAR 65367@{ub} command to free up as much memory as
+possible.
+
+@{h2}Guide
+Brings up this guide.
+
+@{h2}Exit
+Exits the editor and returns to the main NextZXOS menu.
+@----------------------------------------------------------------------------
+@node EDITKEYS
+@prev OPTIONS
+@{r}NextBASIC Guide
+@{c}@{h1}Editing keys
+
+The editor provides a number of special editing keys. A summary of these can
+be seen at any point whilst in the editor by pressing the yellow @{b}NMI@{ub} button
+on the side of your Next, selecting the @{i}Keymap@{ui} option and pressing
+@{b}EXTEND@{ub}. This also shows the colours/shapes of the cursor in different
+modes (for the default colour scheme).
+
+@{h2}CAPS LOCK
+Switches between capital and lower-case entry.
+
+@{h2}GRAPH
+Toggles graphics mode, for entering block graphics characters and UDGs.
+
+@{h2}EDIT
+Brings up the editing options menu.
+
+@{h2}TRUE VIDEO
+Moves the cursor 1 word to the left.
+
+@{h2}INV VIDEO
+Moves the cursor 1 word to the right.
+
+@{h2}EXTEND followed by left arrow
+Moves the cursor to the start of the BASIC line.
+
+@{h2}EXTEND followed by right arrow
+Moves the cursor to the end of the BASIC line.
+
+@{h2}EXTEND followed by up arrow
+Moves the cursor up by 10 screen lines.
+
+@{h2}EXTEND followed by down arrow
+Moves the cursor down by 10 screen lines.
+
+@{h2}EXTEND followed by CAPS LOCK
+Moves the cursor to the start of the program.
+
+@{h2}EXTEND followed by GRAPH
+Moves the cursor to the end of the program.
+
+@{h2}DELETE
+Deletes the character to the left of the cursor.
+
+@{h2}EXTEND followed by DELETE
+Deletes the character under the cursor.
+
+@{h2}EXTEND followed by TRUE VIDEO
+Deletes to the start of the current word.
+
+@{h2}EXTEND followed by INV VIDEO
+Deletes to the end of the current word.
+
+@{h2}EXTEND followed by 9
+Deletes to the start of the BASIC line.
+
+@{h2}EXTEND followed by 0
+Deletes to the end of the BASIC line.

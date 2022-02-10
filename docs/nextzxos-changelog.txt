@@ -1,3 +1,181 @@
+v2.07: 2022-02-19
+=================
+* Bugfixes:
+  + Fix for issue in tokeniser where keywords would be detected 9 chars into
+    an identifier (so variable names such as A23456789IN couldn't be entered).
+  + Fix LIST n to set editor listing to last line of program if n > last line.
+  + Fixed FAT short name matching algorithm to ensure any non-ASCII characters
+    present in short names are properly supported.
+  + Files/directories named "." or ".." can no longer be created in the root
+    of FAT drives.
+  + Fix for long-standing +3DOS bug (present in +3) which allowed read-only
+    files to be opened in update mode.
+  + Fixed %RND 0 to always return 0 (broken by NextZXOS v2.06J).
+  + Fix for issue where renumber could attempt to "renumber" statements such
+    as SPRITE RUN if they directly followed an ELSE keyword.
+  + Fix for crash when BANK..ERASE used with a length of 1.
+
+* Legacy software compatibility improvements:
+  + .TAP/.TZX loaders now remember and use the last chosen settings, so ENTER
+    in the Browser starts loading the game immediately. Settings can be
+    modified by holding SYMBOL-SHIFT when pressing ENTER.
+  + Specific joystick preferences (including user-defined "keyboard joysticks")
+    can now be set for each game, and are saved with the .TAP/.TZX settings.
+  + Switched to automatic DivMMC paging using new core 3.01.10 features, allowing
+    completely unpatched ROMs when running 48K/128K software.
+  + NMI and snapshot loading take advantage of new core 3.01.10 features to
+    avoid any bytes on the stack being overwritten.
+  + Snapshots are now saved in .Z80 format instead of .SNA. This is better at
+    capturing machine state.
+  + New 3.01.10 core feature used to trap all +3 FDC i/o accesses.
+  + Allow filenames to include - $ ( ) & ! which are used by some CP/M software
+    even though they are marked as not allowed in CP/M documentation.
+  + Fix for intermittent crashes loading TAP/TZX files in 128K mode, due to
+    bug in original 128K Spectrum ROM which enables interrupts too early.
+  + Various minor legacy software compatibility improvements.
+
+* NMI enhancements:
+  + ZX80/ZX81 snapshots can now be saved and re-loaded (in .Z80 format).
+  + Added new nextregs plus core & os version info to the Debug Status page.
+  + Added support for redefining new "keyboard joysticks" in Settings.
+
+* Menu system enhancements:
+  + Added 128K BASIC, ZX80 BASIC and ZX81 BASIC options to the main menu.
+  + Added single-key shortcuts throughout NextZXOS menus (can be made more
+    visible by pressing EXTEND).
+  + Added guides for NextZXOS, NextBASIC, Command Line and Calculator,
+    accessible from new options in the menus.
+  + Menus are now user-definable, using a new enMenus.cfg configuration
+    file. Full details in the new NextZXOS guide.
+
+* Editor enhancements:
+  + Added configurable editor colour schemes (also used by the menu system),
+    which can be set with new .EDITPREFS dot command or by selecting a .ecs
+    file from the Browser.
+  + Added coloured syntax highlighting in the 32-column editor mode, dependent
+    on the currently-selected editor colour scheme.
+
+* Browser enhancements:
+  + Added configurable Browser colour schemes, which can be set with the
+    new .BROWSEPREFS dot command or by selecting a .bcs file from the Browser.
+  + Added new "Order" display mode to determine how the Browser sorts the
+    directory:
+      * name (default)
+      * file size
+      * date & time
+      * none (unsorted, as previously)
+    Sort orders can also be reversed by pressing + or -
+    Sorting can be aborted by pressing BREAK.
+  + Added new "Search" option which provides an incremental search on filename
+    (only available when sorting by name).
+  + Added new "Info" display mode to switch between what additional file
+    information is shown:
+      * nothing (default)
+      * file sizes
+      * date & time
+      * attributes
+  + Added new "Mix" display mode option. By default this is on, with files
+    and directories listed together (as previously). If it is turned off,
+    directories will be listed first and will not be affected by any filter
+    (enabling easier navigation when a filter is set).
+  + Added new "Name" action to display the full long filename of the
+    currently-highlighted file or directory.
+  + Added support for runnable directories (with extension .run, containing
+    run.bas file to be automatically loaded).
+  + Added support for "links" to other files/directories. These can be added
+    to C:/Links which can be quickly accessed by pressing L.
+  + Added support for showing guide for currently-highlighted filename
+    (or internal documentation of runnable directories) when G is pressed.
+    If no suitable guide is available, the Browser guide is shown.
+  + Copy/paste is enhanced to allow renaming of file when pasted (thus allowing
+    copies of files to be made in the same directory).
+  + Added "Move", allowing files/directories to be moved (and optionally
+    renamed) to another location on the same drive.
+  + Added new "extended actions" menu, accessed by pressing EXTEND. This
+    provides context-sensitive additional actions for the currently-selected
+    file or directory, configurable using the c:/nextzxos/enBrowsext.cfg file.
+    Initially-provided actions are:
+      * Edit
+      * Text2BAS
+      * BAS2Text
+      * Hexdump
+      * MakeRUN
+      * MakeLink
+      * Catalog
+      * Clear
+      * Mount
+      * Defrag
+      * +/-PROT
+      * +/-SYS
+  + Added additional filtering options:
+      * press S to toggle showing system files
+      * press . to toggle showing "." and ".." special directory entries
+      * press { to toggle showing metadata (eg saved settings for .TAP/.TZXs)
+  + Browser.cfg now accepts multiple extension matches on each line
+    (separated by commas), and extensions are no longer case-sensitive.
+  + If a launched program is successfully executed, return to the Browser is
+    now immediate, no longer requiring the user to press a key at "OK" report.
+  + Default layer/sprite/palette is set on entry to the Browser to ensure the
+    display is not left in an unexpected state when launching software.
+  + No longer allow actions to be attempted if no file is highlighted.
+  + Added support for changing user areas on +3DOS drives.
+
+* Dot command changes:
+  + Added .MAKERUN for creating runnable directories. It accepts any filetype
+    supported by the Browser for the executable file, and .GDE, .TXT, .DOC or
+    .MD documentation.
+  + Added .BROWSEPREFS for setting the display and filtering preferences in
+    the Browser.
+  + Added .EDITPREFS for setting editor/menu system preferences.
+  + Added new --filter option to .BROWSE to allow a temporary file filter
+    to be enabled.
+  + Removed .ASSOCIATE. With the changes to browser.cfg, this would be
+    considerably more difficult to support and use. Since we now have native
+    text editors such as .QE it is also no longer so useful.
+
+* Filesystem enhancements:
+  + Complete refactoring with new abstraction layer separating filesystem
+    modules (currently FAT, CPM/+3DOS) from APIs (currently esxDOS, +3DOS).
+    This allows all programs using either API to access files on any filesystem,
+    so that (for example) dot commands can now work with files on the RAMdisk
+    or mounted .P3D/.DSK images.
+  + Time/datestamps are now set when modifying files on +3DOS filesystems
+  + Exact filesizes and time/datestamps are now provided for +3DOS filesystems
+    by the IDE_GET_LFN call. These therefore are now shown correctly in the
+    Browser and CAT/LS commands.
+  + . can now be used in pathnames to refer to the current directory on FAT
+    drives even for the root directory.
+  + Wildcards can now be used in any part of a path and will match the first
+    directory found. eg CAT "c:/g*/next/orb/o*.*"
+
+* NextBASIC enhancements:
+  + The CAT/DIR/LS command now sorts its results by name (sorting may be
+    aborted by pressing BREAK).
+  + Improved information provided by CAT TAB and CAT ASN.
+  + Integer expression evaluator optimisations.
+  + Floating-point expression evaluator optimisations.
+  + %CODE pseudo-variable added to control optional features.
+    Setting bit 0 changes %RND n to return a value between 0..n (rather than
+    0..n-1 as previously); this allows full 16-bit range of values to be
+    returned with %RND 65535.
+
+* API enhancements:
+  + DOS_CATALOG +3DOS call and F_OPENDIR/F_READDIR esxDOS hooks now provide
+    optional sorting and filtering facilities.
+  + IDE_BROWSER call now provides a way to obtain or change the current
+    Browser preferences.
+  + IDE_WINDOW_LINEIN call now allows easy interruption and continuation of
+    input, and input to screen in any layer/mode.
+  + IDE_SWAP_OPEN now allows any unfragmented file to be specified as a swap
+    file, intended for fast access to application-provided resource files.
+  + IDE_DOS_MAPPING can now return full path info for mounted filesystems.
+
+* Miscellaneous:
+  + Welcome program is now distributed as AUTOEXEC.1ST to avoid overwriting
+    a user's AUTOEXEC.BAS when updating SD card with new version of NextZXOS.
+    Both files are loaded automatically (if present).
+
+
 v2.06N 2020-10-14
 =================
 * Reverted attempted fix for Calculator issues in v2.06J, which caused a
@@ -624,7 +802,7 @@ v2.03a (2019-11-10)
   The standard way to access arrays remains:
     A(x)        where A is an array name A..Z and x is an element number 0..63
   If a 1-dimensional array with more than 64 elements is required, use:
-    A[x]        where A is the base array name A..Z and x is an element number. 
+    A[x]        where A is the base array name A..Z and x is an element number.
                 If the element number is 64, then the first element of the next
                 array is used and so on. So if you need up to 128 elements,
                 and use E[x] with x=0..127, you should not use array F() since

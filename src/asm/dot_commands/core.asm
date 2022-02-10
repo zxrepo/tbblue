@@ -2,7 +2,6 @@
 ; * Dot command to reboot to an alternative core                            *
 ; ***************************************************************************
 
-Z80N    equ     1
 include "macros.def"
 include "nexthw.def"
 
@@ -186,7 +185,7 @@ core_checksum_loop:
         push    de                      ; save address of workspace destination
         ldir                            ; copy launcher to workspace
         pop     hl                      ; HL=address of launcher
-        jp      (hl)                    ; execute it
+        rst     $20                     ; terminate dot command and execute it
 
 
 ; ***************************************************************************
@@ -335,7 +334,7 @@ perform_option_end:
 option_mismatch:
         ld      a,b                     ; A=remaining characters to skip
 skip_option:
-        addhl_A()                       ; skip the option name
+        addhl_A_badFc()                 ; skip the option name
         inc     hl                      ; and the routine address
         inc     hl
         jr      check_next_option
@@ -343,7 +342,7 @@ skip_option:
 invalid_option:
         ld      hl,temparg-1
         ld      a,c
-        addhl_A()
+        addhl_A_badFc()
         set     7,(hl)                  ; set error terminator at end of option
         ld      hl,msg_unknownoption
         jp      err_custom
@@ -418,8 +417,6 @@ command_tail:
 
 coreboot_launcher:
         di
-        xor     a
-        out     (div_memctl),a          ; page out DivMMC
         nxtregn nxr_altrom,$d0          ; lock AltROM0 for writing
         addhl_N coreboot_struct-coreboot_launcher
         ld      de,0

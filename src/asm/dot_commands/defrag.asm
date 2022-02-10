@@ -3,7 +3,6 @@
 ; * .defrag filename                                                        *
 ; ***************************************************************************
 
-Z80N    equ     1
 include "macros.def"
 include "nexthw.def"
 

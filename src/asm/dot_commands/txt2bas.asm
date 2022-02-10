@@ -2,8 +2,6 @@
 ; * Dot command to convert plain text .TXT files to BASIC .BAS format       *
 ; ***************************************************************************
 
-
-Z80N    equ     1
 include "macros.def"
 include "nexthw.def"
 
@@ -346,7 +344,12 @@ txt2bas_end:
         call    write_output_file       ; write the output
         ld      a,(fhandle_txt)
         callesx f_close                 ; close the input file
-        jp      error_handler           ; and exit with its error status
+        ld      hl,(syntax_fails)
+        ld      a,h
+        or      l
+        jp      z,error_handler         ; exit with Fc=0 if no syntax errors
+        ld      hl,msg_synerrs          ; otherwise cause an error
+        jp      err_custom
 
 tokenise_error:
         ld      hl,msg_tokenfail
@@ -1075,7 +1078,7 @@ output_append:
         pop     ix                      ; IX=length
         ld      de,bank_output0
         ld      a,(bufout_bank)
-        addde_A()
+        addde_A_badFc()
         ld      a,(de)
         ld      b,a                     ; B=current output buffer bank id
         ld      de,(bufout_addr)        ; DE=current output buffer address
@@ -1119,7 +1122,7 @@ new_output_bank:
         ld      a,(hl)
         cp      MAX_OUTPUT_BANKS
         jr      nc,out_of_memory        ; don't allocate too many banks
-        addde_A()                       ; DE=address to store bank id
+        addde_A_badFc()                 ; DE=address to store bank id
         push    de
         call    allocate_bank           ; get a new bank
         pop     de
@@ -1421,7 +1424,7 @@ perform_option_end:
 option_mismatch:
         ld      a,b                     ; A=remaining characters to skip
 skip_option:
-        addhl_A()                       ; skip the option name
+        addhl_A_badFc()                 ; skip the option name
         inc     hl                      ; and the routine address
         inc     hl
         jr      check_next_option
@@ -1429,7 +1432,7 @@ skip_option:
 invalid_option:
         ld      hl,temparg-1
         ld      a,c
-        addhl_A()
+        addhl_A_badFc()
         set     7,(hl)                  ; set error terminator at end of option
         ld      hl,msg_unknownoption
         jp      err_custom
@@ -1496,7 +1499,7 @@ option_always_write:
 ; TAB 32 used within help message so it is formatted wide in 64/85 column mode.
 msg_help:
 ;                01234567890123456789012345678901
-        defm    "TXT2BAS v1.5 by Garry Lancaster",$0d
+        defm    "TXT2BAS v1.6 by Garry Lancaster",$0d
         defm    "Convert text file to BASIC",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    ".TXT2BAS [OPT] TXTFILE [BASFILE]",$0d,$0d
@@ -1576,6 +1579,9 @@ msg_badline:
 
 msg_banklength:
         defm    "Too large for ban",'k'+$80
+
+msg_synerrs:
+        defm    "Syntax error",'s'+$80
 
 msg_progwritten:
 msg_toomanyprognames:
