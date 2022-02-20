@@ -1,8 +1,8 @@
 @title Browser Guide
 @author Garry Lancaster
-@version 1.05
+@version 1.06
 @copyright Copyright (C)2022 Garry Lancaster
-@date 2022/02/04
+@date 2022/02/20
 @----------------------------------------------------------------------------
 @node MAIN
 @next SCREEN
@@ -30,6 +30,7 @@ Otherwise, this guide will be shown.
 @{"Using the Browser from NextBASIC" LINK DOTBROWSE}
 @{"Using the Browser from machine-code" LINK IDEBROWSER}
 @{"Current limitations" LINK LIMITATIONS}
+@{"Filename metadata" LINK FILEMETA}
 @----------------------------------------------------------------------------
 @node SCREEN
 @prev MAIN
@@ -535,6 +536,7 @@ For further information, see the NextZXOS API documentation in
 @----------------------------------------------------------------------------
 @node LIMITATIONS
 @prev IDEBROWSER
+@next FILEMETA
 @toc MAIN
 @{r}Browser Guide
 @{c}@{h1}Current Limitations
@@ -563,3 +565,103 @@ have a couple of limitations.
 
   Additionally, not all files will have date/timestamps, if they were created
   when an RTC module was not fitted.
+@----------------------------------------------------------------------------
+@node FILEMETA
+@prev LIMITATIONS
+@toc MAIN
+@{r}Browser Guide
+@{c}@{h1}Filename metadata
+
+The @{i}Browser@{ui} by default hides parts of filenames that contain metadata
+used by other programs to encode additional information about the file that
+cannot be contained within the file body itself.
+
+This is currently only used by the .TAP/.TZX/.SNA/.Z80 loaders, but metadata
+will be hidden in any filename if it conforms to the expected format, so other
+programs could use their own metadata if desired.
+
+Filename metadata takes the following form:
+
+        @{i}filename@{ui}@{b}{metadata-contentsXX}@{ub}@{i}.ext@{ui}
+
+where @{i}filename.ext@{ui} is what will be displayed when metadata is being hidden.
+
+The @{b}XX@{ub} field is a 2-digit hexadecimal value (letters A..F must be uppercased)
+which encodes the total length of the metadata (in characters) including the
+enclosing @{b}{@{ub} and @{b}}@{ub} characters.
+
+The remainder of the @{b}metadata-contents@{ub} are specific to the program
+using the metadata, and are not assigned meaning by the @{i}Browser@{ui}.
+
+@{h2}Metadata for .TAP/.TZX/.SNA/.Z80 files
+The @{b}metadata-contents@{ub} for .TAP/.TZX/.SNA/.Z80 files is defined as
+follows:
+@{b}
+Offset          Meaning@{ub}
++0..+4          Identifier string, "LOAD="
++5              Load mode (ASCII code of key used to start loading)
++6              Execution speed ('0'=3.5MHz, '1'=7MHz, '2'=14MHz, '3'=28MHz)
++7..+8          Hex-coded byte:
+                bit 7:  DAC mono Specdrum enable
+                bit 6:  DAC mono GS covox enable
+                bit 5:  DAC mono Pentagon/atm enable
+                bit 4:  DAC stereo covox enable
+                bit 3:  DAC stereo profi covox enable
+                bit 2:  DAC soundrive mode 2 enable
+                bit 1:  DAC soundrive mode 1 enable
+                bit 0:  AY in 48K mode enable
++9..+10         Hex-coded byte:
+                bit 7:  DMA enable
+                bit 6:  Timex port ff enable
+                bit 5:  issue 2 keyboard enable
+                bit 4:  printer support enable
+                bit 3:  UART/i2c enable
+                bit 2:  mouse enable
+                bit 1:  ULAplus enable
+                bit 0:  LOAD "" CODE mode (TAP/TZX only)
++11..+12        Hex-coded byte:
+                bit 7:  load via Pi audio (TAP only)
+                bit 6:  pause at loading screens (TAP only)
+                bit 5:  tape loading simulation (TAP only)
+                bit 4:  0 (reserved)
+                bit 3:  0 (reserved)
+                bit 2:  0 (reserved)
+                bit 1:  0 (reserved)
+                bit 0:  0 (reserved)
++13..+14        Hex-coded byte:
+                bits 7..4:  joystick left mode
+                bits 3..0:  joystick right mode
+
+                Joystick modes are:     0=leave as default
+                                        1=Sinclair 2
+                                        2=Kempston 1
+                                        3=Cursor
+                                        4=Sinclair 1
+                                        5=Kempston 2
+                                        6=MD 1
+                                        7=MD 2
+                                        8=Keyjoy
+
+If joystick left mode=8, there follow 11 ASCII keycodes
+If joystick right mode=8, there follow 11 ASCII keycodes
+
+Joystick keycodes are listed in the following order:
+        +0      up
+        +1      down
+        +2      left
+        +3      right
+        +4      fire/B
+        +5      fire 2/C
+        +6      start
+        +7      button A
+        +8      button X
+        +9      button Y
+        +10     button Z
+
+Joystick keycode values are:
+        A..Z    letter keys
+        0..9    number keys
+        e       ENTER
+        c       CAPS SHIFT
+        s       SYMBOL SHIFT
+        _       SPACE
