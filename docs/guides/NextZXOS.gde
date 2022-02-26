@@ -1,8 +1,8 @@
 @title NextZXOS Guide
 @author Garry Lancaster
-@version 1.00
+@version 1.01
 @copyright Copyright (C)2022 Garry Lancaster
-@date 2022/02/19
+@date 2022/02/26
 
 @----------------------------------------------------------------------------
 @node MAIN
@@ -329,6 +329,16 @@ containing the following values:
 +90..91 palette data: BRIGHT PAPER 5
 +92..93 palette data: BRIGHT PAPER 6
 +94..95 palette data: BRIGHT PAPER 7
+
+Note that all 6 attributes between +8..+12 (menu item colours) should usually
+be different to avoid strange behaviour when the menu highlight bar is moved.
+You can, however, have the same background AND highlight colour for different
+menu items.
+
+For example, if the value at +8 (highlighted menu text) is the same as the
+value at +10 (highlighted menu shortcuts), then the value at +9 (background
+menu text) must also be the same as the value at +11 (background menu
+shortcuts).
 
 Note that palette data is in the format: 1st byte:RRRGGGBB, 2nd byte:0000000B
 Note also that the palette data can be omitted, and the standard palette will

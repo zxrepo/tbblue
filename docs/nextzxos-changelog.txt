@@ -1,3 +1,26 @@
+v2.07a: 2022-02-26
+==================
+* Bugfixes:
+  + Dot commands can now be stored in c:/dot or c:/bin, with the c:/dot
+    version being used in preference. This allows dot commands created with
+    the esxDOS .LAUNCHER command to be found.
+  + Implemented M_AUTOLOAD esxDOS hook code, allowing dot commands created
+    with .LAUNCHER and similar (eg .SPECASM) to successfully run.
+  + Change dot commands to use same DivMMC RAM bank as esxDOS v0.8.9, since
+    .zxzvm expects this.
+  + Allowed LOAD * etc commands (with same behaviour as LOAD etc) to allow
+    some esxDOS BASIC loaders to run unchanged (fixes .zxzvm).
+  + Added workarounds to allow .GRAMON to run successfully.
+  + Fixed Browser to recognise BASIC and SCREEN$ files without a .BAS/.SCR
+    extension, by interrogating +3DOS header information.
+  + Fix for colour scheme issues when a used colour matched the current
+    global transparency colour.
+  + Fixed editor to ignore line 0 if present in a program, as this could
+    previously cause a hang.
+  + Fixed encoding of CODE mode in .TAP file metadata.
+* Minor documentation updates.
+
+
 v2.07: 2022-02-19
 =================
 * Bugfixes:
