@@ -6,14 +6,14 @@ Current versions
 |Title |Version|  
 |---	|--:	|  
 |*System/Next*| **-.-.-** |  
-|*NextZXOS*|**2.07**|  
+|*NextZXOS*|**2.07a**|  
 |*Core*|**3.01.10**	|  
 |*Firmware*|**1.31**|  
   
   
 Contributor Requests
 ====================
-If you wish to contribute to the distribution, a request via gitlab is not 
+If you wish to contribute to the distribution, a request via gitlab is not
 the only step you need to take; you need to get in touch with one of the other
 contributors and describe the nature of your planned contribution.  
 This is a necessary step as this is the **official** distribution and legality / licenses
