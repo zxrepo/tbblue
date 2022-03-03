@@ -77,12 +77,12 @@ clear_finish:
         and     a                       ; Fc=0, successful
         ret
 
+clear_start:
 
 ; ***************************************************************************
 ; * Uninstall drivers                                                       *
 ; ***************************************************************************
 
-clear_start:
         ld      bc,$817f                ; C=max driver id; B=$81, shutdown
 uninstall_loop:
         push    bc
@@ -95,6 +95,21 @@ uninstall_loop:
         pop     bc
         dec     c
         jr      nz,uninstall_loop
+
+; ***************************************************************************
+; * Restore default interrupt modes, turn off expansion                     *
+; ***************************************************************************
+
+        im      1                       ; interrupt mode 1
+        nxtregn nxr_lineint_control,0   ; standard ULA interrupt only
+        nxtregn nxr_int_en0,$81         ; ULA interrupts, exp /INT
+        nxtregn nxr_int_en1,0           ; no CTC interrupts
+        nxtregn nxr_int_en2,0           ; no UART interrupts
+        nxtregn nxr_dmaint_en0,0        ; no DMA interruptions
+        nxtregn nxr_dmaint_en1,0        ; no DMA interruptions
+        nxtregn nxr_dmaint_en2,0        ; no DMA interruptions
+        nxtregn nxr_expbus_enable,0     ; disable expansion bus
+        nxtregn nxr_expbus_ctrl,0
 
 ; ***************************************************************************
 ; * Deallocate ZX memory allocated for non-BASIC purposes                   *
@@ -232,7 +247,7 @@ saved_turbo:
 ; ***************************************************************************
 
 msg_help:
-        defm    "CLEAR v1.0 by Garry Lancaster",$0d
+        defm    "CLEAR v1.1 by Garry Lancaster",$0d
         defm    "Releases all allocated resources",$0d
         defm    "leaving maximum available memory",$0d,$0d
         defm    "NOTE: Uses integer register %a",$0d,$0d
