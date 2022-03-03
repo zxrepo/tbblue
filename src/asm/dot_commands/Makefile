@@ -26,6 +26,7 @@ all:
 	$(ASM) core.asm $(BUILDDIR)/CORE core.sym
 	$(ASM) makerun.asm $(BUILDDIR)/MAKERUN makerun.sym
 	$(ASM) makelnk.asm $(BUILDDIR)/MAKELNK makelnk.sym
+	$(ASM) clear.asm $(BUILDDIR)/CLEAR clear.sym
 
 clean:
 	$(RM) -rf $(BUILDDIR)
