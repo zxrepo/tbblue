@@ -1,3 +1,25 @@
+v2.07b: 2022-03-06
+==================
+* Added .CLEAR dot command to release all allocated resources.
+* Bugfixes:
+  + Fix for crash if a tape loading error occurred during a LOAD..BANK command
+    from cassette or .TAP.
+  + Fix for crash in renumber if certain dot commands had previously been run
+    (due to stack-in-DivMMC overwriting part of BASIC overlay).
+  + Fix for Tape Loader failing to start if "welcome" program has just been
+    run.
+  + Fixed short name generation for long filenames containing spaces that
+    would otherwise still fit in 8.3 (eg, "eyes out.bas" would incorrectly
+    generate a short name of EYESOUT.BAS; it now generates EYESOU~1.BAS).
+  + Fixed error-reporting from DISK_FILEMAP for cases where SD no longer
+    accessible.
+* Optimisations:
+  + Improved performance of copies from system DivMMC memory to dot command
+    memory.
+  + Implemented built-in .$ command functionality to avoid need to load the
+    .$ dot command as well as the target dot command.
+
+
 v2.07a: 2022-02-26
 ==================
 * Bugfixes:
