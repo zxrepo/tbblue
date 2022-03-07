@@ -1,3 +1,10 @@
+v2.07c: 2022-03-07
+==================
+* Fixed F_GETCWD hook, which would often incorrectly return a "not found" or
+  "bad filename" error if trying to obtain working directory for a drive
+  (rather than for a supplied filespec).
+
+
 v2.07b: 2022-03-06
 ==================
 * Added .CLEAR dot command to release all allocated resources.
