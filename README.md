@@ -6,7 +6,7 @@ Current versions
 |Title |Version|  
 |---	|--:	|  
 |*System/Next*| **-.-.-** |  
-|*NextZXOS*|**2.07c**|  
+|*NextZXOS*|**2.07d**|  
 |*Core*|**3.01.10**	|  
 |*Firmware*|**1.31**|  
   

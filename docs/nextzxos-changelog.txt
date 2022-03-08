@@ -1,3 +1,9 @@
+v2.07d: 2022-03-08
+==================
+* Fixed off-by-1 error causing overwrite of byte in user memory from F_GETCWD
+  hook. This fixes issues in DoYouLove demo and NextDAW.
+
+
 v2.07c: 2022-03-07
 ==================
 * Fixed F_GETCWD hook, which would often incorrectly return a "not found" or
