@@ -1,3 +1,9 @@
+v2.07e: 2022-03-11
+==================
+* Fixed SPRITE command to allow relative coordinates in range -128 to +127
+  (previously, only -127 to +127 was permitted).
+
+
 v2.07d: 2022-03-08
 ==================
 * Fixed off-by-1 error causing overwrite of byte in user memory from F_GETCWD
