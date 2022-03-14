@@ -1,3 +1,14 @@
+v2.07f: 2022-03-14
+==================
+* Fixed save/restore of transparency, sprite and palette control registers
+  when applying editor/Browser colour schemes.
+* Fixed ability of dot commands to trap some "out of memory" errors, leaving
+  the system incorrectly thinking they were still running.
+* Revised .INSTALL and .UNINSTALL to allocate a bank for their workspace
+  rather than taking memory from BASIC. This allows them to be run from larger
+  programs.
+
+
 v2.07e: 2022-03-11
 ==================
 * Fixed SPRITE command to allow relative coordinates in range -128 to +127

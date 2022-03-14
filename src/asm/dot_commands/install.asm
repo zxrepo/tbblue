@@ -72,9 +72,6 @@ f_read                  equ     $9d             ; read file
 m_drvapi                equ     $92             ; driver API
 m_p3dos                 equ     $94             ; call +3DOS API
 
-; ROM 3 routines
-BC_SPACES_r3            equ     $0030           ; allocate workspace
-
 ; File access modes
 esx_mode_read           equ     $01             ; read access
 esx_mode_open_exist     equ     $00             ; open existing files only
@@ -90,10 +87,7 @@ drv_header_len          equ     8               ; size of .DRV header
 ; +3DOS API calls
 ide_bank                equ     $01bd           ; bank allocation
 
-; Next registers
-nxr_mmu1                equ     $51
-div_memctl              equ     $e3
-
+include "nexthw.def"
 include "macros.def"
 
 
@@ -158,23 +152,33 @@ install_start:
 ; * Allocate workspace memory in main RAM                                   *
 ; ***************************************************************************
 
-        ld      hl,(fileheader+5)       ; L=#relocs
-        ld      h,0
-        add     hl,hl                   ; HL=size of relocations
-        inc     h                       ; +512 for driver
-        inc     h
-        push    hl                      ; save size of driver+relocs
-        inc     h                       ; +512 for bank lists
-        inc     h
-        inc     h                       ; +512 for preload buffer
-        inc     h
-        ld      b,h
-        ld      c,l
-        rst     $18
-        defw    BC_SPACES_r3            ; allocate workspace memory for driver
-                                        ; returns with BC unchanged, DE=address
-
-        ex      de,hl                   ; HL=address for list of MMC banks
+        ld      hl,$0001                ; allocate a ZX bank
+        exx                             ; place params in alternates
+        ld      de,ide_bank
+        ld      c,7
+        rst     $08
+        defb    m_p3dos                 ; call IDE_BANK
+        jp      nc,out_of_memory        ; on if error
+        ld      a,e
+        ld      (workspace_bank),a      ; save bank id
+        ld      hl,0
+        add     hl,sp
+        ld      a,h
+        cp      $c0
+        ld      d,nxr_mmu7              ; use MMU7 for workspace if SP<$c000
+        ld      hl,$e000
+        jr      c,use_mmu
+        ld      d,nxr_mmu4              ; use MMU4 if SP>=$c000
+        ld      hl,$8000
+use_mmu:
+        ld      bc,next_reg_select
+        out     (c),d
+        inc     b
+        in      a,(c)
+        out     (c),e                   ; page in allocated bank for workspace
+        ld      e,a                     ; E=previously-paged bank
+        ld      (workspace_mmubank),de  ; save previous bank & MMU id
+                                        ; HL=address for list of MMC banks
         ld      (mmcbanklist_addr),hl
         inc     h                       ; HL=address of list of ZX banks
         ld      (zxbanklist_addr),hl
@@ -183,14 +187,20 @@ install_start:
         inc     h
         inc     h                       ; HL=address to load driver+reloc
         ld      (driver_addr),hl
-        pop     bc                      ; BC=size of driver+relocs
 
 
 ; ***************************************************************************
 ; * Read the driver into newly-allocated workspace                          *
 ; ***************************************************************************
-; HL=(driver_addr) from above, BC=size of driver+relocs
 
+        ld      hl,(fileheader+5)       ; L=#relocs
+        ld      h,0
+        add     hl,hl                   ; HL=size of relocations
+        inc     h                       ; +512 for driver
+        inc     h
+        ld      b,h                     ; BC=size of driver+relocs
+        ld      c,l
+        ld      hl,(driver_addr)
         ld      a,(filehandle)
         rst     $08
         defb    f_read                  ; read the driver+relocs
@@ -272,9 +282,8 @@ install_start:
 ; ***************************************************************************
 
 install_success:
-        ld      a,(filehandle)
-        rst     $08
-        defb    f_close                 ; close the file
+        call    close_and_deallocate    ; close file, free workspace bank
+        xor     a                       ; Fc=0, success
         ei                              ; re-enable interrupts
         ret
 
@@ -306,9 +315,7 @@ translate_drvapi_err:
 exit_error:
         push    af                      ; save error status
         push    hl
-        ld      a,(filehandle)
-        rst     $08
-        defb    f_close                 ; close the file
+        call    close_and_deallocate    ; close file, free workspace bank
         ld      hl,(mmcbanklist_addr)
         ld      d,1                     ; rc_banktype_mmc
         ld      a,(mmcbanksvalid)
@@ -322,6 +329,33 @@ exit_error:
         pop     hl                      ; restore error status
         pop     af
         ei                              ; re-enable interrupts
+        ret
+
+
+; ***************************************************************************
+; * Close file and free workspace bank                                      *
+; ***************************************************************************
+
+close_and_deallocate:
+        ld      a,(filehandle)
+        rst     $08
+        defb    f_close                 ; close the file
+        ld      hl,(workspace_mmubank)  ; get previous bank & MMU id
+        ld      a,h
+        and     a
+        ret     z                       ; nothing to do if MMU id not valid
+        ld      bc,next_reg_select
+        out     (c),h
+        inc     b
+        out     (c),l                   ; restore MMU binding
+        ld      a,(workspace_bank)
+        ld      e,a                     ; E=allocated workspace bank
+        ld      hl,$0003                ; free ZX bank
+        exx                             ; place params in alternates
+        ld      de,ide_bank
+        ld      c,7
+        rst     $08
+        defb    m_p3dos                 ; call IDE_BANK
         ret
 
 
@@ -395,6 +429,7 @@ alloc_failed:
         pop     hl                      ; discard number to allocate
         pop     hl                      ; discard address of number
         pop     hl                      ; discard return address
+out_of_memory:
         ld      hl,msg_allocerror
         jr      err_custom
 
@@ -807,6 +842,14 @@ fileheader:
 filesig:
         defm    "NDRV"
 
+workspace_mmubank:
+        defb    0
+workspace_mmuid:
+        defb    0
+
+workspace_bank:
+        defb    0
+
 mmcbanksvalid:
         defb    0
 
@@ -872,7 +915,7 @@ msg_initfail:
         defm    "Driver init faile",'d'+$80
 
 msg_help:
-        defm    "INSTALL v1.3 by Garry Lancaster",$0d
+        defm    "INSTALL v1.4 by Garry Lancaster",$0d
         defm    "Installs a NextZXOS driver",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    " .INSTALL NAME.DRV",$0d,0
