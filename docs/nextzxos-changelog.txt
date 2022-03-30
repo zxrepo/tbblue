@@ -1,3 +1,10 @@
+v2.07g: 2022-03-30
+==================
+* Fixed snapshot loading bug which led to NMI options using the Browser
+  hanging with "Processing" if a snapshot was loaded after power-on before
+  the NMI menu had been entered normally (uninitialised data issue).
+
+
 v2.07f: 2022-03-14
 ==================
 * Fixed save/restore of transparency, sprite and palette control registers
