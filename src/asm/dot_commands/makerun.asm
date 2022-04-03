@@ -341,6 +341,8 @@ gen_line_loop:
         jr      z,gen_line_done         ; or terminator
         cp      $60                     ; backtick? (pound/currency symbol on ZX)
         jr      z,gen_currency          ; convert to currency code if so
+        cp      $7f                     ; copyright symbol?
+        jr      z,gen_sysdir            ; insert c:/nextzxos/ if so
         cp      '|'                     ; vertical bar? (insert filename)
         jr      z,gen_filename
 gen_line_next_char:
@@ -354,6 +356,20 @@ gen_currency:
         ld      a,(lang_code+1)
         ld      (de),a                  ; append 2nd language code char
         jr      gen_line_next_char
+
+gen_sysdir:
+        push    hl
+        ld      hl,msg_sysdir
+gen_sysdir_loop:
+        ld      a,(hl)
+        ld      (de),a                  ; copy path character
+        inc     hl
+        inc     de
+        and     a
+        jr      nz,gen_sysdir_loop      ; until null-terminator
+        dec     de                      ; back up to replace terminator
+        pop     hl
+        jr      gen_line_loop
 
 gen_filename:
         push    hl                      ; save handler address
@@ -949,7 +965,7 @@ reclaim_line:
 ; ***************************************************************************
 
 msg_help:
-        defm    "MAKERUN v1.0 by Garry Lancaster",$0d
+        defm    "MAKERUN v1.1 by Garry Lancaster",$0d
         defm    "Converts the current directory",$0d
         defm    "into a runnable directory.",$0d,$0d
         defm    "A RUN.BAS file that loads the",$0d
@@ -994,6 +1010,9 @@ msg_tokenfail:
 
 msg_nodirname:
         defm    "No directory nam",'e'+$80
+
+msg_sysdir:
+        defm    "c:/nextzxos/",0
 
 
 ; ***************************************************************************
