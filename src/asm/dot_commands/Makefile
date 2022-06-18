@@ -27,6 +27,7 @@ all:
 	$(ASM) makerun.asm $(BUILDDIR)/MAKERUN makerun.sym
 	$(ASM) makelnk.asm $(BUILDDIR)/MAKELNK makelnk.sym
 	$(ASM) clear.asm $(BUILDDIR)/CLEAR clear.sym
+	$(ASM) metadata.asm $(BUILDDIR)/METADATA metadata.sym
 
 clean:
 	$(RM) -rf $(BUILDDIR)

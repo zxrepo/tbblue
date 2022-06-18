@@ -1,8 +1,8 @@
 @title Browser Guide
 @author Garry Lancaster
-@version 1.06
+@version 1.07
 @copyright Copyright (C)2022 Garry Lancaster
-@date 2022/02/20
+@date 2022/06/18
 @----------------------------------------------------------------------------
 @node MAIN
 @next SCREEN
@@ -140,15 +140,9 @@ Press @{b}S@{ub} to toggle whether or not system/hidden files are shown. The @{b
 indicator lights or dims appropriately.
 
 @{h2}Filename metadata
-Press @{b}{@{ub} to toggle whether or not special filename metadata is shown.
-This metadata is enclosed within @{i}{@{ui} braces @{i}}@{ui}, and is used by some programs
+Press @{b}{@{ub} to toggle whether or not special @{"filename metadata" LINK FILEMETA} is shown.
+This metadata is enclosed within @{i}{@{ui} braces @{i}}@{ui}, and can be used by some programs
 to store additional information.
-
-For example, when you first load a @{i}TAP@{ui} or @{i}TZX@{ui} file, the loader stores
-information about which options you selected to load it with (eg 48K/128K mode)
-so that the next time it is loaded, these options can be automatically set.
-(Don't forget that you can press @{b}SYMBOL-SHIFT@{ub} and @{b}ENTER@{ub} to change
-your choices in the loader.)
 
 @{h2}. and .. directories
 Press @{b}.@{ub} to toggle whether or not the special @{i}.@{ui} and @{i}..@{ui} directory entries
@@ -580,28 +574,47 @@ This is currently only used by the .TAP/.TZX/.SNA/.Z80 loaders, but metadata
 will be hidden in any filename if it conforms to the expected format, so other
 programs could use their own metadata if desired.
 
+By default, the loaders don't use the filename to store metadata, but maintain
+it in the metadata cache (c:/nextzxos/metadata). However, you can choose to
+store the metadata in the filename from the loader's options screen. This
+makes it easy to distribute a single .TAP/.TZX/.SNA/.Z80 file to others
+complete with the appropriate settings.
+
+You can also set bit 1 of the special @{i}%FORMAT@{ui} variable if you want the
+loaders to store metadata in the filename by default rather than the metadata
+cache. To do this, add a command such as the following to your @{i}autoexec.bas@{ui}:
+        @{b}10 %FORMAT=BIN 10@{ub}
+
+See the @{i}NextZXOS@{ui} guide (from the main menu) for more information on
+filesystem options provided by @{b}%FORMAT@{ub}.
+
+A dot command, @{b}.METADATA@{ub}, is provided to easily read or write any metadata
+for files to the metadata cache and/or filename. Type @{b}.METADATA@{ub} at the
+command line for full details.
+
 Filename metadata takes the following form:
 
-        @{i}filename@{ui}@{b}{metadata-contentsXX}@{ub}@{i}.ext@{ui}
+        @{i}filename@{ui}@{b}{keyname=metadata-contentsXX}@{ub}@{i}.ext@{ui}
 
 where @{i}filename.ext@{ui} is what will be displayed when metadata is being hidden.
 
-The @{b}XX@{ub} field is a 2-digit hexadecimal value (letters A..F must be uppercased)
-which encodes the total length of the metadata (in characters) including the
-enclosing @{b}{@{ub} and @{b}}@{ub} characters.
+The @{b}keyname@{ub} field is an identifier for the type of metadata stored in the
+filename.
+
+The @{b}XX@{ub} field is a 2-digit hexadecimal value which encodes the total length
+of the metadata (in characters) including the enclosing @{b}{@{ub} and @{b}}@{ub} characters.
 
 The remainder of the @{b}metadata-contents@{ub} are specific to the program
 using the metadata, and are not assigned meaning by the @{i}Browser@{ui}.
 
 @{h2}Metadata for .TAP/.TZX/.SNA/.Z80 files
-The @{b}metadata-contents@{ub} for .TAP/.TZX/.SNA/.Z80 files is defined as
-follows:
+The key name used for these files is @{b}LOAD@{ub} and the @{b}metadata-contents@{ub}
+are defined as follows:
 @{b}
 Offset          Meaning@{ub}
-+0..+4          Identifier string, "LOAD="
-+5              Load mode (ASCII code of key used to start loading)
-+6              Execution speed ('0'=3.5MHz, '1'=7MHz, '2'=14MHz, '3'=28MHz)
-+7..+8          Hex-coded byte:
++0              Load mode (ASCII code of key used to start loading)
++1              Execution speed ('0'=3.5MHz, '1'=7MHz, '2'=14MHz, '3'=28MHz)
++2..+3          Hex-coded byte:
                 bit 7:  DAC mono Specdrum enable
                 bit 6:  DAC mono GS covox enable
                 bit 5:  DAC mono Pentagon/atm enable
@@ -610,7 +623,7 @@ Offset          Meaning@{ub}
                 bit 2:  DAC soundrive mode 2 enable
                 bit 1:  DAC soundrive mode 1 enable
                 bit 0:  AY in 48K mode enable
-+9..+10         Hex-coded byte:
++4..+5          Hex-coded byte:
                 bit 7:  DMA enable
                 bit 6:  Timex port ff enable
                 bit 5:  issue 2 keyboard enable
@@ -619,7 +632,7 @@ Offset          Meaning@{ub}
                 bit 2:  mouse enable
                 bit 1:  ULAplus enable
                 bit 0:  LOAD "" CODE mode (TAP/TZX only)
-+11..+12        Hex-coded byte:
++6..+7          Hex-coded byte:
                 bit 7:  load via Pi audio (TAP only)
                 bit 6:  pause at loading screens (TAP only)
                 bit 5:  tape loading simulation (TAP only)
@@ -628,7 +641,7 @@ Offset          Meaning@{ub}
                 bit 2:  0 (reserved)
                 bit 1:  0 (reserved)
                 bit 0:  0 (reserved)
-+13..+14        Hex-coded byte:
++8..+9          Hex-coded byte:
                 bits 7..4:  joystick left mode
                 bits 3..0:  joystick right mode
 

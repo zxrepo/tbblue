@@ -1,8 +1,8 @@
 @title NextZXOS Guide
 @author Garry Lancaster
-@version 1.01
+@version 1.03
 @copyright Copyright (C)2022 Garry Lancaster
-@date 2022/02/26
+@date 2022/06/18
 
 @----------------------------------------------------------------------------
 @node MAIN
@@ -16,10 +16,12 @@ of its features.
 @{"Menus" LINK MENUS}
 @{"Main menu options" LINK MAINMENU}
 @{"More menu options" LINK MOREMENU}
+@{"Interface 2 menu options" LINK IF2MENU}
 @{"NMI menu" LINK NMIMENU}
 @{"Configuration - autoexec.bas" LINK AUTOEXEC}
 @{"Configuration - colour schemes" LINK SCHEMES}
 @{"Configuration - menus" LINK MENUSCFG}
+@{"Configuration - file system options" LINK FORMATCFG}
 @----------------------------------------------------------------------------
 @node MENUS
 @prev MAIN
@@ -86,7 +88,7 @@ Switches to the @{"more menu" LINK MOREMENU}.
 @----------------------------------------------------------------------------
 @node MOREMENU
 @prev MAINMENU
-@next NMIMENU
+@next IF2MENU
 @toc MAIN
 @{r}NextZXOS Guide
 @{c}@{h1}More Menu
@@ -104,6 +106,12 @@ If you have trouble loading cassette-based software, use this option to help
 adjust the volume to an appropriate level. When the tape you wish to load is
 playing, the coloured square on the volume indicator bar should move over
 towards the right-hand side of the screen. Press @{b}SPACE@{ub} or @{b}BREAK@{ub} to exit.
+
+@{h2}Interface 2
+Switches to the @{"Interface 2 menu" LINK IF2MENU}, for activating a @{i}Sinclair Interface 2@{ui}
+(or a clone such as the @{i}RAM Turbo@{ui} or @{i}Dandanator@{ui}).
+@{b}WARNING:@{ub} Do not plug/unplug any interfaces or cartridges whilst the Next is
+switched on.
 
 @{h2}CP/M
 @{i}CP/M@{ui} is a complete operating system for 8-bit computers with a huge amount
@@ -125,22 +133,42 @@ kindly provided by @{i}Paul Farrow@{ui}. Most NextZXOS features are unavailable
 in this mode, but the @{"NMI menu" LINK NMIMENU} can be used. Further information can be
 found at @{i}http://www.fruitcake.plus.com@{ui}.
 
-@{h2}48K ROM cart
-If you have a @{i}Sinclair Interface 2@{ui} (or clone such as the @{i}RAM Turbo@{ui}) attached
-to your Next, this will start up any currently-inserted ROM cartridge.
-@{b}WARNING:@{ub} Do not plug/unplug any interfaces or cartridges whilst the Next is
-switched on.
-
-@{h2}128K ROM cart
-Similar to the previous option, but starts the cartridge with the Spectrum in
-128K mode, needed to run 128K software that can be loaded on some custom ROM
-cartridges (such as @{i}Paul Farrow@{ui}'s @{i}ZXC4@{ui}, or the @{i}ZX Dandanator@{ui}).
-
 @{h2}More
 Switches back to the @{"main menu" LINK MAINMENU}.
 @----------------------------------------------------------------------------
-@node NMIMENU
+@node IF2MENU
 @prev MOREMENU
+@next NMIMENU
+@toc MAIN
+@{r}NextZXOS Guide
+@{c}@{h1}Interface 2 Menu
+
+This menu allows you to start up ROM cartridges inserted in an attached
+@{i}Sinclair Interface 2@{ui} (or a clone such as the @{i}RAM Turbo@{ui} or @{i}Dandanator@{ui}).
+
+@{b}WARNING:@{ub} Do not plug/unplug any interfaces or cartridges whilst the Next is
+switched on.
+
+@{h2}48K Cart only
+Starts up a standard cartridge. The joystick ports on the @{i}Interface 2@{ui}
+will @{b}not@{ub} be activated. Instead, you can use the built-in joystick ports
+at the front of the Next, which will be configured as @{i}Sinclair@{ui} types.
+
+@{h2}48K Cart+joys
+Starts up a standard cartridge, and enables the @{i}Interface 2@{ui} joystick ports.
+The Next's own joystick ports will be configured as @{i}MD1@{ui}/@{i}MD2@{ui} types.
+
+@{h2}128K Cart only
+@{h2}128K Cart+joys
+Similar to the previous options, but starts the cartridge with the Spectrum in
+128K mode, needed to run 128K software that can be loaded on some custom ROM
+cartridges (such as @{i}Paul Farrow@{ui}'s @{i}ZXC4@{ui}, or the @{i}ZX Dandanator@{ui}).
+
+@{h2}Back
+Switches back to the @{"more menu" LINK MOREMENU}.
+@----------------------------------------------------------------------------
+@node NMIMENU
+@prev IF2MENU
 @next AUTOEXEC
 @toc MAIN
 @{r}NextZXOS Guide
@@ -346,6 +374,7 @@ be used.
 @----------------------------------------------------------------------------
 @node MENUSCFG
 @prev SCHEMES
+@next FORMATCFG
 @toc MAIN
 @{r}NextZXOS Guide
 @{c}@{h1}Configuration - menus
@@ -420,6 +449,7 @@ don't include a particular menu in your file, the standard one will be used.
         2           NextBASIC options menu
         3           Calculator options menu
         4           Command Line options menu
+        5           Interface 2 menu
 
 You can include as many other menus as you like, and link to them from other
 menus using the @{i}m@{ui} action. Future versions of NextZXOS might add further menus,
@@ -442,3 +472,33 @@ The following internal actions are available:
         8            Perform clear
         9            Exit from editors to main menu
         10           Start Browser
+@----------------------------------------------------------------------------
+@node FORMATCFG
+@prev MENUSCFG
+@toc MAIN
+@{r}NextZXOS Guide
+@{c}@{h1}Configuration - file system options
+
+Some default filesystem-related behaviour can be configured using the special
+@{b}%FORMAT@{ub} integer variable.
+
+This is a 16-bit variable, with each bit controlling a particular behaviour.
+The default value when @{i}NextZXOS@{ui} starts up is 0. If you prefer
+different default settings, you can place a line such as the following in
+your @{"autoexec.bas" LINK AUTOEXEC} file:
+@{b}
+        10 %FORMAT=BIN 10
+@{ub}
+This sets bit 1 of the variable (store loader metadata in filenames) and leaves
+all other bits set to 0 (default behaviour).
+
+@{h2}%FORMAT bits
+The following behaviour occurs for each bit in @{b}%FORMAT@{ub}:
+
+        @{b}Bit@{ub}     @{b}Behaviour@{ub}
+        0       If set, suppresses automatic backup file (.BAK) creation
+        1       If set, loaders write metadata to filenames by default
+
+Other bits are reserved for future use and should be left as zeroes.
+
+

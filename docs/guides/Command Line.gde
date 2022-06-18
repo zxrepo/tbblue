@@ -1,8 +1,8 @@
 @title Command Line Guide
 @author Garry Lancaster
-@version 1.00
+@version 1.01
 @copyright Copyright (C)2022 Garry Lancaster
-@date 2022/02/19
+@date 2022/05/26
 @----------------------------------------------------------------------------
 @node MAIN
 @next OPTIONS
@@ -27,6 +27,12 @@ own help. This is most often seen simply by typing the dot command without
 any options, or with a @{b}-h@{ub} or @{b}--help@{ub} option. eg:
         @{b}.editprefs@{ub}
         @{b}.ls --help@{ub}
+
+The command line editor shows various syntax items (dot commands, strings etc)
+in different colours depending upon the currently-selected editor colour
+scheme. For more information on editor colour schemes, see the @{b}NextZXOS@{ub} guide,
+found on the main menu. Note that syntax-highlighting colours are currently
+only supported for 32-character editing mode.
 
 Pressing @{b}EDIT@{ub} brings up a @{"menu" LINK OPTIONS} for further options.
 @----------------------------------------------------------------------------

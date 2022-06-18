@@ -1,3 +1,44 @@
+v2.07h: 2022-06-18
+==================
+* Added "Manual entry" option for POKEs in the NMI menu, so POKEs listed in
+  magazines can be more easily entered (issue 62).
+* Moved Interface 2 ROM cartridge options to a separate sub-menu. The default
+  options now set the Next's joystick ports to Sinclair1/2 so standard ROM
+  cartridge games can be played with them. Alternative options enable the
+  Interface 2 ports as Sinclair1/2 and set the Next's ports to MD1/2.
+* Implemented pointer operations for window channels (and mode windows), so
+  RETURN #n TO var/DIM #n TO var/GOTO #n,pos can be used. In all cases, the
+  x pos/size is in the low 16 bits and the y pos/size is in the high 16 bits.
+  Positions/sizes are in pixels. Therefore GOTO #n,y*65536+x is equivalent
+  to PRINT #n;POINT x,y;
+* Added .METADATA dot command for handling file metadata in filenames or
+  metadata cache (c:/nextzxos/metadata).
+* TAP/TZX/SNA/Z80 loaders now save settings to metadata cache by default.
+* Added %FORMAT special variable to control optional filesystem behaviour.
+  + bit 0 suppresses automatic .BAK file creation (issue 68)
+  + bit 1 causes loaders to save settings to filename by default
+* Fix for issues 64/67: corruption of BASIC program on exit to menu if editor
+  in Timex hi-res mode.
+* Fix for issue 65: BANK..LIST should not change current NextBASIC editor line.
+* Fix for issue 66: guides from menu could be obscured by layer 2 screen.
+* Fix for issue 69: joystick ports are now configured as MD1 at reset so they
+  work in menus/Browser.
+* Fix for browser.cfg not being parsed correctly if line-endings were not CRLF.
+* Fix scroll routine for compatibility with PAW+3.
+* Fix to prevent directory being moved inside itself.
+* Fixed F_SEEK to correctly clamp to file size if pointer>size.
+* Fixed DISK_FILEMAP hook to generate error if filemap buffer < $4000.
+* Fixed "Bad filename" error generation on +3DOS filesystems.
+* Fix for corrupted byte at 0x8000 or 0xe000 if .INSTALL failed (eg driver
+  already installed).
+* Fixed .MKDATA/.MKSWAP to place filemap buffer > $4000.
+* Fixed .MAKERUN to properly deal with (c) symbol in browser.cfg.
+* Ensure bit 7 of nextreg 2 is always preserved by NextZXOS so that ESP can be
+  held in reset even when performing soft resets/starting ROM cartridges etc.
+* Documentation (pdf/odt) updates.
+* Guide updates.
+
+
 v2.07g: 2022-03-30
 ==================
 * Fixed snapshot loading bug which led to NMI options using the Browser

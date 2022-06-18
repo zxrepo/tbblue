@@ -530,17 +530,18 @@ check_fragmentation:
         callesx f_seek                  ; seek to start of file
         pop     af
         push    af
-        ld      hl,filemap_buffer
+        ld      hl,(bufferaddr)
         ld      bc,1
         callesx f_read                  ; read 1 byte to ensure starting cluster
         pop     af
-        ld      hl,filemap_buffer
+        ld      hl,(bufferaddr)
         ld      de,filemap_size
         callesx disk_filemap
         ret     c
-        ld      de,filemap_buffer+6
+        ld      de,(bufferaddr)
+        addde_N 6
         sbc     hl,de                   ; Fz=1 if unfragmented
-        ret     nc                      ; exit if 1+ entries in buffer
+        ret     nc                      ; success if 1+ entries in buffer
         xor     a                       ; if 0 entries in buffer, Fc=0 & Fz=1
         ret
 
@@ -686,7 +687,7 @@ endif
 
 msg_help:
 if MKDATA
-        defm    "MKDATA v1.3 by Garry Lancaster",$0d,$0d
+        defm    "MKDATA v1.4 by Garry Lancaster",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    " .MKDATA FILENAME [SIZE]",$0d,$0d
         defm    "INFO:",$0d
@@ -799,9 +800,6 @@ old_caps:
 
 tmpfilehandle:
         defb    $ff
-
-filemap_buffer:
-        defs    filemap_size*6          ; needs 6 bytes per entry
 
 temp_num:
         defw    0                       ; number of current temporary file

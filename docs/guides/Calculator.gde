@@ -1,8 +1,8 @@
 @title Calculator Guide
 @author Garry Lancaster
-@version 1.00
+@version 1.01
 @copyright Copyright (C)2022 Garry Lancaster
-@date 2022/02/19
+@date 2022/05/26
 @----------------------------------------------------------------------------
 @node MAIN
 @next OPTIONS
@@ -24,6 +24,12 @@ When you press @{b}ENTER@{ub} the expression is evaluated and the answer is
 displayed on the following line. You can use the answer in a further expression
 by typing directly after it. Alternatively, press @{b}ENTER@{ub} to start a
 new line and begin entering a new expression.
+
+The calculator editor shows various syntax items (numbers, symbols etc)
+in different colours depending upon the currently-selected editor colour
+scheme. For more information on editor colour schemes, see the @{b}NextZXOS@{ub} guide,
+found on the main menu. Note that syntax-highlighting colours are currently
+only supported for 32-character editing mode.
 
 Pressing @{b}EDIT@{ub} brings up a @{"menu" LINK OPTIONS} for further options.
 @----------------------------------------------------------------------------

@@ -372,7 +372,7 @@ opt1_a: defw    show_usage
 
 ; TAB 32 used within help message so it is formatted wide in 64/85 column mode.
 msg_help:
-        defm    "CORE v0.1 by Garry Lancaster",$0d
+        defm    "CORE v0.2 by Garry Lancaster",$0d
         defm    "Boot an alternative core",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    ".CORE [OPT] CORENAME [FILE]",$0d,$0d
@@ -422,7 +422,14 @@ coreboot_launcher:
         ld      de,0
         ld      bc,128
         ldir                            ; copy struct into AltROM0
-        nxtregn nxr_reset,2             ; hard reset
+        ld      bc,next_reg_select
+        ld      a,nxr_reset
+        out     (c),a
+        inc     b
+        in      a,(c)                   ; get current reset settings
+        and     %10000000               ; preserve exp bus reset
+        or      %00000010               ; hard reset
+        out     (c),a
 
 coreboot_struct:
         defm    "COREBOOT"

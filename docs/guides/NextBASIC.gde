@@ -1,8 +1,8 @@
 @title NextBASIC Guide
 @author Garry Lancaster
-@version 1.00
+@version 1.01
 @copyright Copyright (C)2022 Garry Lancaster
-@date 2022/02/19
+@date 2022/05/26
 @----------------------------------------------------------------------------
 @node MAIN
 @next EDITOR
@@ -29,6 +29,12 @@ card in @{b}/docs/nextzxos@{ub}.
 The editor shows a partial listing of the current NextBASIC program on the
 screen. You can move around the listing using the arrow keys (or the special
 @{"editing keys" LINK EDITKEYS}, and modify or add program lines.
+
+The program listing shows various syntax items (keywords, line numbers etc)
+in different colours depending upon the currently-selected editor colour
+scheme. For more information on editor colour schemes, see the @{b}NextZXOS@{ub} guide,
+found on the main menu. Note that syntax-highlighting colours are currently
+only supported for 32-character editing mode.
 
 To add a new program line, move the cursor to a blank screen line (pressing
 @{b}ENTER@{ub} will insert a new blank line for you after the current program line),

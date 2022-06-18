@@ -315,7 +315,6 @@ translate_drvapi_err:
 exit_error:
         push    af                      ; save error status
         push    hl
-        call    close_and_deallocate    ; close file, free workspace bank
         ld      hl,(mmcbanklist_addr)
         ld      d,1                     ; rc_banktype_mmc
         ld      a,(mmcbanksvalid)
@@ -326,6 +325,7 @@ exit_error:
         ld      a,(zxbanksvalid)
         and     a
         call    nz,deallocate_banks     ; deallocate if valid
+        call    close_and_deallocate    ; close file, free workspace bank
         pop     hl                      ; restore error status
         pop     af
         ei                              ; re-enable interrupts
@@ -915,7 +915,7 @@ msg_initfail:
         defm    "Driver init faile",'d'+$80
 
 msg_help:
-        defm    "INSTALL v1.4 by Garry Lancaster",$0d
+        defm    "INSTALL v1.5 by Garry Lancaster",$0d
         defm    "Installs a NextZXOS driver",$0d,$0d
         defm    "SYNOPSIS:",$0d
         defm    " .INSTALL NAME.DRV",$0d,0
