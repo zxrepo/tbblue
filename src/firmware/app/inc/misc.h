@@ -41,6 +41,5 @@ void disable_bootrom();
 unsigned long get_core_ver();
 unsigned long get_fattime();
 unsigned char getCoreBoot();
-void readFlash(unsigned int startPage, unsigned char offset, unsigned char *pBuffer, unsigned int pages);
 
 #endif // _MISC_H

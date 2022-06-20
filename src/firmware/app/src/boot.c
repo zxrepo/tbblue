@@ -29,12 +29,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "videomagic.h"
 #include "videotest.h"
 #include "switch.h"
+#include "flash.h"
 
 FATFS           FatFs;          /* FatFs work area needed for each volume */
 FIL             Fil;            /* File object needed for each open file */
 FRESULT         res;
 
-unsigned char * FW_version = "1.31 ";
+unsigned char * FW_version = "1.40";
 
 // minimal required for this FW
 unsigned long minimal = 0x03010a; // 03 01 0a = 3.01.10
@@ -187,7 +188,7 @@ void check_coreversion()
         REG_NUM = REG_RAMPAGE;
         REG_VAL = RAMPAGE_ROMSPECCY + 1;
         l = (FSIZE_t)8896*s[mach_id >> 4];
-        readFlash(0x07dd, 0x40, 0x0000, 16*4);
+        readFlash(boards[boardId].coreBlocks - 1, 0x5d, 0x40, 0x0000, 16*4);
 
         current = get_core_ver();
 
@@ -442,30 +443,20 @@ unsigned char keyjoy_default[11] = {
         0b00000010,     // X
 };
 
-void load_keyjoys()
-{
-        unsigned int i, k;
-
-        for (i = 0; i < 2; i++)
-        {
-                REG_NUM = REG_KMHA;
-                REG_VAL = 0x80;
-                REG_NUM = REG_KMLA;
-                REG_VAL = i << 4;
-
-                for (k = 0; k < 11; k++)
-                {
-                        REG_NUM = REG_KMLD;
-                        REG_VAL = keyjoy_default[k];
-                }
-        }
-}
-
 void main()
 {
         // Always run at 28MHz.
         REG_NUM = REG_TURBO;
         REG_VAL = 3;
+
+        // Start with PS/2 mode=keyboard until a personality is chosen.
+        // This allows users with PS/2 keyboard only to enter settings and
+        // change PS/2 mode. Those with just a PS/2 mouse will be using the
+        // membrane keyboard, so will also be fine.
+        // Anyone with both a PS/2 keyboard and mouse that has them connected
+        // around the opposite way is on their own.
+        REG_NUM = REG_PERIPH2;
+        REG_VAL = 0xa0;
 
         vdp_init();
         disable_bootrom();
@@ -496,6 +487,7 @@ void main()
         }
 
         // Show the boot screen
+        detectBoard();
         check_coreversion();
         display_bootscreen();
 
@@ -581,7 +573,7 @@ void main()
 
         // NOTE: Keymap must be loaded before ROMs as it uses the same SRAM.
         load_keymap();
-        load_keyjoys();
+        load_keyjoys(keyjoy_default);
         load_roms();
         init_registers();
 
@@ -593,7 +585,14 @@ void main()
         for (cont = 0; cont < 0xffff; cont++);
 
         REG_NUM = REG_RESET;
-        REG_VAL = RESET_SOFT;                           // Soft-reset
+        if (settings[eSettingESPReset])
+        {
+                REG_VAL = RESET_ESPBUS + RESET_SOFT;
+        }
+        else
+        {
+                REG_VAL = RESET_SOFT;
+        }
 
         for(;;);
 }

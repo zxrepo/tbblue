@@ -37,16 +37,16 @@ LDFLAGS = -mz80 --code-loc 0x6010 --data-loc 0 --no-std-crt0
 ROFLAGS = -D_FS_READONLY=1 -D_FS_MINIMIZE=1
 RWFLAGS = -D_FS_READONLY=0 -D_FS_MINIMIZE=2
 
-_OBJS0 = crt0.rel boot.rel vdp.rel vdplow.rel spi.rel diskio.rel ffro.rel misc.rel modules.rel config.rel fwfile.rel switch.rel videomagic.rel
+_OBJS0 = crt0.rel boot.rel vdp.rel vdplow.rel spi.rel flash.rel diskio.rel ffro.rel misc.rel modules.rel config.rel fwfile.rel switch.rel videomagic.rel
 OBJS0 = $(patsubst %,$(ODIR)/%,$(_OBJS0))
 
 _OBJS1 = crt0.rel editor.rel vdp.rel spi.rel diskio.rel ff.rel misc.rel config.rel configw.rel
 OBJS1 = $(patsubst %,$(ODIR)/%,$(_OBJS1))
 
-_OBJS2 = crt0.rel updater.rel vdp.rel spi.rel diskio.rel ffro.rel misc.rel config.rel
+_OBJS2 = crt0.rel updater.rel vdp.rel spi.rel flash.rel flashw.rel diskio.rel ffro.rel misc.rel config.rel
 OBJS2 = $(patsubst %,$(ODIR)/%,$(_OBJS2))
 
-_OBJS3 = crt0.rel cores.rel vdp.rel spi.rel diskio.rel ffro.rel misc.rel config.rel
+_OBJS3 = crt0.rel cores.rel vdp.rel spi.rel flash.rel flashw.rel diskio.rel ffro.rel misc.rel config.rel
 OBJS3 = $(patsubst %,$(ODIR)/%,$(_OBJS3))
 
 _OBJS4 = crt0.rel videotest.rel vdp.rel spi.rel diskio.rel ff.rel misc.rel fwfile.rel config.rel configw.rel layers.rel videomagic.rel

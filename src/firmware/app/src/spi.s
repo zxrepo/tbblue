@@ -84,6 +84,24 @@ _SPI_send4bytes::
         ret
 
 ; ------------------------------------------------
+; Send 5 bytes to flash
+; ------------------------------------------------
+; void SPI_send5bytes(unsigned char *buffer)
+_SPI_send5bytes::
+        pop             bc
+        pop             hl
+        push    hl
+        push    bc
+
+        ld              c, #PORTSPI
+        ld              a, #0x7F
+        out             (#PORTCFG), a                   ; /CS = 0       11 T-States
+        .rept 5
+        outi                                            ;               16 T-States
+        .endm
+        ret
+
+; ------------------------------------------------
 ; Receive up to 256 bytes from flash
 ; ------------------------------------------------
 ; void SPI_receive(unsigned char *buffer, unsigned char pages)
@@ -106,19 +124,17 @@ spirecvloop:
         ret
 
 ; ------------------------------------------------
-; Writing data in flash (260 bytes)
+; Writing data in flash (256 bytes)
 ; ------------------------------------------------
-; void SPI_writebytes(unsigned char *buffer)
-_SPI_writebytes::
+; void SPI_write(unsigned char *buffer)
+_SPI_write::
         pop             bc
         pop             hl
         push    hl
         push    bc
 
         ld              c, #PORTSPI
-        ld              a, #0x7F
-        out             (#PORTCFG), a                   ; /CS = 0       11 T-States
-        .rept 260
+        .rept 256
         outi                                            ;               16 T-States
         .endm
         ld              a, #0xFF

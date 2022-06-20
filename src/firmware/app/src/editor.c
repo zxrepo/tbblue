@@ -115,24 +115,28 @@ const char * editName[eSettingMAX] =
         "BEEPer",               // eSettingBEEPMode
         "BtnSwap",              // eSettingMouseBtnSwap
         "MouseDPI",             // eSettingMouseDPI
+        "ESP Reset",            // eSettingESPReset
 };
 
 // ZX Spectrum Next
+const unsigned char linesNextZXOS = 5;
 unsigned char peripheralsNext[] =
 {
-        eSettingJoystick1,      eSettingPSGMode,
-        eSettingJoystick2,      eSettingStereoMode,
-        eSettingPS2,            eSettingTurboSound,
-        eSettingKMouse,         eSettingDAC,
-        eSettingIss23,          eSettingAY48,
-        eSettingFreq5060,       eSettingSpeakerMode,
-        eSettingScanlines,      eSettingBEEPMode,
-        eSettingScandoubler,    eSettingHDMISound,
-        eSettingDivMMC,         eSettingTimex,
-        eSettingDivPorts,       eSettingULAplus,
-        eSettingMF,             eSettingDMA,
-        eSettingMouseDPI,       eSettingUARTI2C,
-        eSettingMouseBtnSwap
+        // Settings honoured by NextZXOS
+        eSettingPS2,            eSettingHDMISound,
+        eSettingMouseDPI,       eSettingSpeakerMode,
+        eSettingMouseBtnSwap,   eSettingBEEPMode,
+        eSettingIss23,          eSettingStereoMode,
+        eSettingScanlines,      eSettingESPReset,
+
+        // Settings for other personalities only
+        eSettingJoystick1,      eSettingTurboSound,
+        eSettingJoystick2,      eSettingPSGMode,
+        eSettingKMouse,         eSettingAY48,
+        eSettingDivMMC,         eSettingDAC,
+        eSettingDivPorts,       eSettingTimex,
+        eSettingMF,             eSettingULAplus,
+        eSettingDMA,            eSettingUARTI2C,
 };
 
 const unsigned char itemsCountNext = sizeof(peripheralsNext) / sizeof(unsigned char);
@@ -252,6 +256,21 @@ static void printVal(unsigned char help)
         }
 }
 
+static unsigned char getItemLine(unsigned char item)
+{
+        lin = (item >> 1);
+        if (lin < linesNextZXOS)
+        {
+                lin += LI_ITEMS;
+        }
+        else
+        {
+                lin += LI_ITEMS + 3;
+        }
+        return lin;
+}
+
+
 static void show_peripherals()
 {
         vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
@@ -260,7 +279,9 @@ static void show_peripherals()
         vdp_prints(TITLE);
         vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_LCYAN);
         vdp_gotoxy(0, 2);
-        vdp_prints("Options:\n");
+        vdp_prints("Options (always used):\n");
+        vdp_gotoxy(0, 5 + linesNextZXOS);
+        vdp_prints("Options (not used by NextZXOS):\n");
         vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_CYAN);
         vdp_gotoxy(0, 22);
                 //  12345678901234567890123456789012
@@ -272,7 +293,7 @@ static void show_peripherals()
 
         for (i = 0; i < itemsCount; i++)
         {
-                lin = (i >> 1) + LI_ITEMS;
+                lin = getItemLine(i);
                 col = ((i & 1) == 0) ? 0 : 16;
                 vdp_gotoxy(col, lin);
                 vdp_setfg(COLOR_WHITE);
@@ -351,7 +372,7 @@ static void readkeyb()
 static unsigned char iedit()
 {
         r = 0;
-        lin = l + LI_ITEMS;
+        lin = getItemLine(it);
         col = (c == 0) ? 9 : 25;
         while(1) {
                 vdp_gotoxy(col, lin);
@@ -461,9 +482,9 @@ init:
         vdp_prints(TITLE);
         vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_CYAN);
         vdp_gotoxy(0, 22);
-        vdp_prints("  Press 'E' to edit options    ");
+        vdp_prints("  Press SPACE to edit options  ");
         vdp_gotoxy(0, 23);
-        vdp_prints("        'C' for credits screen  ");
+        vdp_prints("         'C'  for credits screen");
         vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_GRAY);
         while(1) {
                 vdp_setfg(COLOR_LGREEN);
@@ -498,7 +519,7 @@ init:
                         display_about();
                         goto init;
                 }
-                else if (button_e) {
+                else if (button_space) {
                         show_peripherals();
                         mode_edit();
                         goto init;

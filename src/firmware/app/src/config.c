@@ -54,6 +54,7 @@ const char * settingName[eSettingMAX] =
         "beepmode",             // eSettingBEEPMode
         "buttonswap",           // eSettingMouseBtnSwap
         "mousedpi",             // eSettingMouseDPI
+        "espreset",             // eSettingESPReset
 };
 
 const unsigned char settingMaxValue[eSettingMAX] =
@@ -86,6 +87,7 @@ const unsigned char settingMaxValue[eSettingMAX] =
         MAX_BEEPMODE,           // eSettingBEEPMode
         MAX_BUTTONSWAP,         // eSettingMouseBtnSwap
         MAX_MOUSEDPI,           // eSettingMouseDPI
+        MAX_ESPRESET,           // eSettingESPReset
 };
 
 const unsigned char settingDefaults[eSettingMAX] =
@@ -118,6 +120,7 @@ const unsigned char settingDefaults[eSettingMAX] =
         0,                      // eSettingBEEPMode
         0,                      // eSettingMouseBtnSwap
         1,                      // eSettingMouseDPI
+        0,                      // eSettingESPReset
 };
 
 const unsigned char settingType[eSettingMAX] =
@@ -150,6 +153,7 @@ const unsigned char settingType[eSettingMAX] =
         eTypeBEEPMode,          // eSettingBEEPMode
         eTypeYesNo,             // eSettingMouseBtnSwap
         eTypeDPI,               // eSettingMouseDPI
+        eTypeYesNo,             // eSettingESPReset
 };
 
 unsigned char settings[eSettingMAX];
@@ -191,7 +195,7 @@ void parseword(unsigned int *pValue)
 
 void update_video_settings()
 {
-        unsigned char opc = 0;
+        unsigned char opc = 0xfa;       // keyjoy modes
 
         if (settings[eSettingFreq5060] == 1)    opc |= 0x04;
         if (settings[eSettingScandoubler] == 1) opc |= 0x01;
@@ -221,10 +225,57 @@ void update_video_settings()
 }
 
 
+unsigned char keyjoy_firmware[11] = {
+        0b00100010,     // right=8
+        0b00011100,     // left=5
+        0b00100100,     // down=6
+        0b00100011,     // up=7
+        0b00111000,     // fire/B=SPACE
+        0b00110000,     // fire2/C=ENTER
+        0b00001000,     // A=A
+        0b00101011,     // S=U
+        0b00101100,     // Y=Y
+        0b00111011,     // Z=N
+        0b00000011,     // X=C
+};
+
+void load_keyjoys(unsigned char *pKeyjoy)
+{
+        unsigned int i, k;
+
+        for (i = 0; i < 2; i++)
+        {
+                REG_NUM = REG_KMHA;
+                REG_VAL = 0x80;
+                REG_NUM = REG_KMLA;
+                REG_VAL = i << 4;
+
+                for (k = 0; k < 11; k++)
+                {
+                        REG_NUM = REG_KMLD;
+                        REG_VAL = pKeyjoy[k];
+                }
+        }
+}
+
 void reset_settings()
 {
+        unsigned char opc;
+
         // Default all options to something sensible
         memcpy(&settings, &settingDefaults, sizeof(settings));
+
+        // Hold the ESP in reset to start with
+        REG_NUM = REG_RESET;
+        REG_VAL = RESET_ESPBUS;
+
+        // Set the joystick ports to keyjoys
+        REG_NUM = REG_PERIPH1;
+        opc = REG_VAL;
+        REG_VAL = opc | 0xfa;
+
+        // Initialise the keyjoys
+        load_keyjoys(keyjoy_firmware);
 }
 
 void load_config()
@@ -338,15 +389,5 @@ void load_config()
 
         if (settings[eSettingMenuDefault] >= menu_cont) {
             settings[eSettingMenuDefault] = menu_cont - 1;
-        }
-
-        REG_NUM = REG_PERIPH2;
-        if (settings[eSettingPS2])
-        {
-                REG_VAL = 0xa4;
-        }
-        else
-        {
-                REG_VAL = 0xa0;
         }
 }

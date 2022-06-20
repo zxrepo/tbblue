@@ -89,14 +89,3 @@ unsigned char getCoreBoot()
 
         return (sum == COREBOOT_CHECKSUM);
 }
-
-void readFlash(unsigned int startPage, unsigned char offset, unsigned char *pBuffer, unsigned int pages)
-{
-        pBuffer[0] = cmd_read_bytes;
-        pBuffer[1] = startPage >> 8;
-        pBuffer[2] = startPage & 0xFF;
-        pBuffer[3] = offset;
-        SPI_send4bytes(pBuffer);
-        SPI_receive(pBuffer, pages);
-        SPI_cshigh();
-}

@@ -53,6 +53,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define MAX_BEEPMODE    1
 #define MAX_BUTTONSWAP  1
 #define MAX_MOUSEDPI    3
+#define MAX_ESPRESET    1
 
 #define MAX_TITLE       31      // inc null; 2 spaces get printed to left
 #define MAX_ROMNAME     15
@@ -88,6 +89,7 @@ enum {
         eSettingBEEPMode,
         eSettingMouseBtnSwap,
         eSettingMouseDPI,
+        eSettingESPReset,
 
         eSettingMAX
 };
@@ -131,6 +133,7 @@ void parsestring(char *pDest, unsigned int maxlen);
 void parsenumber(unsigned char *pValue);
 void parseword(unsigned int *pValue);
 void update_video_settings();
+void load_keyjoys(unsigned char *pKeyjoy);
 void reset_settings();
 void load_config();
 void save_config();

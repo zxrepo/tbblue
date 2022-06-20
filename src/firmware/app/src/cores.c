@@ -25,8 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "spi.h"
 #include "misc.h"
 #include "config.h"
-
-const char ce[5]   = "\\|/-";
+#include "flash.h"
 
 FATFS           FatFs;          /* FatFs work area needed for each volume */
 FIL             Fil, DatFil;    /* File object needed for each open file */
@@ -34,11 +33,8 @@ FRESULT         res;
 DIR             Dir;
 FILINFO         FilInfo;
 
-unsigned char   buffer[512];
-unsigned char   mach_id, mach_version,mach_version_sub;
-unsigned char   mach_ab = 0;
-unsigned char   cLed = 0;
-unsigned char   k, l, file_mach_id, file_mach_version, vma, vmi, cs, csc;
+extern unsigned char sectBuffer[512];
+unsigned char   k, l;
 unsigned int    bl, i, j;
 unsigned long   fsize, dsize;
 
@@ -51,7 +47,7 @@ unsigned long   fsize, dsize;
 #define MAX_TIME                9
 #define RESERVED_SLOTS          8
 #define MAX_CORE_SLOTS          (32-RESERVED_SLOTS)
-#define MAX_FILE_ITEMS          120
+#define MAX_FILE_ITEMS          80 // TODO not enough memory: 120
 #define CORES_TITLE             "  ZX Spectrum Next Extra Cores  "
 #define MENU_LINES              19
 #define MAX_USER_FILES          16
@@ -224,8 +220,8 @@ unsigned char parseBitstream(const char *bitptr)
 
 unsigned char readCoreHeader(unsigned char coreId)
 {
-        readFlash((coreId * 8) << 8, 0, buffer, 1);
-        return parseBitstream(buffer);
+        readFlash(coreId * boards[boardId].coreBlocks, 0, 0, sectBuffer, 1);
+        return parseBitstream(sectBuffer);
 }
 
 unsigned char findBitstreamSlot()
@@ -239,15 +235,15 @@ unsigned char findBitstreamSlot()
                 res = f_open(&Fil, line, FA_READ);
                 if (res == FR_OK)
                 {
-                        res = f_read(&Fil, buffer, 256, &bl);
+                        res = f_read(&Fil, sectBuffer, 256, &bl);
                         f_close(&Fil);
-                        if ((res == FR_OK) & (bl == 256) && parseBitstream(buffer))
+                        if ((res == FR_OK) & (bl == 256) && parseBitstream(sectBuffer))
                         {
                                 strncpy(bit_name, line, MAX_BIT_NAME);
                                 strncpy(bit_date, tmp_date, MAX_DATE);
                                 strncpy(bit_time, tmp_time, MAX_TIME);
 
-                                for (id = 0; id < MAX_CORE_SLOTS; id++)
+                                for (id = 0; id < boards[boardId].numCores - RESERVED_SLOTS; id++)
                                 {
                                         if (cores[id].dirname[0] == 0)
                                         {
@@ -271,63 +267,9 @@ unsigned char findBitstreamSlot()
         return 0;
 }
 
-
-void prepareErase()
-{
-        // Read flash ID
-        // EPCS4     = 0x12
-        // W25Q32BV  = 0x15
-        // W25Q128JV = 0x17
-        buffer[0] = cmd_read_id;
-        SPI_send4bytes(buffer);
-        SPI_receive(buffer, 1);
-        SPI_cshigh();
-
-        if ( (buffer[0] != 0x15) && (buffer[0] != 0x17) )
-        {
-                display_error("Flash not detected!");
-        }
-
-        vdp_prints("Erasing Flash: ");
-}
-
-void eraseBlock(unsigned char blockid)
-{
-        if (mach_id == HWID_ZXNEXT)
-        {
-                buffer[0] = cmd_erase_block64;
-                buffer[1] = blockid;
-                buffer[2] = 0x00;
-                buffer[3] = 0x00;
-
-                if (buffer[1] < 0x10)
-                {
-                        display_error("Attempt to erase < 0x10!");
-                }
-
-                SPI_sendcmd(cmd_write_enable);
-                SPI_send4bytes(buffer); // send the command to erase a 64kb block
-                SPI_cshigh();
-
-                REG_NUM = REG_DEBUG;
-                l = 0;
-
-                while ((SPI_sendcmd_recv(cmd_read_status) & 0x01) == 1) {
-                        vdp_putchar(ce[l]);
-                        vdp_putchar(8);
-                        l = (l + 1) & 0x03;
-
-                        //blink the debug cLed
-                        if (cLed == 0) cLed = 1; else cLed = 0; LED = cLed;
-
-                        for (i = 0; i < 5000; i++) ;
-                }
-        }
-}
-
 void eraseCore(unsigned char entry)
 {
-        unsigned char core_id = RESERVED_SLOTS+entry;
+        unsigned char coreId = RESERVED_SLOTS+entry;
 
         vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
         vdp_cls();
@@ -335,29 +277,37 @@ void eraseCore(unsigned char entry)
         vdp_prints(CORES_TITLE);
         vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
 
-        sprintf(line, "\n\nErasing core slot:  %02d\n\n", core_id);
+        sprintf(line, "\n\nErasing core slot:  %02d\n\n", coreId);
         vdp_prints(line);
 
-        prepareErase();
-        eraseBlock(core_id * 8);
-        vdp_prints(" OK\n");
+        if ((coreId < RESERVED_SLOTS) || (coreId >= boards[boardId].numCores))
+        {
+                vdp_prints("Invalid core id!\n");
+                vdp_prints("\n\nPress ENTER");
+                getEnter();
+                return;
+        }
+
+        eraseFlash(coreId * boards[boardId].coreBlocks, 1);
 
         vdp_prints("\n\nPress ENTER");
         getEnter();
 }
 
-unsigned char upgradeCore(unsigned char core_id, unsigned char *pName, unsigned char *pDirname)
+unsigned char upgradeCore(unsigned char entry, unsigned char *pName, unsigned char *pDirname)
 {
+        unsigned char coreId = RESERVED_SLOTS+entry;
+
         vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
         vdp_cls();
         vdp_setbg(COLOR_BLUE);
         vdp_prints(CORES_TITLE);
         vdp_setcolor(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
 
-        sprintf(line, "\n\nFlashing core:\n\n  \%02d: %s\n\n", core_id, pName);
+        sprintf(line, "\n\nFlashing core:\n\n  \%02d: %s\n\n", coreId, pName);
         vdp_prints(line);
 
-        if ((core_id < 2) || (core_id > 31))
+        if ((coreId < RESERVED_SLOTS) || (coreId >= boards[boardId].numCores))
         {
                 vdp_prints("Invalid core id!\n");
                 vdp_prints("\n\nPress ENTER");
@@ -379,58 +329,15 @@ unsigned char upgradeCore(unsigned char core_id, unsigned char *pName, unsigned 
         }
         else
         {
-                prepareErase();
+                unsigned long coreSecs = (f_size(&Fil)+511) >> 9;
 
-                for (bl = 0; bl < 8; bl++)
+                if (coreId == 0)
                 {
-                        eraseBlock((core_id * 8) + bl);
+                        display_error("Attempt to flash AB core!");
                 }
 
-                vdp_prints(" OK\n");
-                vdp_prints("Writing Flash: ");
-
-                dsize = (core_id * 8);
-                dsize = dsize << 16; // first core sector
-
-                l = 0;
-                while (!f_eof(&Fil))
-                {
-                        buffer[0] = cmd_write_bytes;
-                        buffer[1] = (dsize >> 16) & 0xFF;
-                        buffer[2] = (dsize >> 8) & 0xFF;
-                        buffer[3] = dsize & 0xFF;
-
-                        res = f_read(&Fil, buffer+4, 256, &bl);
-
-                        // the last block NOT EQUAL 256 - TO DO!!!
-                        //if (res != FR_OK || bl != 256)
-                        //{
-                        //      display_error("Error reading block!");
-                        //}
-                        if (buffer[1] < 0x10)
-                        {
-                                display_error("Attempt to write < 0x10!");
-                        }
-
-                        SPI_sendcmd(cmd_write_enable);
-                        SPI_writebytes(buffer);
-                        vdp_putchar(ce[l]);
-                        vdp_putchar(8);
-                        l = (l + 1) & 0x03;
-
-                        while ((SPI_sendcmd_recv(cmd_read_status) & 0x01) == 1);
-
-                        dsize += 256;
-
-                        //blink the debug cLed
-                        if (cLed == 0) cLed = 1; else cLed = 0; LED = cLed;
-                }
-                vdp_prints(" OK\n");
-
-                SPI_sendcmd(cmd_write_disable);
-
+                writeCore(coreId, &Fil, 0, coreSecs);
                 vdp_prints("Updated!\n");
-
                 f_close(&Fil);
         }
 
@@ -449,7 +356,7 @@ void readCores() {
         memset(cores, 0, MAX_CORE_SLOTS * sizeof(coreitem));
         memset(fileItems, 0, MAX_FILE_ITEMS * sizeof(fileitem));
 
-        for (id = 0; id < MAX_CORE_SLOTS; id++)
+        for (id = 0; id < boards[boardId].numCores - RESERVED_SLOTS; id++)
         {
                 if (readCoreHeader(RESERVED_SLOTS+id))
                 {
@@ -462,9 +369,7 @@ void readCores() {
 
         do {
                 f_readdir(&Dir, &FilInfo);
-                vdp_putchar(ce[l]);
-                vdp_putchar(8);
-                l = (l + 1) & 0x03;
+                flashProgress();
 
                 if (FilInfo.fname[0] && strncmp(FilInfo.fname, "NEXT", MAX_DIR_NAME))
                 {
@@ -830,7 +735,7 @@ unsigned char flashCore(unsigned char entry)
         }
         else if (file_entry < numFileItems)
         {
-                if (upgradeCore(RESERVED_SLOTS+entry, fileItems[file_entry].name, fileItems[file_entry].fname))
+                if (upgradeCore(entry, fileItems[file_entry].name, fileItems[file_entry].fname))
                 {
                         strncpy(cores[entry].name, fileItems[file_entry].name, MAX_CORE_NAME);
                         strncpy(cores[entry].dirname, fileItems[file_entry].fname, MAX_DIR_NAME);
@@ -916,7 +821,7 @@ void showBootCoreScreen()
                         {
                                 vdp_prints("Y");
                                 while ((HROW5 & 16) == 0);
-                                upgradeCore(RESERVED_SLOTS+core_entry, cores[core_entry].name, cores[core_entry].dirname);
+                                upgradeCore(core_entry, cores[core_entry].name, cores[core_entry].dirname);
                                 break;
                         }
 
@@ -1080,26 +985,21 @@ void bootCore()
         for (;;) ;
 }
 
-void main() {
-        //turn off the debug cLed
-        REG_NUM = REG_DEBUG;
-        REG_VAL = 0;
+void main()
+{
+        vdp_init();
+        detectBoard();
 
-        REG_NUM = REG_MACHID;
-        mach_id = REG_VAL;
-        REG_NUM = REG_VERSION;
-        mach_version = REG_VAL;
+        if (boardId != 0)
+        {
+                display_error("Only supported on issue 2!");
+        }
 
-        REG_NUM = REG_VERSION_SUB;
-        mach_version_sub = REG_VAL;
-
-        if (mach_id == HWID_ZXNEXT_AB)
+        if (machineAB)
         {
                 //can't work with AB, so hang
                 while (1){}
         }
-
-        vdp_init();
 
         vdp_setcolor(COLOR_BLACK, COLOR_BLUE, COLOR_WHITE);
         vdp_prints(CORES_TITLE);
@@ -1114,14 +1014,8 @@ void main() {
         // module).
         load_config();
 
-        if (mach_id != HWID_ZXNEXT)
-        {
-                vdp_prints("Not supported on this hardware!");
-                for (;;) ;
-        }
-
-        memset(buffer, 0, 512);
-        f_mount(&FatFs, "", 0);                         /* Give a work area to the default drive */
+        memset(sectBuffer, 0, 512);
+        f_mount(&FatFs, "", 0);
 
         readCores();
         file_name = 0;
@@ -1133,14 +1027,14 @@ void main() {
                 // Invalidate the magic for next time around.
                 pCoreBoot->magic[0] = 0;
 
-                for (core_entry = 0; core_entry < MAX_CORE_SLOTS; core_entry++)
+                for (core_entry = 0; core_entry < boards[boardId].numCores - RESERVED_SLOTS; core_entry++)
                 {
                         if (strncmp(pCoreBoot->dirname, cores[core_entry].dirname, COREBOOT_NAMES_SIZE) == 0)
                         {
                                 if (pCoreBoot->filename[0])
                                 {
-                                        strncpy(buffer, pCoreBoot->filename, COREBOOT_NAMES_SIZE);
-                                        file_name = buffer;
+                                        strncpy(sectBuffer, pCoreBoot->filename, COREBOOT_NAMES_SIZE);
+                                        file_name = sectBuffer;
                                 }
 
                                 bootCore();
@@ -1150,4 +1044,5 @@ void main() {
 
         core_entry = chooseCore();
         bootCore();
+
 }

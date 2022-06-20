@@ -28,19 +28,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define cmd_write_disable       0x04
 #define cmd_read_status         0x05
 #define cmd_read_bytes          0x03
+#define cmd_read_bytes_4b       0x13
 #define cmd_read_id             0xAB
 #define cmd_fast_read           0x0B
 #define cmd_write_status        0x01
 #define cmd_write_bytes         0x02
 #define cmd_erase_bulk          0xC7
+#define cmd_erase_block32       0x52
+#define cmd_erase_block32_4b    0x5C
+#define cmd_page_program        0x02
+#define cmd_page_program_4b     0x12
 #define cmd_erase_block64       0xD8            // Block Erase 64K
+#define cmd_address_3byte       0xE9
+#define cmd_address_4byte       0xB7
 
 void SPI_sendcmd(unsigned char cmd);
 void SPI_cshigh(void);
 unsigned char SPI_sendcmd_recv(unsigned char cmd);
 void SPI_send4bytes(unsigned char *buffer);
+void SPI_send5bytes(unsigned char *buffer);
 void SPI_receive(unsigned char *buffer, unsigned char pages);
-void SPI_writebytes(unsigned char *buffer);
+void SPI_write(unsigned char *buffer);
 
 #endif
 

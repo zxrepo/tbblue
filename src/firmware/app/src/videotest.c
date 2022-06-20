@@ -183,7 +183,7 @@ void videoTestInit(unsigned char mode)
                         {
                                 REG_NUM = REG_RAMPAGE;
                                 REG_VAL = viddata_page + i;
-                                fwRead((unsigned char *)0, 0x4000);     
+                                fwRead((unsigned char *)0, 0x4000);
                         }
 
                         REG_NUM = REG_RAMPAGE;
@@ -262,7 +262,7 @@ unsigned char videoTestMode()
         //       point since the details of the current video mode cycle
         //       state are stored in RAM.
         unsigned long l;
-        unsigned char opc = 0;
+        unsigned char opc = 0xfa;       // keyjoys
         unsigned char modeName_x;
 
         REG_NUM = REG_VIDEOT;

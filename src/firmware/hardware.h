@@ -46,6 +46,9 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define peek16(A) (*(volatile unsigned int*)(A))
 #define poke16(A,V) *(volatile unsigned int*)(A)=(V)
 
+#define SET_NEXTREG(reg,val) REG_NUM=reg; REG_VAL=val;
+#define GET_NEXTREG(reg,dest) REG_NUM=reg; dest=REG_VAL;
+
 /* Filenames */
 #define NEXT_UPDATE_FILE    "TBBLUE  TBU"
 #define NEXT_UPDATE_FILE2   "TBBLUE.TBU"
@@ -97,6 +100,7 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define REG_PERIPH4             0x09
 #define REG_PERIPH5             0x0a
 #define REG_VERSION_SUB         0x0e
+#define REG_BOARDID             0x0f
 #define REG_ANTIBRICK           0x10
 #define REG_VIDEOT              0x11
 #define REG_L2BANK              0x12
@@ -144,10 +148,9 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define AY_REG_ENV_COARSE       0x0c
 
 /* Reset types */
-#define RESET_POWERON           4
-#define RESET_HARD              2
-#define RESET_SOFT              1
-#define RESET_NONE              0
+#define RESET_ESPBUS            0x80
+#define RESET_HARD              0x02
+#define RESET_SOFT              0x01
 
 /* Anti-brick */
 #define AB_CMD_NORMALCORE       0x80
