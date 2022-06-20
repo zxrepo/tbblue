@@ -1,3 +1,12 @@
+v2.07i: 2022-06-20
+==================
+* Fix to reset persistent paths if they don't exist after a drive (re)mount.
+* Fix for RST $20 to preserve value of HL when exiting dot command.
+* Improve performance of Browser on directories containing many extensionless
+  files (eg c:/dot) if colour scheme doesn't distinguish executable files in
+  the file list.
+
+
 v2.07h: 2022-06-18
 ==================
 * Added "Manual entry" option for POKEs in the NMI menu, so POKEs listed in
