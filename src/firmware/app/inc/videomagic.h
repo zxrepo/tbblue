@@ -31,18 +31,17 @@ enum {
 #define VIDMAGIC_LEN 9
 #define VIDMODE_OFFSET (VIDMAGIC_OFFSET + VIDMAGIC_LEN)
 #define VIDITER_OFFSET (VIDMODE_OFFSET + 1)
-#define VIDBLACK_OFFSET (VIDITER_OFFSET + 1)
-#define VIDWHITE_OFFSET (VIDBLACK_OFFSET + 1)
 
 extern unsigned char * strVidMagic;
 extern unsigned char *pVidMagic;
 extern unsigned char *pVidTestMode;
 extern unsigned char *pVidTestIter;
-extern unsigned char *pVidTestBlack;
-extern unsigned char *pVidTestWhite;
 extern unsigned char vidtestmode;
+extern unsigned char vidtestiter;
 
 unsigned char videoTestActive();
 unsigned char videoTestReselect();
+void videoTestSet();
+void videoTestDisable();
 
 #endif // _VIDEOMAGIC_H

@@ -35,7 +35,7 @@ FATFS           FatFs;          /* FatFs work area needed for each volume */
 FIL             Fil;            /* File object needed for each open file */
 FRESULT         res;
 
-unsigned char * FW_version = "1.40";
+unsigned char * FW_version = "1.42";
 
 // minimal required for this FW
 unsigned long minimal = 0x03010a; // 03 01 0a = 3.01.10
@@ -229,7 +229,7 @@ void check_coreversion()
                         for (;;) ;
                 }
 
-                vdp_prints("\n\n\nHold U to enter the updater now\n");
+                vdp_prints("\n\n\nPress U to enter the updater now");
                 vdp_prints(      " if you have copied the latest\n");
                 vdp_prints(      "  TBBLUE.TBU to your SD card\n");
 
@@ -238,8 +238,7 @@ void check_coreversion()
                 {
                         if ((HROW5 & 0x08) == 0)
                         {
-                                REG_NUM = REG_RESET;
-                                REG_VAL = 0x02; // hard reset to loader
+                                switchModule(FW_BLK_UPDATER);
                         }
                 }
         }
@@ -472,6 +471,7 @@ void main()
                 // override any menu line "override" for this boot. This
                 // is useful if the default line won't display because of
                 // an override.
+                videoTestSet();
                 switchModule(FW_BLK_TESTCARD);
         }
         else
@@ -522,6 +522,7 @@ void main()
                 if (videoTestActive())
                 {
                         // Enter video test if A/V/D/R pressed.
+                        videoTestSet();
                         switchModule(FW_BLK_TESTCARD);
                 }
 
@@ -587,7 +588,7 @@ void main()
         REG_NUM = REG_RESET;
         if (settings[eSettingESPReset])
         {
-                REG_VAL = RESET_ESPBUS + RESET_SOFT;
+                REG_VAL = RESET_ESPBUS | RESET_SOFT;
         }
         else
         {

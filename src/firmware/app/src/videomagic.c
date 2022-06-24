@@ -27,13 +27,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 
 unsigned char vidtestmode;
+unsigned char vidtestiter;
 
 unsigned char * strVidMagic = "VideoTest";
 unsigned char *pVidMagic = (unsigned char *)VIDMAGIC_OFFSET;
 unsigned char *pVidTestMode = (unsigned char *)VIDMODE_OFFSET;
 unsigned char *pVidTestIter = (unsigned char *)VIDITER_OFFSET;
-unsigned char *pVidTestBlack = (unsigned char *)VIDBLACK_OFFSET;
-unsigned char *pVidTestWhite = (unsigned char *)VIDWHITE_OFFSET;
 
 unsigned char videoTestReselect()
 {
@@ -60,6 +59,7 @@ unsigned char videoTestReselect()
             && (mode != vidtestmode))
         {
                 vidtestmode = mode;
+                vidtestiter = 0;
                 return 1;
         }
         else
@@ -77,10 +77,12 @@ unsigned char videoTestActive()
         {
                 // Video mode testing is already in progress.
                 vidtestmode = *pVidTestMode;
+                vidtestiter = *pVidTestIter;
         }
         else
         {
                 vidtestmode = eVidTestNone;
+                vidtestiter = 0;
         }
 
         if (!videoTestReselect())
@@ -94,4 +96,22 @@ unsigned char videoTestActive()
         }
 
         return (vidtestmode != eVidTestNone);
+}
+
+void videoTestSet()
+{
+        REG_NUM = REG_RAMPAGE;
+        REG_VAL = RAMPAGE_ROMSPECCY + 2;
+        strncpy(pVidMagic, strVidMagic, VIDMAGIC_LEN);
+
+        *pVidTestMode = vidtestmode;
+        *pVidTestIter = vidtestiter;
+}
+
+void videoTestDisable()
+{
+        REG_NUM = REG_RAMPAGE;
+        REG_VAL = RAMPAGE_ROMSPECCY + 2;
+
+        *pVidMagic = 0;
 }

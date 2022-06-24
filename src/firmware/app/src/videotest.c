@@ -37,18 +37,12 @@ const testmodeitem modesDigital[] =
 {
         { 7, 0, 1 },
         { 7, 1, 1 },
-
-        // End marker
-        { 255, 255, 255 }
 };
 
 const testmodeitem modesRGB[] =
 {
         { 0, 0, 0 },
         { 0, 1, 0 },
-
-        // End marker
-        { 255, 255, 255 }
 };
 
 const testmodeitem modesVGA[] =
@@ -67,9 +61,6 @@ const testmodeitem modesVGA[] =
         { 5, 1, 1 },
         { 6, 0, 1 },
         { 6, 1, 1 },
-
-        // End marker
-        { 255, 255, 255 }
 };
 
 const testmodeitem modesAll[] =
@@ -97,9 +88,6 @@ const testmodeitem modesAll[] =
         { 5, 1, 1 },
         { 6, 0, 1 },
         { 6, 1, 1 },
-
-        // End marker
-        { 255, 255, 255 }
 };
 
 const testmodeitem *modeTables[] =
@@ -109,6 +97,15 @@ const testmodeitem *modeTables[] =
         modesDigital,           // eVidTestDigital
         modesRGB,               // eVidTestRGB
         modesVGA,               // eVidTestVGA
+};
+
+const unsigned char modeIters[] =
+{
+        0,                      // eVidTestNone
+        sizeof(modesAll) / sizeof(testmodeitem),
+        sizeof(modesDigital) / sizeof(testmodeitem),
+        sizeof(modesRGB) / sizeof(testmodeitem),
+        sizeof(modesVGA) / sizeof(testmodeitem),
 };
 
 char *modeName[] =
@@ -138,140 +135,80 @@ void ayOff()
         aySend(AY_REG_VOLUME_A, 0x00);
 }
 
-void videoTestInit(unsigned char mode)
+void videoTestInit()
 {
-        unsigned int i, j;
+        unsigned int i;
         unsigned int *pPalette;
 
-        // viddata_page is the first 16K bank of 5 x 16K banks
-        // which are safe from corruption across resets.
-        // We use the last 5 banks of DivMMC RAM - the first
-        // 3 are used by switchModule().
-        const unsigned int viddata_page = RAMPAGE_RAMDIVMMC + 3;
+        fwOpenAndSeek(FW_BLK_SCREENS);
+
+        // Load the L2 screen.
+        for (i = 0; i < 3; i++)
+        {
+                REG_NUM = REG_RAMPAGE;
+                REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + i;
+                fwRead((unsigned char *)0, 0x4000);
+        }
 
         REG_NUM = REG_RAMPAGE;
-        REG_VAL = RAMPAGE_ROMSPECCY + 2;
+        REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + 3;
 
-        if (mode == eVidTestNone)
+        // Erase the unused palette entries
+        memset(0x0000, 0, 0x400);
+
+        // Read the L2 palette data
+        fwRead((unsigned char *)0x0000, FW_L2_PAL_SIZE);
+
+        fwSeek((FSIZE_t)FW_L2_PAL_SIZE+(FSIZE_t)0x1d600);
+
+        // Read the tilemap palette data
+        fwRead((unsigned char *)0x0200, FW_TILEMAP_PAL_SIZE);
+
+        // Find the layer2 palette indices for black and white.
+        pPalette = (unsigned int *)0;
+
+        for (i = 0; i < 256; i++)
         {
-                // Overwrite the magic to disable testing.
-                *pVidMagic = 0;
-        }
-        else
-        {
-                if (strncmp(pVidMagic, strVidMagic, VIDMAGIC_LEN) == 0)
+                if (pPalette[i] == 0x0000)
                 {
-                        // The testcard data is already present, so just
-                        // change the mode.
-                        if (*pVidTestMode != mode)
-                        {
-                                *pVidTestMode = mode;
-                                *pVidTestIter = 0;
-                        }
-                }
-                else
-                {
-                        // Load the L2 test card into RAM (at 14MHz)
-                        fwOpenAndSeek(FW_BLK_SCREENS);
-
-                        // The L2 screen, tilemap, and l2/tilemap palettes
-                        // are all read in to RAM which is stable across
-                        // resets. This means it can simply be copied back
-                        // from memory after each reboot without needing to
-                        // be reloaded.
-                        for (i = 0; i < 3; i++)
-                        {
-                                REG_NUM = REG_RAMPAGE;
-                                REG_VAL = viddata_page + i;
-                                fwRead((unsigned char *)0, 0x4000);
-                        }
-
-                        REG_NUM = REG_RAMPAGE;
-                        REG_VAL = viddata_page + 3;
-
-                        // Erase the unused palette entries
-                        memset(0x0000, 0, 0x400);
-
-                        // Read the L2 palette data
-                        fwRead((unsigned char *)0x0000, FW_L2_PAL_SIZE);
-
-                        fwSeek((FSIZE_t)FW_L2_PAL_SIZE+(FSIZE_t)0x1d600);
-
-                        // Read the tilemap palette data
-                        fwRead((unsigned char *)0x0200, FW_TILEMAP_PAL_SIZE);
-
-                        // Find the layer2 palette indices for black and white.
-                        pPalette = (unsigned int *)0;
-
-                        for (i = 0; i < 256; i++)
-                        {
-                                if (pPalette[i] == 0x0000)
-                                {
-                                        l2black = i;
-                                }
-
-                                if (pPalette[i] == 0x01ff)
-                                {
-                                        l2white = i;
-                                }
-                        }
-
-                        // Similarly, read the tilemap data into the next bank.
-                        REG_NUM = REG_RAMPAGE;
-                        REG_VAL = viddata_page + 4;
-                        fwRead((unsigned char *)0, FW_TILEMAP_DAT_SIZE);
-
-                        fwClose();
-
-                        // Initialise the testing data and signal in progress.
-                        REG_NUM = REG_RAMPAGE;
-                        REG_VAL = RAMPAGE_ROMSPECCY + 2;
-                        strncpy(pVidMagic, strVidMagic, VIDMAGIC_LEN);
-
-                        *pVidTestMode = mode;
-                        *pVidTestIter = 0;
-
-                        *pVidTestBlack = l2black;
-                        *pVidTestWhite = l2white;
+                        l2black = i;
                 }
 
-                // Copy the layer2 & tilemap data from DivMMC RAM.
-                for (i = 0; i < 5; i++)
+                if (pPalette[i] == 0x01ff)
                 {
-                        for (j = 0; j < 8; j++)
-                        {
-                                REG_NUM = REG_RAMPAGE;
-                                REG_VAL = viddata_page + i;
-
-                                memcpy(copybuf, (unsigned char *)(j*2048), 2048);
-
-                                REG_NUM = REG_RAMPAGE;
-                                REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + i;
-
-                                memcpy((unsigned char *)(j*2048), copybuf, 2048);
-                        }
+                        l2white = i;
                 }
         }
+
+        // Set the layer2 and tilemap palettes.
+        setPalette(PALETTE_L2_0, (unsigned char *)0);
+        setPalette(PALETTE_TILEMAP_0, (unsigned char *)0x200);
+
+        // Read the tilemap data into the next bank.
+        REG_NUM = REG_RAMPAGE;
+        REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + 4;
+        fwRead((unsigned char *)0, FW_TILEMAP_DAT_SIZE);
+
+        fwClose();
 }
 
 unsigned char videoTestMode()
 {
-        // Set the current mode.
-        // NOTE: If the timing register contents are changed, a power-on
-        //       reboot will occur, but we will then be returned to this
-        //       point since the details of the current video mode cycle
-        //       state are stored in RAM.
         unsigned long l;
-        unsigned char opc = 0xfa;       // keyjoys
         unsigned char modeName_x;
 
-        REG_NUM = REG_VIDEOT;
-        REG_VAL = curtestmode.timing | 0x80;
+        // Save current mode/iteration so that they can be re-fetched if the
+        // following write to the video timing register causes a reset.
+        videoTestSet();
 
-        if (curtestmode.freq)           opc |= 0x04;
-        if (curtestmode.doubler)        opc |= 0x01;
-        REG_NUM = REG_PERIPH1;
-        REG_VAL = opc;
+        // Clear the RAM5 ULA screen area so that if there is a reset, the
+        // screen will initially be blank.
+        REG_NUM = REG_RAMPAGE;
+        REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + 4;
+        memset((unsigned char*)0x4000, 0, 0x2000);
+
+        // Set the new timing, frequency, scandoubler. This may cause a reset.
+        set_video_mode(curtestmode.timing, curtestmode.freq, curtestmode.doubler);
 
         // Set layer2 start bank.
         REG_NUM = REG_L2BANK;
@@ -306,12 +243,6 @@ unsigned char videoTestMode()
         {
                 l2_prints("/scan*1");
         }
-
-        // Set the layer2 and tilemap palettes for the testcard
-        REG_NUM = REG_RAMPAGE;
-        REG_VAL = RAMPAGE_RAMSPECCY + L2_BANK + 3;
-        setPalette(PALETTE_L2_0, (unsigned char *)0);
-        setPalette(PALETTE_TILEMAP_0, (unsigned char *)0x200);
 
         // Copy the tilemap data up to RAM5.
         REG_NUM = REG_RAMPAGE;
@@ -416,7 +347,7 @@ unsigned char videoTestMode()
                                 setOrderedPalette(PALETTE_L2_0);
 
                                 // Turn off video mode cycling.
-                                videoTestInit(eVidTestNone);
+                                videoTestDisable();
 
                                 // Update config.ini with current mode settings.
                                 settings[eSettingTiming] = curtestmode.timing;
@@ -439,11 +370,7 @@ unsigned char videoTestMode()
                 // Exit with new mode range if chosen with key A/V/H/S.
                 if (videoTestReselect())
                 {
-                        REG_NUM = REG_RAMPAGE;
-                        REG_VAL = RAMPAGE_ROMSPECCY + 2;
-
-                        *pVidTestMode = vidtestmode;
-                        *pVidTestIter = 0xff;   // will be incremented to 0
+                        vidtestiter = 0xff;   // will be incremented to 0
                         return 0;
                 }
         }
@@ -456,41 +383,39 @@ void main()
 {
         vdp_init();
         load_config();
-        videoTestActive();
-        videoTestInit(vidtestmode);
+
+        if (!videoTestActive())
+        {
+                // TODO Shouldn't ever get here, but if so default
+                //      to testing all modes.
+                vidtestmode = eVidTestAll;
+                vidtestiter = 0;
+        }
+
+        videoTestInit();
 
         while (1)
         {
-                REG_NUM = REG_RAMPAGE;
-                REG_VAL = RAMPAGE_ROMSPECCY + 2;
-
-                vidtestmode = *pVidTestMode;
-
-                l2black = *pVidTestBlack;
-                l2white = *pVidTestWhite;
-
-                curtestmode = (modeTables[vidtestmode])[*pVidTestIter];
-
-                if (curtestmode.timing != 255)
+                if (vidtestmode >= sizeof(modeTables) / sizeof(testmodeitem *))
                 {
-                        if (videoTestMode())
-                        {
-                                // Exit if mode successfully selected.
-                                REG_NUM = REG_RESET;
-                                REG_VAL = RESET_HARD;
-                        }
-
-                        // Re-select test mode data RAM page.
-                        REG_NUM = REG_RAMPAGE;
-                        REG_VAL = RAMPAGE_ROMSPECCY + 2;
-
-                        // If not selected, step to next mode.
-                        *pVidTestIter = *pVidTestIter + 1;
+                        vidtestmode = eVidTestAll;
                 }
-                else
+
+                if (vidtestiter >= modeIters[vidtestmode])
                 {
-                        // Look back to table start if end reached.
-                        *pVidTestIter = 0;
+                        vidtestiter = 0;
                 }
+
+                curtestmode = (modeTables[vidtestmode])[vidtestiter];
+
+                if (videoTestMode())
+                {
+                        // Exit if mode successfully selected.
+                        REG_NUM = REG_RESET;
+                        REG_VAL = RESET_HARD;
+                }
+
+                // If not selected, step to next mode.
+                vidtestiter++;
         }
 }

@@ -132,6 +132,7 @@ extern mnuitem *pMenu;
 void parsestring(char *pDest, unsigned int maxlen);
 void parsenumber(unsigned char *pValue);
 void parseword(unsigned int *pValue);
+void set_video_mode(unsigned char timing, unsigned char freq, unsigned char doubler);
 void update_video_settings();
 void load_keyjoys(unsigned char *pKeyjoy);
 void reset_settings();

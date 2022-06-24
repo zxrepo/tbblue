@@ -106,6 +106,8 @@ __sfr __banked __at 0x7FFE HROW7; // SPACE,SYM SHFT,M,N,B
 #define REG_L2BANK              0x12
 #define REG_TRANSPARENCY        0x14
 #define REG_SLU_MODE            0x15
+#define REG_VIDEOLINE_HI        0x1e
+#define REG_VIDEOLINE_LO        0x1f
 #define REG_KMHA                0x28
 #define REG_KMLA                0x29
 #define REG_KMHD                0x2a

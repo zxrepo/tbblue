@@ -193,24 +193,35 @@ void parseword(unsigned int *pValue)
         *pValue = atoi(temp);
 }
 
-void update_video_settings()
+void set_video_mode(unsigned char timing, unsigned char freq, unsigned char doubler)
 {
+        unsigned char vl, vh;
         unsigned char opc = 0xfa;       // keyjoy modes
+        if (freq)       opc |= 0x04;
+        if (doubler)    opc |= 0x01;
 
-        if (settings[eSettingFreq5060] == 1)    opc |= 0x04;
-        if (settings[eSettingScandoubler] == 1) opc |= 0x01;
+        // Waiting until line 230 helps prevent monitors becoming confused
+        // when a mode change occurs.
+        do {
+                REG_NUM = REG_VIDEOLINE_HI;
+                vh = REG_VAL;
+                REG_NUM = REG_VIDEOLINE_LO;
+                vl = REG_VAL;
+        } while ((vh != 0) && (vl != 230));
+
+        REG_NUM = REG_VIDEOT;
+        REG_VAL = (timing & 0x07) | 0x80;
 
         REG_NUM = REG_PERIPH1;
         REG_VAL = opc;
+}
 
-        opc = settings[eSettingScanlines] & 3;
-
-        REG_NUM = REG_PERIPH4;
-        REG_VAL = opc;
+void update_video_settings()
+{
+        unsigned char tim = settings[eSettingTiming];
 
         if ((menu_cont > 0) && (settings[eSettingMenuDefault] < menu_cont))
         {
-                unsigned char tim = settings[eSettingTiming];
                 pMenu = &(menus[settings[eSettingMenuDefault]]);
 
                 // If timing override is specified, use it.
@@ -218,10 +229,12 @@ void update_video_settings()
                 {
                         tim = pMenu->video_timing;
                 }
-
-                REG_NUM = REG_VIDEOT;
-                REG_VAL = (tim & 0x07) | 0x80;
         }
+
+        set_video_mode(tim, settings[eSettingFreq5060], settings[eSettingScandoubler]);
+
+        REG_NUM = REG_PERIPH4;
+        REG_VAL = settings[eSettingScanlines] & 3;
 }
 
 
