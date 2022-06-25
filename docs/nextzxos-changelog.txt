@@ -1,3 +1,16 @@
+v2.07j: 2022-06-25
+==================
+* Fix for "end of file"/"tape loading error" when attempting to load a CODE
+  or SCREEN$ file where the file is shorter than the requested size. Standard
+  Spectrum behaviour is to load the entire file without any error.
+* Fix for issue 31: Spectrum +3 FORMAT LINE/LPRINT commands are now silently
+  accepted, aiding compatibility with +3 software such as Artist II.
+* Fix for issue 53: BANK..PROC commands containing colon (:) in string literal
+  parameters were failing with "Parameter error".
+* Fix for issue 71: PROC commands with 8 parameters were failing with
+  "Parameter error".
+
+
 v2.07i: 2022-06-20
 ==================
 * Fix to reset persistent paths if they don't exist after a drive (re)mount.
