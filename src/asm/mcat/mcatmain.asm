@@ -3,28 +3,153 @@
 ;adapted from ;Professional Adventure Writer 128K
 ;Microdrive Handler (C) Phil Wade, May 1987
 ;
-;Version 00
+;Version 01
 ;LSTOFF 
+
+		ORG	61440 ;49152		; Now on a page boundary so we can use in DOT
 	
 ;Define Spectrum operating system calls
 	
 INCLUDE "specsys.asm"
 
-		ORG	49152		; Now on a page boundary so we can use in DOT
+DEFC	CR     =  13
+
+DEFC	PRINT  =  2
+DEFC	RECFLG =  67
+
+DEFC	WAIT_K =  15D4h
+DEFC	MAKE_S =  1655h
+
+;DEFC	STRMS  =  5C16h
+DEFC	ERR_NR =  5C3Ah
+DEFC	CHANS  =  5C4Fh
+;DEFC	PROG   =  5C53h
+
+DEFC	D_STR1 =  5CD6h
+DEFC	S_STR1 =  5CD8h
+DEFC	N_STR1 =  5CDAh
+DEFC	T_STR1 =  5CDCh
+DEFC	HD_00  =  5CE6h
+DEFC	HD_0B  =  5CE7h
+DEFC	HD_0D  =  5CE9h
+DEFC	HD_0F  =  5CEBh
+;DEFC	HD_11  =  5CEDh
+
+DEFC	OPEN_M =  22h
+DEFC	CLOSE_M =  23h
+DEFC	NEWVARS =  31h
+DEFC	SHADOW =  32h
+
+
 
 ;Save/Verify or Load a block - details as tape header at IX.
 ;Also used as entry point to request a catalogue with TADDR_lo=3
-	
-DISCLS:	CALL	INITROM	;Setup to ensure correct ROM points
 
+;relocated from the end so the calling code can patch it easily.
+		JR	DISCLS
+	
+DATDEV:	DEFB	'3'
+DRIVEN:	DEFW	3
+		
+HMSAFE:	DEFB	3		;Buffer for Header
+		DEFM	"012345678"
+SAFENX:	DEFM	'9'
+		DEFW	0,0,0
+
+;Function required
+
+DISPATCH:	DEFB	3
+
+;various stores for System Variable and Register values
+	
+STK_SV:	DEFW	0		;original value of SP
+ERR_ST:	DEFW	0		;your value for ERRSP
+STK_ST:	DEFW	0		;value of SP after error
+
+;Needed for HiSoft EXT Cat
+
+POINTE: 	DEFS 2
+
+
+DISCLS:	DI			; This is done in EDSLVH but, just in case
+
+		PUSH	IX
+		PUSH	HL
+		PUSH	DE
+		PUSH	BC
+		EXX
+		PUSH	HL
+		PUSH	DE
+		PUSH	BC
+		EXX
+		
+		LD	BC,9275	; Disable all the SD card handling stuff
+		LD	A,135
+		OUT	(C),A
+;		LD BC,9531 - 
+		INC	B
+		LD	A,246
+		OUT	(C),A	
+		
+		DEC	B		;Enable the BUS
+		LD	A,128
+		OUT	(C),A 
+		INC	B
+		LD	A,128
+		OUT	(C),A
+			
+		CALL	INITROM	;Setup to ensure correct ROM points
+
+		LD 	A,4		;Green border as all OK
+		OUT 	(254),A
+
+		LD	A,(DATDEV)	;Set current drive
+		SUB	'0'		;Convert to real numbers
+		LD	(DRIVEN),A
+		
 ;		CALL	MOVHED		;Move header info to 'safe' memory
+
+		LD	IX,HMSAFE	;We are not currently passed anything
 		LD	L,(IX+$0B)
 		LD	H,(IX+$0C)
-;		LD	C,(IX+$0D)
-		LD	C,3		;Force a CAT at the moment
+		LD	C,(IX+$0D)
+;		LD	C,3		;Force a CAT at the moment
 		LD	B,(IX+$0E)
 		CALL	EDSLVH		;Do function
-		JP	ROMSM		;Set minimum workspace as we return
+
+		LD 	A,5		;Cyan border as we have returned from sub
+		OUT 	(254),A
+
+		LD	BC,9275	; Re-enable all the SD card handling stuff
+		LD	A,135
+		OUT	(C),A
+		INC	B
+		LD	A,255
+		OUT	(C),A	
+
+		DEC	B		;Enable the BUS (caller has handled hardware)
+		LD	A,128
+		OUT	(C),A
+		INC	B
+		XOR	A		;Zero to disable bus
+		OUT	(C),A
+;****Arghhhh		OUT	(128),A
+		
+		EXX
+		POP	BC
+		POP	DE
+		POP	HL
+		EXX		
+		POP	BC
+		POP	DE
+		POP	HL
+		POP	IX
+	
+		EI
+
+		RET			;Our DOT command can be returned to.
+		
+;		JP	ROMSM		;Set minimum workspace as we return
 	
 ;Phil's bit....
 ;On entry to this routine, there must be a "Tape Header" in the Workspace,
@@ -109,32 +234,36 @@ DR_SV:		SET	5,(IY+124)	;flag "save"
 DR_LD:		SET	4,(IY+124)	;flag "load"
 		JR	LD_VFY		;save a byte!
 	
-DR_CAT:	LD 	A,4
-		OUT 	(254),A
-	DEFC POKE_C =	ASMPC+1		;Poked with address of shadow CATALOGUE
+DR_CAT:
+;***TODO We need to do the extended CAT stuff here...
+		LD	A,(DISPATCH)
+		CP	$04
+		JP	Z,EXT_CAT
+	
+	DEFC POKE_C =	ASMPC+1	;Poked with address of shadow CATALOGUE
 		CALL	$1C5E		;little way into the Shadow ROM cat
+		
 		CALL	$0700
+			
 		LD	HL,(ERR_ST)	;Back here so reset error system
 		LD	(ERRSP),HL
 		JR	NO_ERR		;Exit back to caller
 	
-;various stores for System Variable and Register values
-	
-STK_SV:		DEFW	0		;original value of SP
-ERR_ST:		DEFW	0		;your value for ERRSP
-STK_ST:		DEFW	0		;value of SP after error
-	
 ;now the "error" handler, which is ALWAYS used
 ;Even a successful load/save/verify will come here.
 	
-_ERROR:		DI			;interrupts OFF
+_ERROR:	DI			;interrupts OFF
+
+		LD 	A,1		;If we get back here then Blue...
+		OUT 	(254),A
+
 		LD	(IY+124),0	;clear FLAGS3
 		LD	(STK_ST),SP	;store SP (to be picked up in HL)
 		LD	A,(ERRNR)	;inspect "old" error number
 		CP	$FF		;is it still #FF?
 		JR	Z,NEW_ER	;if so, suspect a new error
 	
-OLD_ER:		LD	HL,(ERR_ST)	;restore PAW error handler
+OLD_ER:	LD	HL,(ERR_ST)	;restore PAW error handler
 		LD	(ERRSP),HL
 		EI			;interrupts ON
 		CP	$14		;Break?
@@ -147,21 +276,23 @@ OLD_ER:		LD	HL,(ERR_ST)	;restore PAW error handler
 ;To get here, we must have been successful in our Save/Load/Vfy
 ;We now set the Zero flag to signify this success to the caller
 	
-NO_ERR:		XOR	A		;Set the Zero flag
+NO_ERR:	XOR	A		;Set the Zero flag
 		LD	SP,(STK_SV)	;original stack pointer from caller
 		LD	(IY+0),$FF	;clear error
 		POP	IX		;Recall IX
-		INC	(IX+10)
-		POP	AF		;Restore correct RAM page and
-		LD	A,1
+;		INC	(IX+10)	;Left over from PAW to make 9th char inc
+		POP	AF		;Restore correct RAM page
+		
+		LD	A,6		;Set yellow
 		OUT	(254),A
+
 		RET
 	
-SH_UNK:		CALL	M_OFF		;turn off motors etc.,
+SH_UNK:	CALL	M_OFF		;turn off motors etc.,
 		LD	L,22		;'Statement Lost' (too true!)
 ERR_2:		JP	$55		;jump to PAW error handler via ROM
 	
-BRK_ER:		CALL	M_OFF		;turn off motors etc.,
+BRK_ER:	CALL	M_OFF		;turn off motors etc.,
 		LD	L,12		;'BREAK'
 		JR	ERR_2		;save one byte...
 	
@@ -174,7 +305,7 @@ M_OFF:		LD	HL,$17B7	;address of routine in shadow ROM
 	
 ;"New" errors (interface one) are tested here
 	
-NEW_ER:		LD	DE,$0081	;Test HL against #81
+NEW_ER:	LD	DE,$0081	;Test HL against #81
 		AND	A
 		SBC	HL,DE
 		JR	NZ,SH_UNK	;if not, we appear to be lost...
@@ -184,7 +315,7 @@ NEW_ER:		LD	DE,$0081	;Test HL against #81
 		JR	_LOOK2		;we start at the Hi-Byte
 	
 _LOOK:		DEC	HL		;move down old stack, one "pair"
-_LOOK2:		DEC	HL		;come here to move down one more byte
+_LOOK2:	DEC	HL		;come here to move down one more byte
 		LD	A,B		;compare address/Hi with Stackend/Hi
 		CP	H
 		JR	NC,SH_UNK	;we've failed if this far down
@@ -206,6 +337,7 @@ _LOOK2:		DEC	HL		;come here to move down one more byte
 		LD	A,(DE)		;A = ERROR CODE from 8K ROM
 		INC	A		;A = true error number
 		CALL	$0700		;page-in old ROM
+
 		CP	$18		;if bigger than #17 it's garbage
 		JR	NC,SH_UNK	;we've failed...
 	
@@ -238,15 +370,17 @@ P_R_L:		LD	A,(HL)		;fetch character of message
 		JR	P_R_L		;go back and get next character
 E_P_M:		CALL	$0700		;finished with 8K ROM
 
-
 ;*** TODO this is the bit that will help us recover after an error?	
 		LD	HL,(ERR_ST)	;get PAW error pointer
 		LD	(ERRSP),HL
 	
-		LD A,2
-		OUT (254),A
-		HALT
-;		JP	ERRY		;jump into to PAW error handler
+		LD 	A,2		;Red border as we have come error route
+		OUT 	(254),A
+
+;		CALL	0A028h		; Breakpoint to monitor ***
+ERR_LOOP:	JP	ERR_LOOP	; *** TEMP Hold at Red as it causes havok
+	
+		RET
 	
 ;Subroutine to page-out old ROM and page-in 8K ROM
 	
@@ -260,10 +394,8 @@ _BACK:		POP	HL		;drop the two unwanted addresses
 	
 ;Copy header at IX to safe area as WSPACE seems to be destroyed
 	
-MOVHED:		LD	A,(DATDEV)	;Set current drive
-		SUB	'0'		;Convert to real numbers
-		LD	(DRIVEN),A
-MOVHE2:		LD	DE,HMSAFE	;Address of new header area
+
+MOVHED:	LD	DE,HMSAFE	;Address of new header area
 		PUSH	DE		;On stack
 		EX	(SP),IX		;Into IX and old onto stack
 		POP	HL		;Into HL for Source
@@ -284,13 +416,12 @@ ERRSUB:
 		CALL	ROMSM
 		CALL	USECLL		;Clear lower screen and reset wrap buffer
 	
-
 ;***TODO Need to do this in a better way
 CHKSP2:	
 		RET
 
 	
-USECLL:		CALL	ROMCL		;Clear lower screen (disables print trap)
+USECLL:	CALL	ROMCL		;Clear lower screen (disables print trap)
 ;		CALL	CLRWRB		;Clear any wordwrap
 CHANK:		LD	A,253		;Select lower screen
 		JR	OPEN
@@ -300,7 +431,7 @@ USECLS:	CALL	ROMCS		;Clear all screen (disables print trap)
 ;		LD	HL,(SPOSN)	;Do a SAVEAT
 ;		LD	(SSPOSN),HL
 ;		CALL	CLRWRB
-CHANS:		LD	A,2
+		LD	A,2
 OPEN:
 ;		CALL	FLUSH		;Flush any characters in wrap buffer
 		CALL	ROMCH		;Open channel
@@ -312,7 +443,11 @@ OPEN2:
 ;the address of the various routines
 ;TODO - Check this works with all ROM versions - we may not have known that BITD 
 	
-INITROM:	LD	HL,BACK2     ;Page out 16K ROM, 8K ROM in
+INITROM:	
+		RST	$08	     ;Create new system vars
+		DEFB	$31
+
+		LD	HL,BACK2     ;Page out 16K ROM, 8K ROM in leaving it
 		LD	(HD_11),HL
 		RST	$08
 		DEFB	$32
@@ -369,6 +504,7 @@ BACK2:		POP	HL
 		LD	HL,$0006
 		ADD	HL,DE
 		LD	(POKE_C),HL
+		LD	(POKE_C2),HL
 	
 ;Find the address of the Error Messages
 	
@@ -396,12 +532,249 @@ TRY2:		INC	IX           ;Step on one byte
 		LD	(MES_PK),IX  ;POKE it in
 		JP	$0700        ;page out 8K ROM, return to 16K ROM and then code
 		
+;Hisoft Extended CAT
 
-HMSAFE:		DEFB	3		;Buffer for Header
-		DEFM	"012345678"
-SAFENX:		DEFM	'9'
-		DEFW	0,0,0
+EXT_CAT:
+	LD	HL,SPACE
+	LD	(POINTE),HL
+;	LD	IY,5C3Ah
+
+;Set upnew channel and attach to Stream 14
+
+	LD	HL,(PROG)
+	DEC	HL
+	PUSH	HL
+	LD	BC,11
 	
-DATDEV:		DEFB	'3'
-DRIVEN:		DEFW	3
+	RST	10h
+	DEFW	MAKE_S
+
+	LD	HL,CH14out
+	POP	DE
+	PUSH	DE
+	EX	DE,HL
+	LD	(HL),E
+	INC	HL
+	LD	(HL),D
+	INC	HL
+	EX	DE,HL
+	LD	HL,C14INF
+	LD	BC,11-2
+	LDIR
+	POP	HL
+	INC	HL
+	LD	BC,(CHANS)
+	OR	A
+	SBC	HL,BC
+	LD	(STRM6+28),HL
+
+;Now read in bare catalogue
+
+;	EXX
+;	PUSH	HL
+;	EXX
+
+;	RST	8
+;	DEFB	NEWVARS
+	
+	LD	A,14
+	LD	(S_STR1),A
+	LD	HL,(DRIVEN)
+	LD	(D_STR1),HL
+
+	RST	$10
+	DEFW	$1601
+
+	DEFC POKE_C2 =	ASMPC+1	;Poked with address of shadow CATALOGUE
+	CALL	$1C5E		;little way into the Shadow ROM cat
+
+	CALL	$700
+;	LD	HL,(POKE_C)
+;	LD	(HD_11),HL
+;	EI
+;	RST	8
+;	DEFB	SHADOW
+	
+;Now process bare catalogue
+
+	LD	HL,SPACE
+	LD	B,11
+	CALL	WRstring
+CatL1:	LD	B,15
+CatLoo: PUSH	BC	
+	INC	HL
+	LD	A,(HL)
+	CP	CR	;finished?
+	JR	Z,CatEnd
+	DEC	HL
+	LD	B,11
+	PUSH	HL
+	CALL	WRstring
+	EX	(SP),HL
+	INC	HL
+	EX	DE,HL
+	LD	HL,T_STR1
+	LD	(HL),E
+	INC	HL
+	LD	(HL),D
+	LD	HL,(DRIVEN)
+	LD	(D_STR1),HL
+	LD	HL,10
+	LD	(N_STR1),HL
+	EI
+	RST	8
+	DEFB 	OPEN_M
+	CALL 	Space
+	BIT	PRINT,(IX+RECFLG)
+	JR	NZ,NotPri
+	LD	A,”D”
+	CALL 	CONOUT
+	JR	CatBack
+NotPri: PUSH 	IX
+	
+	POP	DE
+	LD	HL,82
+	ADD	HL,DE
+	EX	DE,HL
+	LD	A,(DE)
+	INC	DE
+	LD	HL,TYPETAB
+	LD	C,A
+	LD	B,0
+	ADD	HL,BC
+	LD	A,(HL)
+	CALL	CONOUT
+	CALL	Space
+	EX	DE,HL
+	LD	A,C
+	OR	A
+	JR	NZ,NotPro
+	INC	HL
+	INC	HL
+	INC	HL
+	INC	HL
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)
+	INC	HL
+	CALL	DEOUTS
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)
+	CALL	DEOUTS
+	JR	CatBack
+
+NotPro: CP	3
+	JR	NZ,CatBack
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)
+	INC	HL
+	CALL	DEOUTS
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)
+	CALL	DEOUTS
+	
+CatBack: RST	8
+	DEFB	CLOSE_M
+	POP	HL
+	POP	BC
+	DJNZ	CatLoo
+	JP 	CatL1
+
+CatEnd: POP	BC
+	DEC	HL
+	LD	B,5
+	CALL	WRstring
+
+;	EXX	
+;	POP	HL
+;	EXX
+
+	LD	BC,0
+	
+		LD	HL,(ERR_ST)	;Back here so reset error system
+		LD	(ERRSP),HL
+		JP	NO_ERR		;Exit back to caller
+
+;Subroutines...
+
+;Output DE in decimal
+DEOUTS:	PUSH HL
+	PUSH IX
+        EX   DE,HL
+        LD   B,5
+        LD   IX,TENTAB
+DEloop: LD   E,(IX)
+        LD   D,(IX+1)
+       LD   A,-1
+TenLoop: INC  A
+       OR   A
+       SBC  HL,DE
+       JR   NC,TenLoop
+       ADD  HL,DE
+       OR   30h
+       CALL CONOUT
+       INC  IX
+       INC  IX
+       DJNZ DEloop
+       CALL Space
+       POP  IX
+       POP  HL
+       RET
+
+;Outputfor Stream14
+
+CH14out: LD   HL,(POINTE)
+       LD   (HL),A
+       INC  HL
+       LD   (POINTE),HL
+       RET
+
+;Writea string oflength B from (HL)
+
+WRstring: LD   A,(HL)
+       CALL CONOUT
+       INC  HL
+       DJNZ WRstring
+       RET
+
+;Open a stream
+
+ChOpen: PUSH HL
+       PUSH DE
+       PUSH BC
+       CALL 1601h
+       POP  BC
+       POP  DE
+       POP  HL
+       RET
+
+;Output a space to stream 2
+
+Space:  LD   A,' '
+;Output to stream 2
+
+CONOUT: PUSH AF
+       LD   A,2
+       CALL ChOpen
+       POP  AF
+       RST  10h
+       RET
+
+
+;Stuff needed for EXTCAT
+
+SPACE:  DEFS 512
+
+TENTAB: DEFW 10000,1000,100,10,1
+	
+TYPETAB: DEFM "PNSB"
+
+C14INF: DEFW 15C4h
+       DEFB "Z"
+       DEFW 28h,28h,11
+
+	RET
 	

@@ -2,7 +2,10 @@
 ; TBBlue / ZX Spectrum Next project
 ; Copyright (c) 2010-2018 
 ;
-; MCAT - DOTJAM for June 2022 nicked code from date by Victor Trucco and Tim Gilberts
+; MCAT - DOTJAM for June 2022
+; Reused code from date by Victor Trucco and Tim Gilberts and others...
+;
+; Version 0.4
 ;
 ; All rights reserved
 ;
@@ -36,187 +39,231 @@
 ;
 ;-------------------------------------------------------------------------------
 ;
-; .MCAT for ESXDOS and NextZXOS
+; .MCAT for ESXDOS and eventually NextZXOS
 ;
 ; This will eventually catalog a microdrive on the Next
 ;
 ; Built using Z80ASM for Z88DK
+; See https://github.com/z88dk/z88dk/wiki/Tool---z80asm---directives
 
-	org 0x2000
+	DEFC IDE_BANK = $01bd           ; NextZXOS function to manage memory
+	DEFC M_P3DOS = $94  		 ; +3 DOS function call
 
-	
-	defc PORT = 0x3B
-	defc PORT_CLOCK = 0x10 ;0x103b
-	defc PORT_DATA = 0x11 ;0x113b
+;	DEFC MAINRAM = 49152		; Where out code can run above CLEAR
+	DEFC MAINRAM = 61440
 
-
+	ORG 0x2000
   
 MAIN:
-	ld a,h
-	or l
-	JP z,end_error  ;if we dont have parameters it is a read command
+	LD	A,H
+	OR	L
+	JP	Z,end_error	;if we dont have parameters it is an error
 
-	LD A,(HL)
+	LD	IX,MCATMAIN	;Included bin of MCATMAIN location
 	
-	CP '-'		;options flag (anything gives the help)
-	JP NZ,CAT
+	LD	A,(HL)
 
-	INC HL
-	LD A,(HL)
-	CP 'i'
-	JP NZ,end_error
+;***TODO add skip whitespace from later DOTS...
 
+	CP	'-'		;options flag (anything other than -i gives the help)
+	JP	NZ,CAT		;Do our main function
+
+	INC	HL
+	LD	A,(HL)
+	CP	'i'
+	JR	Z,init_drives
+
+	CP	'e'
+	JP	NZ,end_error
+	JP	Z,EXTCAT
+
+init_drives:
 ;Equivalent to the BASIC:
 ;OUT 9275,135: OUT 9531,246
 ;OUT 9275,128: OUT 9531,8
 ;soft reset (OUT 9275,2:OUT 9531,1)
 
-	LD BC,9275
-	LD A,135
-	OUT (C),A
-;	LD BC,9531 - 
-	INC B
-	LD A,246
-	OUT (C),A
+	LD	BC,9275
+	LD	A,135
+	OUT	(C),A
+;	LD	BC,9531 - 
+	INC	B
+	LD	A,246
+	OUT	(C),A
 	
-	DEC B
-	LD A,128
-	OUT (C),A
-	INC B
-	LD A,8
-	OUT (C),A
+	DEC	B
+	LD	A,128
+	OUT	(C),A
+	INC	B
+	LD	A,8
+	OUT	(C),A
 
-	DEC B
-	LD A,2
-	OUT (C),A
-	INC B
-	LD A,1
-	OUT (C),A	
+	DEC	B
+	LD	A,2
+	OUT	(C),A
+	INC	B
+	LD	A,1
+	OUT	(C),A	
 	
-	HALT
-	
+	HALT			; This dumps us into the main ROM at ***
 ;	 
 
-	CP 34		;Date should be quoted
-	JP NZ,end_error
-	INC HL
+EXTCAT:
+;Need whitespace skip
+	INC	HL		; Skip the one space
+	LD	A,(HL)
+	CP	' '
+	JR 	NZ,end_error
+	INC	HL
 
-;--DATE IN MONTH	
-	CALL CONVERT_DIGITS
-	JP c,end_error; return to basic with error message
-	
-	LD (DATE),a 	; store in the table for diag after if needed
-	OR A
-	JP Z,end_error
+;	CALL	0A028h		; Breakpoint to monitor ***
 
-;TODO check for >31 (need to calculate number for that)
-	
-	inc HL ; separator (can be anything really)
+	LD	DE,MsgECat
 
-;--MONTH	
-	inc HL
-	CALL CONVERT_DIGITS
-	jr c,end_error; return to basic with error message
+	LD	A,4
+	JR	CAT2
 
-	LD (MON),a ; store in the table
-	OR A
-	JR Z,end_error
+;The actual CAT routine.
+	
+CAT:	
+	LD	DE,MsgCat
+	LD	A,3		;Option 4 is extended CAT for supported drivers
+CAT2:
+	LD	(IX+$16),A
+	
+	LD	A,(HL)		;Get our drive number
+	LD	(DRIVE),A	;Put in here for error message
+	LD	(IX+2),A	;Copy drive into that as well.	
+	
+	SUB	'0'		;Must be 1-8
+	JR	Z,err_drive
+	CP	9
+	JR	NC,err_drive
 
-;TODO check for > 12
-	
-	inc HL ;separator
-	inc HL ; 2
-	LD A,(HL)
-	CP '2'
-	JR NZ,end_error
-	
-	inc HL ; 0
-	LD A,(HL)
-	CP '0'
-	JR NZ,end_error
+	EX	DE,HL
+	CALL	PrintMsg
 
-;YEAR - no check as can be 00-99	
-	inc HL ; 
-	CALL CONVERT_DIGITS
-	jr c,end_error; return to basic with error message
+;***TODO - allocate a page properly - don't assume Page 0 and a CLEAR before...
+	PUSH	IX
+	POP	HL
+	LD	DE,MAINRAM
+	LD	BC,MCATMEND-MCATMAIN
+	LDIR				;Copy code into page
 
-	LD (YEA),a ; store in the table
+;	CALL	0A028h		; Breakpoint to monitor ***
 
-	INC HL
-	LD A,(HL)	;Date should be quoted
-	CP A,34
-	JR NZ,end_error
-	
-	;---------------------------------------------------
-	; Talk to DS1307 
-	call START_SEQUENCE
-	
-	ld l,0xD0 
-	call SEND_DATA
-	
-	ld l,0x04  ;start to send at reg 0x04 (date) 
-	call SEND_DATA
-	
-	;---------------------------------------------------
+;Transfer ops to main memory
 
-	ld hl, (DATE)
-	call SEND_DATA
-	
-	ld hl, (MON)
-	call SEND_DATA
+	CALL	MAINRAM
+			
+;***TODO Deallocate any page we had for our code...
 
-	ld hl, (YEA)
-	call SEND_DATA
+	XOR	A		; Zero is OK error return by convention
 
-	;STOP_SEQUENCE
-	CALL SDA0
-	CALL SCL1
-	CALL SDA1
-	
-	;---------------------------------------------------
-	; Talk to DS1307 
-WRITE_SIG:
-	call START_SEQUENCE
-	
-	ld l,0xD0 
-	call SEND_DATA
-	
-	ld l,0x3E  ;start to send at reg 0x3E (sig) 
-	call SEND_DATA
-	
-	;---------------------------------------------------
 
-	LD L,'Z'
-	call SEND_DATA
-	
-	LD L,'X'
-	call SEND_DATA
+	RET
 
-	;STOP_SEQUENCE
-	CALL SDA0
-	CALL SCL1
-	CALL SDA1
-	
-	;-------------------------------------------------	
-	
-end:
-	;it´s ok, lets show the current date
-	JR READ_DATE
-	ret
-	
-	;return to basic with an error message
+err_drive:
+	PUSH	AF
+	LD	HL,ErrDrive
+	CALL	PrintMsg
+	POP	AF
 
-diag_code: call prt_hex
-	call print_newline
+diag_code:
+	CALL	prt_hex
+	CALL	print_newline
 	
 end_error:
-	LD HL, MsgUsage
+	LD	HL,MsgUsage
+	JP	PrintMsg
 
-	CALL PrintMsg
-		
+;---------------------------------------------	
+;emook pointed me to this - not used yet but getting ready
+;originally via Matt Davies — 30/03/2021
+allocPage:
+                push    ix
+                push    bc
+                push    de
+                push    hl
+
+                ; Allocate a page by using the OS function IDE_BANK.
+                ld      hl,$0001        ; Select allocate function and allocate from normal memory.
+                call    callP3dos
+                ccf
+                ld      a,e
+                pop     hl
+                pop     de
+                pop     bc
+                pop     ix
+                ret     nc
+                xor     a               ; Out of memory, page # is 0 (i.e. error), CF = 1
+                scf
+                ret
+
+callP3dos:
+                exx                     ; Function parameters are switched to alternative registers.
+                ld      de,IDE_BANK     ; Choose the function.
+                ld      c,7             ; We want RAM 7 swapped in when we run this function (so that the OS can run).
+                rst     8
+                DEFB      M_P3DOS         ; Call the function, new page # is in E
+                ret
+
+freePage:
+                push    af
+                push    ix
+                push    bc
+                push    de
+                push    hl
+
+                ld      e,a             ; E = page #
+                ld      hl,$0003        ; Deallocate function from normal memory
+                call    callP3dos
+
+                pop     hl
+                pop     de
+                pop     bc
+                pop     ix
+                pop     af
+                ret
+                			
+;---------------------------------------------	
+;Useful subroutines for DOT commands
+;*** maybe not needed in here - will be removed if too big	
+
+NUMBER_TO_ASC:
+	LD a,(HL)
+	
+	; get just the upper bits
+	SRL A
+	SRL A
+	SRL A
+	SRL A 
+	add 48 ;convert number to ASCII
+	LD b,a
+	
+	;now the lower bits
+	LD a,(HL)
+	and 0x0f ;just the lower bits
+	add 48 ;convert number to ASCII
+	LD c,a
+	
 	ret
 	
+LOAD_PREPARE_AND_MULT:
+	ld a,(HL)
+;	and 0x7F ; clear the bit 7 
+PREPARE_AND_MULT:
+	SRL a
+	SRL a
+	SRL a
+	SRL a
+	CALL X10
+	ld b,a
+	ld a,(HL)
+	and 0x0F
+	add a,b
 	
+	ret
 	
 CONVERT_DIGITS:
 	LD a,(HL)
@@ -278,286 +325,6 @@ CHAR_ERROR:
 	scf ; set the carry
 	ret
 	
-	
-CAT:
-	LD BC,9275
-	LD A,135
-	OUT (C),A
-;	LD BC,9531 - 
-	INC B
-	LD A,246
-	OUT (C),A
-	
-	DEC B
-	LD A,128
-	OUT (C),A
-	INC B
-	LD A,128
-	OUT (C),A
-
-READ_DATE:					
-	;---------------------------------------------------
-	; Talk to DS1307 and request all the regisers and 0x3e 0x3f
-	call START_SEQUENCE
-	
-	ld l,0xD0 
-	call SEND_DATA
-	
-	ld l,0x3E		;Start at last two bytes to get signature 
-	call SEND_DATA
-	
-	call START_SEQUENCE
-	
-	ld l,0xD1
-	call SEND_DATA
-	;---------------------------------------------------
-	
-	;point to the first reg in table
-	LD HL,SIG
-	
-	;there are 7 regs to read and 2 bytes of signature
-	LD e, 9
-	
-loop_read:
-	call READ
-
-	;point to next reg
-	inc l	
-	
-	;dec number of regs
-	dec e
-	jr z, end_read
-	
-	;if don´t finish, send as ACK and loop
-	call SEND_ACK
-	jr loop_read
-
-	;we just finished to read the I2C, send a NACK and STOP
-end_read:	
-	call SEND_NACK
-	
-	;STOP_SEQUENCE:
-	CALL SDA0
-	CALL SCL1
-	CALL SDA1
-
-;-----------------------------------------------------------	
-
-	OR A		;Clear Carry 
-	LD HL,(SIG)
-	LD DE,585Ah	;ZX=Sig
-	SBC HL,DE
-	SCF		;Flag an error
-	JR NZ,NO_RTC_FOUND
-
-	;get the date
-	LD HL, DATE
-	LD a,(HL)
-	call NUMBER_TO_ASC
-	ld a,b
-	LD (day_txt),a
-	ld a,c
-	LD (day_txt + 1),a
-	
-	
-	
-	;get the month
-	inc HL
-	LD a,(HL)
-	call NUMBER_TO_ASC
-	ld a,b
-	LD (mon_txt),a
-	ld a,c
-	LD (mon_txt + 1),a
-
-	;get the year
-	inc HL
-	LD a,(HL)
-	call NUMBER_TO_ASC
-	ld a,b
-	LD (yea_txt),a
-	ld a,c
-	LD (yea_txt + 1),a
-
-	
-	ld hl,MsgDate
-	CALL PrintMsg
-
-	ret
-
-NO_RTC_FOUND:
-
-	LD HL,NoRTCmessage
-	CALL PrintMsg
-	
-	RET
-
-
-	
-NUMBER_TO_ASC:
-	LD a,(HL)
-	
-	; get just the upper bits
-	SRL A
-	SRL A
-	SRL A
-	SRL A 
-	add 48 ;convert number to ASCII
-	LD b,a
-	
-	;now the lower bits
-	LD a,(HL)
-	and 0x0f ;just the lower bits
-	add 48 ;convert number to ASCII
-	LD c,a
-	
-	ret
-	
-LOAD_PREPARE_AND_MULT:
-	ld a,(HL)
-;	and 0x7F ; clear the bit 7 
-PREPARE_AND_MULT:
-	SRL a
-	SRL a
-	SRL a
-	SRL a
-	CALL X10
-	ld b,a
-	ld a,(HL)
-	and 0x0F
-	add a,b
-	
-	ret
-	
-SEND_DATA:
-	; 8 bits
-	ld h,8
-SEND_DATA_LOOP:	
-	
-	;next bit
-	RLC L
-	
-	ld a,L
-	CALL SDA
-	
-	call PULSE_CLOCK
-	
-	dec h
-	jr nz, SEND_DATA_LOOP
-	
-		
-WAIT_ACK:
-	;free the line to wait for the ACK
-	CALL SDA1
-	call PULSE_CLOCK
-
-	ret
-
-READ:
-	;free the data line
-	CALL SDA1
-	
-	; lets read 8 bits
-	ld D,8	
-READ_LOOP:
-
-	;next bit
-	rlc (hl)
-	
-	;clock is high
-	CALL SCL1	
-	
-	;read the bit
-	ld b,PORT_DATA
-	in a,(c)
-	
-	;is it 1?
-	and 1
-	
-	jr nz, set_bit
-	res 0,(hl)
-	jr end_set
-	
-set_bit:
-	set 0,(hl)
-	
-end_set:
-
-	
-	;clock is low
-	CALL SCL0
-	
-	
-	dec d
-	
-	;go to next bit
-	jr nz, READ_LOOP
-	
-	;finish the byte read
-	ret
-	
-SEND_NACK:
-	ld a,1
-	jr SEND_ACK_NACK
-	
-SEND_ACK:	
-	xor a  ;a=0	
-	
-SEND_ACK_NACK:
-	
-	CALL SDA
-	
-	call PULSE_CLOCK
-	
-;	free the data line
-	CALL SDA1
-
-	ret
-
-
-START_SEQUENCE:	
-
-	;high in both i2c pins, before begin
-	ld a,1
-	ld c, PORT
-	CALL SCL 
-	CALL SDA
-	
-	;high to low when clock is high
-	CALL SDA0
-	
-	;low the clock to start sending data
-	CALL SCL
-	
-	ret
-	
-SDA0:
-	xor a 
-	jr SDA
-	
-SDA1: 
-	ld a,1
-
-SDA: 
-	ld b,PORT_DATA
-	 OUT (c), a
-	 ret
-
-SCL0:
-	xor a 
-	jr SCL
-SCL1:
-	ld a,1
-SCL:
-	ld b,PORT_CLOCK
-	OUT (c), a
-	ret
-	
-PULSE_CLOCK:
-	CALL SCL1
-	CALL SCL0
-	ret
-	
 ; input A, output A = A * 10
 X10:
 	ld b,a
@@ -575,10 +342,6 @@ PrintMsg:
 	rst 10h
 	inc hl
 	jr PrintMsg
-
-
-			
-;---------------------------------------------		
 
 openscreen:		ld a,2
 			jp $1601
@@ -650,39 +413,32 @@ lp2:			inc a
 			jp 16
 
 
-str_DE:		DEFM "DE  : "
+str_DE:	DEFM "DE  : "
 		DEFB 0
-str_BC:		DEFM "BC  : "
+str_BC:	DEFM "BC  : "
 		DEFB 0
-str_REG:	DEFM "RTC : "
-		DEFB 0
+
 
 newline:	DEFB 13,0	
 	
 
-
-
-NoRTCmessage:	DEFM "No valid RTC signature found.",13
-		DEFM "Try setting date first",13,13,0
-
-MsgDate: 	DEFB "The date is "
-day_txt:	DEFB "  "
-slash1:		DEFB "/"
-mon_txt:	DEFB "  "
-slash2:		DEFB "/20"
-yea_txt:	DEFB "  "
-endmsg:		DEFB 13,13,0
-
-MsgUsage:	DEFB "MCAT V0.2 usage: ",13
-	 	DEFB "mcat <ENTER>",13
+MsgUsage:	DEFM "MCAT V0.4 usage: ",13
+	 	DEFB "mcat {-i}",13
+	 	DEFB "mcat {-e} drive<ENTER>",13
+		DEFB "Functions need CLEAR 61439",13
 	 	DEFB 0
 
-SIG:		DEFW 0					
-SEC:		DEFB 0		
-MIN:		DEFB 0	
-HOU:		DEFB 0	
-DAY:		DEFB 0		 
-DATE:		DEFB 0	
-MON:		DEFB 0	
-YEA:		DEFB 0	
+MsgECat:	DEFM "Extended "
+MsgCat:	DEFM "CAT on Microdrive "
+DRIVE:		DEFB '3',':',13
+		DEFB 0
+
+ErrDrive:	DEFM "ERROR: Drive No out of range:"
+		DEFB 0
 	
+	
+;Now we include the code that runs in main memory after being copied there.	
+MCATMAIN:
+	BINARY	"mcatmain.bin"
+MCATMEND:
+
