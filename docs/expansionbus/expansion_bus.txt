@@ -365,3 +365,4 @@ Note
 The above register data may change and you should always check on the config with the latest cores...
 
 https://gitlab.com/SpectrumNext/ZX_Spectrum_Next_FPGA/-/blob/master/cores/zxnext/nextreg.txt
+
