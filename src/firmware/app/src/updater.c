@@ -245,6 +245,13 @@ void main()
 {
         vdp_init();
         detectBoard();
+
+        if (machineId != HWID_ZXNEXT)
+        {
+                sprintf(line, "Unsupported machine: 0x%02x", machineId);
+                display_error(line);
+        }
+
         GET_NEXTREG(REG_VERSION, mach_version);
         GET_NEXTREG(REG_VERSION_SUB, mach_version_sub);
 

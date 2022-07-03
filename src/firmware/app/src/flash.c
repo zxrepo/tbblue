@@ -69,12 +69,6 @@ void detectBoard()
                 machineAB = 1;
         }
 
-        if (machineId != HWID_ZXNEXT)
-        {
-                sprintf(line, "Unsupported machine: 0x%02x", machineId);
-                display_error(line);
-        }
-
         if (boardId >= NUM_BOARD_TYPES)
         {
                 sprintf(line, "Unknown board id: 0x%02x", boardId);

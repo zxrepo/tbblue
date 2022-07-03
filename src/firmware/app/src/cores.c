@@ -990,7 +990,7 @@ void main()
         vdp_init();
         detectBoard();
 
-        if (boardId != 0)
+        if ((boardId != 0) || (machineId != HWID_ZXNEXT))
         {
                 display_error("Only supported on issue 2!");
         }
