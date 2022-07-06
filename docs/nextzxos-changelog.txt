@@ -1,3 +1,11 @@
+v2.07k: 2022-07-06
+==================
+* Fix for issue 72: Browser could not follow links to files/directories on
+  other drives.
+* Fix for %FORMAT settings being cleared again immediately after processing
+  autoexec.bas.
+
+
 v2.07j: 2022-06-25
 ==================
 * Fix for "end of file"/"tape loading error" when attempting to load a CODE
