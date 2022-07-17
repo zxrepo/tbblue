@@ -627,7 +627,7 @@ CatLoo: PUSH	BC
 	CALL 	Space
 	BIT	PRINT,(IX+RECFLG)
 	JR	NZ,NotPri
-	LD	A,”D”
+	LD	A,'D'
 	CALL 	CONOUT
 	JR	CatBack
 NotPri: PUSH 	IX

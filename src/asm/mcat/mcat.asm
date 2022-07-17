@@ -422,7 +422,7 @@ str_BC:	DEFM "BC  : "
 newline:	DEFB 13,0	
 	
 
-MsgUsage:	DEFM "MCAT V0.4 usage: ",13
+MsgUsage:	DEFM "MCAT V0.5 usage: ",13
 	 	DEFB "mcat {-i}",13
 	 	DEFB "mcat {-e} drive<ENTER>",13
 		DEFB "Functions need CLEAR 61439",13
